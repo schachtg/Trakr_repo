@@ -1,0 +1,49 @@
+.btn {
+    background: linear-gradient(140deg, rgba(44,246,138,1) 0%, rgba(52,235,186,1) 25%, rgba(52,235,202,1) 67%, rgba(85,248,255,1) 100%);
+    color: #111;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 50px;
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+    cursor: pointer;
+    outline: none;
+    border: none;
+  }
+  
+/* Hover state */
+.btn:hover {
+    background: #23ba92; /* Darker background color on hover */
+}
+
+/* Active (clicked) state */
+.btn:active {
+    background: #178164; /* Even darker background color when clicked */
+    outline: none;
+}
+
+.btn_trnsp {
+    background: transparent;
+    color: #1dffdd;
+    padding: 0;
+    font-size: 1rem;
+    border: none;
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+}
+
+/* Hover state */
+.btn_trnsp:hover {
+    color: #23ba92; /* Darker background color on hover */
+}
+
+/* Active (clicked) state */
+.btn_trnsp:active {
+    outline: none;
+}
+
+.gap {
+    margin-right: 5px;
+}
