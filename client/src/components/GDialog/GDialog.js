@@ -9,8 +9,6 @@ export default function GDialog({openDialog, setOpenDialog, children}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
-    // Need to add background blur
-
     const onClickClose = () => {
         setOpenDialog(false);
     }
