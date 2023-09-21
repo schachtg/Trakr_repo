@@ -1,9 +1,8 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import styles from './SprintCol.module.css';
-import Divider from '@material-ui/core/Divider';
+import styles from './SprintTable.module.css';
 import { SMALL_WIDTH } from '../../Constants';
 
-export default function SprintCol() {
+export default function SprintTable() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let colMax = [true, false, false, false, false]
     let numRows = 10;
@@ -62,7 +61,6 @@ export default function SprintCol() {
                         <h1 className={smallScreen ? styles.col_name_sml : styles.col_name}>Done</h1>
                         {divs}
                     </div>
-
                 </div>
             </div>
         </Fragment>

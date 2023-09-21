@@ -1,0 +1,55 @@
+.form_section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.dark_input {
+    background-color: #555;
+    color: white;
+    border: none;
+    height: 2rem;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #555 inset !important;
+}
+
+input:-webkit-autofill{
+    -webkit-text-fill-color: white !important;
+}
+
+.dark_select {
+    background-color: #555;
+    color: white;
+    border: none;
+    height: 30px;
+}
+
+.dark_description {
+    background-color: #555;
+    color: white;
+    border: none;
+    resize: none;
+    height: 100px;
+}
+
+.dark_description::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+
+.dark_description::-webkit-scrollbar-thumb {
+    background-color: #b4b4b4; /* Color of the thumb */
+    border-radius: 5px; /* Rounded corners of the thumb */
+}
+
+.dark_description::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Color of the thumb on hover */
+}
+
+.dark_description::-webkit-scrollbar-track {
+    background-color: #222; /* Color of the track */
+}
