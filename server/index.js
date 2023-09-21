@@ -11,12 +11,15 @@ app.use(express.json()); //req.body
 //ROUTES//
 
 // create a ticket
-app.post("/tickets", async (req, res) => {
+app.post("/:username/tickets", async (req, res) => {
   try {
-    const { description } = req.body;
+    const { username } = req.params;
+    const tableName = username + "_tickets";
+    const { name, type, epic, description, blocks, blockedBy, points, assignee, sprint, column, project } = req.body;
+
     const newTicket = await pool.query(
-      "INSERT INTO ticket (description) VALUES($1) RETURNING *",
-      [description]
+      `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [name, type, epic, description, blocks, blockedBy, points, assignee, sprint, column, project]
     );
 
     res.json(newTicket.rows[0]);

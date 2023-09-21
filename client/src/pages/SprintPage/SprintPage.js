@@ -19,24 +19,49 @@ const epicOptions = [
     "Epic 3",
 ];
 
+const typeOptions = [
+    "Task",
+    "Bug",
+    "Spike",
+];
+
 const ticketList = [
     "Ticket 1",
     "Ticket 2",
     "Ticket 3",
 ];
 
-const asigneeOptions = [
+const assigneeOptions = [
     "No asignee",
     "Person 1",
     "Person 2",
     "Person 3",
 ];
 
+const sprintOptions = [
+    "Current sprint",
+    "Sprint 2",
+    "Sprint 3",
+    "Sprint 4",
+];
+
 export default function SprintPage() {
     const [openDialog, setOpenDialog] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < SMALL_WIDTH;
-    const [formData, setFormData] = useState({name: "",epic: "",description: "", blocks: [], blockedBy: [], points: 0});
+    const [formData, setFormData] = useState({
+        name: "",
+        type: "Task",
+        epic: "",
+        description: "",
+        blocks: [],
+        blockedBy: [],
+        points: 0,
+        assignee: "",
+        sprint: "Current sprint",
+        column: "To Do",
+        project: "New Project"
+    });
     const [errorMessage, setErrorMessage] = useState('');
 
     const handleChange = (event) => {
@@ -49,8 +74,13 @@ export default function SprintPage() {
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
     };
 
-    const handleChangeAsignee = (value) => {
-        let name = "asignee"
+    const handleChangeType = (value) => {
+        let name = "type"
+        setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+    };
+
+    const handleChangeAssignee = (value) => {
+        let name = "assignee"
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
     };
 
@@ -64,10 +94,38 @@ export default function SprintPage() {
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
     };
 
-    const handleSubmit = (event) => {
+    const handleChangeSprint = (value) => {
+        let name = "sprint"
+        setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+    };
+
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        alert(`Name: ${formData.name}, Epic: ${formData.epic}, Description: ${formData.description}, Blocks: ${formData.blocks}, Blocked By: ${formData.blockedBy}, Points: ${formData.points}`
-        );
+
+        try{ 
+            const body = {
+                name: formData.name,
+                type: formData.type,
+                epic: formData.epic,
+                description: formData.description,
+                blocks: formData.blocks,
+                blockedBy: formData.blockedBy,
+                points: formData.points,
+                assignee: formData.assignee,
+                sprint: formData.sprint,
+                column: formData.column,
+                project: formData.project
+            };
+            const response = await fetch("http://localhost:5000/username/tickets", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            });
+
+            window.location = "/";
+        } catch (err) {
+            console.error(err.message);
+        }
     };
 
     const handleChangePoints = (event) => {
@@ -128,6 +186,24 @@ export default function SprintPage() {
                             <input className={styles.dark_input} type="text" id="name" name="name" value={formData.name} onChange={handleChange}/>
                         </div>
 
+                        
+                        <div className={styles.form_section}>
+                            <label htmlFor="type">Type:</label>
+                            <Select
+                                dropdownStyle={{ backgroundColor: '#555' }}
+                                showSearch
+                                optionFilterProp="children"
+                                name="type"
+                                defaultValue = "Task"
+                                onChange={handleChangeType}
+                                filterOption={(input, option) =>
+                                option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                            >
+                                {typeOptions.map((type, index) => <Option key={index} value={type}>{type}</Option>)}
+                            </Select>
+                        </div>
+
                         <div className={styles.form_section}>
                             <label htmlFor="epic">Epic:</label>
                             <Select
@@ -135,7 +211,7 @@ export default function SprintPage() {
                                 showSearch
                                 optionFilterProp="children"
                                 name="epic"
-                                defaultValue = "No asignee"
+                                defaultValue = "No Epic"
                                 onChange={handleChangeEpic}
                                 filterOption={(input, option) =>
                                 option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -191,19 +267,36 @@ export default function SprintPage() {
                         </div>
 
                         <div className={styles.form_section}>
-                            <label htmlFor="asignee">Asignee:</label>
+                            <label htmlFor="assignee">Assignee:</label>
                             <Select
                                 dropdownStyle={{ backgroundColor: '#555' }}
                                 showSearch
                                 optionFilterProp="children"
-                                name="asignee"
-                                defaultValue = "No asignee"
-                                onChange={handleChangeAsignee}
+                                name="assignee"
+                                defaultValue = "No assignee"
+                                onChange={handleChangeAssignee}
                                 filterOption={(input, option) =>
                                 option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
                             >
-                                {epicOptions.map((asignee, index) => <Option key={index} value={asignee}>{asignee}</Option>)}
+                                {assigneeOptions.map((assignee, index) => <Option key={index} value={assignee}>{assignee}</Option>)}
+                            </Select>
+                        </div>
+
+                        <div className={styles.form_section}>
+                            <label htmlFor="sprint">Sprint:</label>
+                            <Select
+                                dropdownStyle={{ backgroundColor: '#555' }}
+                                showSearch
+                                optionFilterProp="children"
+                                name="sprint"
+                                defaultValue = "Current sprint"
+                                onChange={handleChangeSprint}
+                                filterOption={(input, option) =>
+                                option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                            >
+                                {sprintOptions.map((sprint, index) => <Option key={index} value={sprint}>{sprint}</Option>)}
                             </Select>
                         </div>
 
