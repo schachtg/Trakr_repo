@@ -54,7 +54,7 @@ export default function SprintPage() {
                     </GButton>
                 </div>
                 <GDialog openDialog={openDialog} setOpenDialog={setOpenDialog}>
-                    <TicketForm setOpenForm={closeCreateTicket}/>
+                    <TicketForm closeForm={closeCreateTicket}/>
                 </GDialog>
             </div>
         </Fragment>
