@@ -32,10 +32,17 @@
     cursor: pointer;
 }
 
+.ticket_header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 .ticket_title {
     color: black;
     width: 100%;
     font-size: 1rem;
+    font-weight: bold;
     top: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2; /* Number of lines to show */
@@ -43,6 +50,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.3rem;
+    margin-bottom: 0.2rem;
+}
+
+.ticket_epic {
+    color: white;
+    background-color: #181818;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    padding: 0.1rem 0.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2rem;
+    margin-bottom: 0;
 }
 
 .ticket_body {
@@ -54,11 +74,11 @@
 
 .ticket_asignee {
     color: black;
-    font-size: 0.8rem;
+    font-size: 1rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.1rem;
+    line-height: 1.3rem;
 }
 
 .ticket_points {

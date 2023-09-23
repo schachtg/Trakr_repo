@@ -1,6 +1,7 @@
 .page_content {
     margin: 1rem 0;
     padding: 0rem 4rem;
+    max-width: 2500px;
 }
 
 .page_content_sml {

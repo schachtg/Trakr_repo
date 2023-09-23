@@ -175,7 +175,7 @@ export default function TicketForm({closeForm}) {
                         optionFilterProp="children"
                         name="epic"
                         id="epic"
-                        defaultValue = "No Epic"
+                        defaultValue = "No epic"
                         onChange={handleChangeEpic}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

@@ -4,7 +4,7 @@ import GDialog from '../../components/GDialog/GDialog';
 import TicketForm from '../../components/TicketForm/TicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 
-export default function TicketBox({ticket}) {
+export default function TicketBox({ticket, handleDragStart}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [openDialog, setOpenDialog] = useState(false);
     let smallScreen = windowWidth < SMALL_WIDTH;
@@ -33,8 +33,16 @@ export default function TicketBox({ticket}) {
     return (
         <Fragment>
             <div className={styles.outer_container}>
-                <div onClick={openCreateTicket} className={smallScreen ? styles.ticket_box_sml : styles.ticket_box_lrg}>
-                    <h1 className={styles.ticket_title}>{ticket.title}</h1>
+                <div
+                    draggable
+                    onDragStart={handleDragStart}
+                    className={smallScreen ? styles.ticket_box_sml : styles.ticket_box_lrg}
+                    onClick={openCreateTicket}
+                >
+                    <div className={styles.ticket_header}>
+                        <h1 className={styles.ticket_title}>{ticket.title}</h1>
+                        {ticket.epic !== "No epic" && <h1 className={styles.ticket_epic}>{ticket.epic}</h1>}
+                    </div>
                     <div className={styles.ticket_body}>
                         <h1 className={styles.ticket_asignee}>{ticket.assignee}</h1>
                         <div className={styles.points_container}>
