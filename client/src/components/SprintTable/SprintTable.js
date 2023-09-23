@@ -77,15 +77,15 @@ let columnsDefault = [
 ];
 
 let initialized = false;
+let largestColTemp = 0;
 
 export default function SprintTable() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [draggingTicketIndex, setDraggingTicketIndex] = useState(-1);
     const [tickets, setTickets] = useState(ticketsDefault);
     const [columns, setColumns] = useState(columnsDefault);
-    const [largestCol, setLargestCol] = useState(0);
+    const [largestCol, setLargestCol] = useState(largestColTemp);
     let smallScreen = windowWidth < SMALL_WIDTH;
-    let largestColTemp = 0;
 
     const getLargestCol = () => {
         largestColTemp = 0;
@@ -94,12 +94,10 @@ export default function SprintTable() {
                 largestColTemp = column.size;
             }
         });
-        //console.log("in largest");
         setLargestCol(largestColTemp);
     }
 
     const setColumnsWrapper = (newColumns) => {
-        //console.log("in col wrapper");
         setColumns(newColumns);
         getLargestCol();
     }

@@ -39,14 +39,14 @@ export default function TicketBox({ticket, handleDragStart}) {
                     className={smallScreen ? styles.ticket_box_sml : styles.ticket_box_lrg}
                     onClick={openCreateTicket}
                 >
-                    <div className={styles.ticket_header}>
-                        <h1 className={styles.ticket_title}>{ticket.title}</h1>
-                        {ticket.epic !== "No epic" && <h1 className={styles.ticket_epic}>{ticket.epic}</h1>}
-                    </div>
+                    <h1 className={styles.ticket_title}>{ticket.title}</h1>
                     <div className={styles.ticket_body}>
-                        <h1 className={styles.ticket_asignee}>{ticket.assignee}</h1>
-                        <div className={styles.points_container}>
-                            <h1 className={styles.ticket_points}>{ticket.points}</h1>
+                        {ticket.epic !== "No epic" && <h1 className={styles.ticket_epic}>{ticket.epic}</h1>}
+                        <div className={styles.ticket_footer}>
+                            <h1 className={styles.ticket_asignee}>{ticket.assignee}</h1>
+                            <div className={styles.points_container}>
+                                <h1 className={styles.ticket_points}>{ticket.points}</h1>
+                            </div>
                         </div>
                     </div>
                 </div>
