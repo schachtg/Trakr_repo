@@ -23,14 +23,6 @@ let ticketsDefault = [
         column_name: "Done"
     },
     {
-        id: 2,
-        title: "Integrate Multiple Users In Projects Tab",
-        epic: "No epic",
-        assignee: "Graham Cracker",
-        points: 4,
-        column_name: "In Progress"
-    },
-    {
         id: 3,
         title: "Add Notifications",
         epic: "Epic 4",
@@ -45,7 +37,15 @@ let ticketsDefault = [
         assignee: "Pesdsdasdter Parker",
         points: 2.3,
         column_name: "To Do"
-    }
+    },
+    {
+        id: 2,
+        title: "Integrate Multiple Users In Projects Tab",
+        epic: "No epic",
+        assignee: "Graham Cracker",
+        points: 4,
+        column_name: "In Progress"
+    },
 ];
 
 let columnsDefault = [
