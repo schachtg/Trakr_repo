@@ -41,7 +41,7 @@ export default function TicketBox({ticket, handleDragStart}) {
                 >
                     <h1 className={styles.ticket_title}>{ticket.name}</h1>
                     <div className={styles.ticket_body}>
-                        {ticket.epic !== "No epic" && <h1 className={styles.ticket_epic}>{ticket.epic}</h1>}
+                        {(ticket.epic !== "No epic" && ticket.epic !== "") && <h1 className={styles.ticket_epic}>{ticket.epic}</h1>}
                         <div className={styles.ticket_footer}>
                             <h1 className={styles.ticket_asignee}>{ticket.assignee}</h1>
                             <div className={styles.points_container}>

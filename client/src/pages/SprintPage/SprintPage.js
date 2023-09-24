@@ -6,7 +6,7 @@ import { mdiPlus } from '@mdi/js';
 // components
 import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
-import SprintCol from '../../components/SprintTable/SprintTable';
+import SprintTable from '../../components/SprintTable/SprintTable';
 import CreateTicketForm from '../../components/CreateTicketForm/CreateTicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 
@@ -43,7 +43,7 @@ export default function SprintPage() {
                     {!smallScreen && <h1 className={styles.long_text}>Sprint 1</h1>}
                     <h1 className={styles.long_text}>New Project</h1>
                 </div>
-                <SprintCol />
+                <SprintTable />
                 <div className={styles.create_ticket_row}>
                     <GButton
                         onClick={openCreateTicket}

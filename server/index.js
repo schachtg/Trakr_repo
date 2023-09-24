@@ -84,6 +84,6 @@ app.delete("/tickets/:id", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(process.env.DB_PORT, () => {
   console.log('Server has started on port ' + process.env.DB_PORT);
 });

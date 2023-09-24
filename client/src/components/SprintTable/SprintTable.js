@@ -4,6 +4,7 @@ import { SMALL_WIDTH } from '../../Constants';
 
 // Components
 import TicketBox from '../TicketBox/TicketBox';
+import NoTicketsAvailable from '../NoTicketsAvailable/NoTicketsAvailable';
 
 let ticketsDefault = [];
 
@@ -160,6 +161,7 @@ export default function SprintTable() {
                     </div>
                 ))}
             </div>
+            {tickets.length === 0 && <NoTicketsAvailable /> }
         </Fragment>
     );
 }
