@@ -7,7 +7,7 @@ import { mdiPlus } from '@mdi/js';
 import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
 import SprintCol from '../../components/SprintTable/SprintTable';
-import TicketForm from '../../components/TicketForm/TicketForm';
+import CreateTicketForm from '../../components/CreateTicketForm/CreateTicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 
 export default function SprintPage() {
@@ -22,7 +22,6 @@ export default function SprintPage() {
     const closeCreateTicket = () => {
         setOpenDialog(false);
     }
-
 
     useEffect(() => {
         const handleWindowResize = () => {
@@ -49,12 +48,13 @@ export default function SprintPage() {
                     <GButton
                         onClick={openCreateTicket}
                         icon={mdiPlus}
+                        type="button"
                     >
                         Create Ticket
                     </GButton>
                 </div>
                 <GDialog openDialog={openDialog} setOpenDialog={setOpenDialog}>
-                    <TicketForm closeForm={closeCreateTicket}/>
+                    <CreateTicketForm closeForm={closeCreateTicket}/>
                 </GDialog>
             </div>
         </Fragment>

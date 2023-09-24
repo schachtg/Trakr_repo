@@ -1,11 +1,11 @@
 import React, {Fragment} from 'react';
-import styles from './TicketForm.module.css';
+import styles from './CreateTicketForm.module.css';
 import { useState } from 'react';
 import { mdiContentSave } from '@mdi/js';
 import { Select } from 'antd';
 
 // components
-import GButton from '../../components/GButton/GButton';
+import GButton from '../GButton/GButton';
 
 const { Option } = Select;
 
@@ -42,7 +42,15 @@ const sprintOptions = [
     "Sprint 4",
 ];
 
-export default function TicketForm({closeForm}) {
+const columnOptions = [
+    "To Do",
+    "In Progress",
+    "Testing",
+    "Done",
+    "Impeded",
+];
+
+export default function CreateTicketForm({closeForm}) {
     const [formData, setFormData] = useState({
         name: "",
         type: "Task",
@@ -53,7 +61,7 @@ export default function TicketForm({closeForm}) {
         points: 0,
         assignee: "",
         sprint: "Current sprint",
-        column: "To Do",
+        column_name: "To Do",
         project: "New Project"
     });
     const [errorMessage, setErrorMessage] = useState('');
@@ -93,6 +101,11 @@ export default function TicketForm({closeForm}) {
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
     };
 
+    const handleChangeColumn = (value) => {
+        let name = "column_name"
+        setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+    };
+
     const handleChangePoints = (event) => {
         const { name, value } = event.target;
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
@@ -109,6 +122,7 @@ export default function TicketForm({closeForm}) {
         event.preventDefault();
 
         try{ 
+            closeForm();
             const body = {
                 name: formData.name,
                 type: formData.type,
@@ -119,7 +133,7 @@ export default function TicketForm({closeForm}) {
                 points: formData.points,
                 assignee: formData.assignee,
                 sprint: formData.sprint,
-                column: formData.column,
+                column_name: formData.column_name,
                 project: formData.project
             };
             
@@ -142,13 +156,12 @@ export default function TicketForm({closeForm}) {
 
     return (
         <Fragment>
-            <form onSubmit={handleSubmit}>
+            <form id="form" method="post" onSubmit={handleSubmit}>
                 <div className={styles.form_section}>
                     <label htmlFor="name">Name:</label>
                     <input className={styles.dark_input} type="text" id="name" name="name" value={formData.name} onChange={handleChange}/>
                 </div>
-
-                
+           
                 <div className={styles.form_section}>
                     <label htmlFor="type">Type:</label>
                     <Select
@@ -268,8 +281,25 @@ export default function TicketForm({closeForm}) {
                     </Select>
                 </div>
 
+                <div className={styles.form_section}>
+                    <label htmlFor="column_name">Column:</label>
+                    <Select
+                        dropdownStyle={{ backgroundColor: '#555' }}
+                        showSearch
+                        optionFilterProp="children"
+                        name="column_name"
+                        id="column_name"
+                        defaultValue = "To Do"
+                        onChange={handleChangeColumn}
+                        filterOption={(input, option) =>
+                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                    >
+                        {columnOptions.map((column_name, index) => <Option key={index} value={column_name}>{column_name}</Option>)}
+                    </Select>
+                </div>
+
                 <GButton
-                    onClick={closeForm}
                     icon={mdiContentSave}
                     type="submit"
                 >

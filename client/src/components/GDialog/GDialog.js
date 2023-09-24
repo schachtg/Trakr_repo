@@ -38,6 +38,7 @@ export default function GDialog({openDialog, setOpenDialog, children}) {
                             iconSize={1.7}
                             className={styles.close_btn}
                             onClick={onClickClose}
+                            type="button"
                         />
                     </div>
                     <Divider className={styles.divider_class}/>

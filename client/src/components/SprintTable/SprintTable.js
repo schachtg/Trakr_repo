@@ -5,48 +5,7 @@ import { SMALL_WIDTH } from '../../Constants';
 // Components
 import TicketBox from '../TicketBox/TicketBox';
 
-let ticketsDefault = [
-    {
-        id: 0,
-        title: "Update Board",
-        epic: "Epic 1",
-        assignee: "No assignee",
-        points: 3,
-        column_name: "Impeded"
-    },
-    {
-        id: 1,
-        title: "Add New Login System",
-        epic: "Epicnennsefjsofifafjoiasfj 1",
-        assignee: "Shana Sickbal",
-        points: 0.5,
-        column_name: "Done"
-    },
-    {
-        id: 3,
-        title: "Add Notifications",
-        epic: "Epic 4",
-        assignee: "Peter Parker",
-        points: 2.3,
-        column_name: "To Do"
-    },
-    {
-        id: 4,
-        title: "Add adsdas",
-        epic: "Epic 4",
-        assignee: "Pesdsdasdter Parker",
-        points: 2.3,
-        column_name: "To Do"
-    },
-    {
-        id: 2,
-        title: "Integrate Multiple Users In Projects Tab",
-        epic: "No epic",
-        assignee: "Graham Cracker",
-        points: 4,
-        column_name: "In Progress"
-    },
-];
+let ticketsDefault = [];
 
 let columnsDefault = [
     {
@@ -103,11 +62,16 @@ export default function SprintTable() {
     }
 
     const setTicketsWrapper = (newTickets) => {
+        
         columnsDefault.forEach(column => {
             column.size = 0;
         });
+        let colIndex = 0;
         newTickets.forEach(ticket => {
-            columnsDefault.find(column => column.name === ticket.column_name).size += 1;
+            colIndex = columnsDefault.findIndex(column => column.name === ticket.column_name);
+            if(colIndex !== -1) {
+                columnsDefault[colIndex].size++;
+            }
         });
         setColumnsWrapper(columnsDefault);
         setTickets(newTickets);
@@ -125,13 +89,27 @@ export default function SprintTable() {
         }
     }
 
+    const getTicketsFromDB = async event => {
+        try{
+            const response = await fetch("http://localhost:5000/username/tickets", {
+                method: "GET",
+                headers: {"Content-Type": "application/json"}
+            });
+            const data = await response.json();
+            ticketsDefault = data;
+            setTicketsWrapper(ticketsDefault);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
     const handleOnDragOver = (e) => {
         e.preventDefault();
     }
 
     useEffect(() => {
         if (!initialized) {
-            setTicketsWrapper(ticketsDefault);
+            getTicketsFromDB();
             initialized = true;
         }
         const handleWindowResize = () => {

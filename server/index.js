@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const pool = require('./db');
+require('dotenv');
 
 //middleware
 app.use(cors());
@@ -15,11 +16,11 @@ app.post("/:username/tickets", async (req, res) => {
   try {
     const { username } = req.params;
     const tableName = username + "_tickets";
-    const { name, type, epic, description, blocks, blockedBy, points, assignee, sprint, column, project } = req.body;
+    const { name, type, epic, description, blocks, blockedBy, points, assignee, sprint, column_name, project } = req.body;
 
     const newTicket = await pool.query(
       `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-      [name, type, epic, description, blocks, blockedBy, points, assignee, sprint, column, project]
+      [name, type, epic, description, blocks, blockedBy, points, assignee, sprint, column_name, project]
     );
 
     res.json(newTicket.rows[0]);
@@ -29,9 +30,11 @@ app.post("/:username/tickets", async (req, res) => {
 });
 
 // get all tickets
-app.get("/tickets", async (req, res) => {
+app.get("/:username/tickets", async (req, res) => {
   try {
-    const allTickets = await pool.query("SELECT * FROM ticket");
+    const { username } = req.params;
+    const tableName = username + "_tickets";
+    const allTickets = await pool.query(`SELECT * FROM ${tableName}`);
     res.json(allTickets.rows);
   } catch (err) {
     console.error(err.message);
@@ -81,6 +84,6 @@ app.delete("/tickets/:id", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 5000, () => {
-  console.log('Server has started on port 5000');
+app.listen(process.env.PORT, () => {
+  console.log('Server has started on port ' + process.env.DB_PORT);
 });

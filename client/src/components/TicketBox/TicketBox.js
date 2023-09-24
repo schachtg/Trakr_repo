@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import styles from './TicketBox.module.css';
 import GDialog from '../../components/GDialog/GDialog';
-import TicketForm from '../../components/TicketForm/TicketForm';
+import TicketForm from '../CreateTicketForm/CreateTicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 
 export default function TicketBox({ticket, handleDragStart}) {
@@ -39,7 +39,7 @@ export default function TicketBox({ticket, handleDragStart}) {
                     className={smallScreen ? styles.ticket_box_sml : styles.ticket_box_lrg}
                     onClick={openCreateTicket}
                 >
-                    <h1 className={styles.ticket_title}>{ticket.title}</h1>
+                    <h1 className={styles.ticket_title}>{ticket.name}</h1>
                     <div className={styles.ticket_body}>
                         {ticket.epic !== "No epic" && <h1 className={styles.ticket_epic}>{ticket.epic}</h1>}
                         <div className={styles.ticket_footer}>
