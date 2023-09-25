@@ -1,7 +1,7 @@
 import React, {Fragment} from 'react';
-import styles from './CreateTicketForm.module.css';
+import styles from './TicketForm.module.css';
 import { useState } from 'react';
-import { mdiContentSave } from '@mdi/js';
+import { mdiContentSave, mdiDelete } from '@mdi/js';
 import { Select } from 'antd';
 
 // components
@@ -50,16 +50,16 @@ const columnOptions = [
     "Impeded",
 ];
 
-export default function CreateTicketForm({closeForm}) {
-    const [formData, setFormData] = useState({
+export default function CreateTicketForm({closeForm, ticket}) {
+    const [formData, setFormData] = useState(ticket || {
         name: "",
         type: "Task",
-        epic: "",
+        epic: "No epic",
         description: "",
         blocks: [],
-        blockedBy: [],
+        blocked_by: [],
         points: 0,
-        assignee: "",
+        assignee: "No assignee",
         sprint: "Current sprint",
         column_name: "To Do",
         project: "New Project"
@@ -92,8 +92,10 @@ export default function CreateTicketForm({closeForm}) {
     };
 
     const handleChangeBlockedBy = (value) => {
-        let name = "blockedBy"
+        let name = "blocked_by"
+        console.log(formData.blocked_by);
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+        console.log(formData.blocked_by);
     };
 
     const handleChangeSprint = (value) => {
@@ -129,7 +131,7 @@ export default function CreateTicketForm({closeForm}) {
                 epic: formData.epic,
                 description: formData.description,
                 blocks: formData.blocks,
-                blockedBy: formData.blockedBy,
+                blocked_by: formData.blocked_by,
                 points: formData.points,
                 assignee: formData.assignee,
                 sprint: formData.sprint,
@@ -137,12 +139,34 @@ export default function CreateTicketForm({closeForm}) {
                 project: formData.project
             };
             
-            await fetch("http://localhost:5000/username/tickets", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(body)
-            });
+            if (ticket) {
+                await fetch(`http://localhost:5000/username/tickets/${ticket.ticket_id}`, {
+                    method: "PUT",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(body)
+                });
+            } else {
+                await fetch("http://localhost:5000/username/tickets", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(body)
+                });
+            }
 
+            window.location = "/";
+        } catch (err) {
+            console.error(err.message);
+        }
+    };
+
+    const handleDeleteTicket = async (event) => {
+        event.preventDefault();
+
+        try{
+            closeForm();
+            await fetch(`http://localhost:5000/username/tickets/${ticket.ticket_id}`, {
+                method: "DELETE"
+            });
             window.location = "/";
         } catch (err) {
             console.error(err.message);
@@ -170,7 +194,7 @@ export default function CreateTicketForm({closeForm}) {
                         optionFilterProp="children"
                         name="type"
                         id="type"
-                        defaultValue = "Task"
+                        defaultValue={formData.type}
                         onChange={handleChangeType}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -188,7 +212,7 @@ export default function CreateTicketForm({closeForm}) {
                         optionFilterProp="children"
                         name="epic"
                         id="epic"
-                        defaultValue = "No epic"
+                        defaultValue={formData.epic}
                         onChange={handleChangeEpic}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -212,6 +236,7 @@ export default function CreateTicketForm({closeForm}) {
                         name="blocks"
                         id="blocks"
                         mode="multiple"
+                        defaultValue={formData.blocks}
                         onChange={handleChangeBlocks}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -222,14 +247,15 @@ export default function CreateTicketForm({closeForm}) {
                 </div>
 
                 <div className={styles.form_section}>
-                    <label htmlFor="blockedBy">Blocked by:</label>
+                    <label htmlFor="blocked_by">Blocked by:</label>
                     <Select
                         dropdownStyle={{ backgroundColor: '#555' }}
                         showSearch
                         optionFilterProp="children"
-                        name="blockedBy"
-                        id="blockedBy"
+                        name="blocked_by"
+                        id="blocked_by"
                         mode="multiple"
+                        defaultValue={formData.blocked_by}
                         onChange={handleChangeBlockedBy}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -253,7 +279,7 @@ export default function CreateTicketForm({closeForm}) {
                         optionFilterProp="children"
                         name="assignee"
                         id="assignee"
-                        defaultValue = "No assignee"
+                        defaultValue={formData.assignee}
                         onChange={handleChangeAssignee}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -271,7 +297,7 @@ export default function CreateTicketForm({closeForm}) {
                         optionFilterProp="children"
                         name="sprint"
                         id="sprint"
-                        defaultValue = "Current sprint"
+                        defaultValue={formData.sprint}
                         onChange={handleChangeSprint}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -289,7 +315,7 @@ export default function CreateTicketForm({closeForm}) {
                         optionFilterProp="children"
                         name="column_name"
                         id="column_name"
-                        defaultValue = "To Do"
+                        defaultValue={formData.column_name}
                         onChange={handleChangeColumn}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -298,13 +324,22 @@ export default function CreateTicketForm({closeForm}) {
                         {columnOptions.map((column_name, index) => <Option key={index} value={column_name}>{column_name}</Option>)}
                     </Select>
                 </div>
-
-                <GButton
-                    icon={mdiContentSave}
-                    type="submit"
-                >
-                    Save
-                </GButton>
+                <div className={styles.button_row}>
+                    <GButton
+                        icon={mdiContentSave}
+                        type="submit"
+                    >
+                        Save
+                    </GButton>
+                    {ticket && <GButton
+                        icon={mdiDelete}
+                        onClick={handleDeleteTicket}
+                        type="button"
+                        warning
+                    >
+                        Delete
+                    </GButton>}
+                </div>
             </form>
         </Fragment>
     );

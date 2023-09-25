@@ -8,12 +8,6 @@
     font-size: 30px;
 }
 
-.no_tickets_text_sml {
-    font-style: italic;
-    font-size: 30px;
-    margin-bottom: 2rem;
-}
-
 .img_lrg {
     width: 600px;
     height: 450px;
@@ -31,6 +25,5 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 0;
-    margin-bottom: 15px;
+    margin: 0 0;
  }

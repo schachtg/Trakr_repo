@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import styles from './TicketBox.module.css';
 import GDialog from '../../components/GDialog/GDialog';
-import TicketForm from '../CreateTicketForm/CreateTicketForm';
+import TicketForm from '../TicketForm/TicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 
 export default function TicketBox({ticket, handleDragStart}) {
@@ -43,7 +43,7 @@ export default function TicketBox({ticket, handleDragStart}) {
                     <div className={styles.ticket_body}>
                         {(ticket.epic !== "No epic" && ticket.epic !== "") && <h1 className={styles.ticket_epic}>{ticket.epic}</h1>}
                         <div className={styles.ticket_footer}>
-                            <h1 className={styles.ticket_asignee}>{ticket.assignee}</h1>
+                            <h1 className={styles.ticket_asignee}>{ticket.assignee !== "No assignee" && ticket.assignee}</h1>
                             <div className={styles.points_container}>
                                 <h1 className={styles.ticket_points}>{ticket.points}</h1>
                             </div>
@@ -52,7 +52,7 @@ export default function TicketBox({ticket, handleDragStart}) {
                 </div>
             </div>
             <GDialog openDialog={openDialog} setOpenDialog={setOpenDialog}>
-                <TicketForm closeForm={closeCreateTicket}/>
+                <TicketForm ticket={ticket} closeForm={closeCreateTicket}/>
             </GDialog>
         </Fragment>
     );

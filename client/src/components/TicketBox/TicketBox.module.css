@@ -71,6 +71,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    margin-bottom: 0.5rem;
 }
 
 .ticket_asignee {
@@ -80,6 +81,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.3rem;
+    margin-bottom: 0;
 }
 
 .ticket_points {

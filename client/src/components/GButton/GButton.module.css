@@ -11,15 +11,38 @@
     outline: none;
     border: none;
   }
+
+.btn_warning {
+    background: linear-gradient(140deg, rgb(248, 54, 203) 0%, rgb(244, 47, 123)67%, rgb(244, 59, 108) 100%);
+    color: #111;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 50px;
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+    cursor: pointer;
+    outline: none;
+    border: none;
+  }
   
 /* Hover state */
 .btn:hover {
     background: #23ba92; /* Darker background color on hover */
 }
 
+.btn_warning:hover {
+    background: #c52073; /* Darker background color on hover */
+}
+
 /* Active (clicked) state */
 .btn:active {
     background: #178164; /* Even darker background color when clicked */
+    outline: none;
+}
+
+.btn_warning:active {
+    background: #87154e; /* Even darker background color when clicked */
     outline: none;
 }
 

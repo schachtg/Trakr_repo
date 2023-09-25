@@ -1,13 +1,13 @@
 import React, { Fragment } from 'react';
 import styles from './SprintPage.module.css';
 import { useState, useEffect } from 'react';
-import { mdiPlus } from '@mdi/js';
+import { mdiPlus, mdiChevronRight } from '@mdi/js';
 
 // components
 import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
 import SprintTable from '../../components/SprintTable/SprintTable';
-import CreateTicketForm from '../../components/CreateTicketForm/CreateTicketForm';
+import CreateTicketForm from '../../components/TicketForm/TicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 
 export default function SprintPage() {
@@ -51,6 +51,15 @@ export default function SprintPage() {
                         type="button"
                     >
                         Create Ticket
+                    </GButton>
+                </div>
+                <div className={styles.next_sprint_row}>
+                    <GButton
+                        icon={mdiChevronRight}
+                        type="button"
+                        warning
+                    >
+                        Next Sprint
                     </GButton>
                 </div>
                 <GDialog openDialog={openDialog} setOpenDialog={setOpenDialog}>

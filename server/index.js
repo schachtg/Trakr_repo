@@ -16,11 +16,11 @@ app.post("/:username/tickets", async (req, res) => {
   try {
     const { username } = req.params;
     const tableName = username + "_tickets";
-    const { name, type, epic, description, blocks, blockedBy, points, assignee, sprint, column_name, project } = req.body;
+    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project } = req.body;
 
     const newTicket = await pool.query(
       `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-      [name, type, epic, description, blocks, blockedBy, points, assignee, sprint, column_name, project]
+      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project]
     );
 
     res.json(newTicket.rows[0]);
@@ -43,10 +43,10 @@ app.get("/:username/tickets", async (req, res) => {
 
 
 // get a ticket
-app.get("/tickets/:id", async (req, res) => {
+app.get("/:username/tickets/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const ticket = await pool.query("SELECT * FROM ticket WHERE ticket_id = $1", [
+    const { id, username } = req.params;
+    const ticket = await pool.query(`SELECT * FROM ${username}_tickets WHERE ticket_id = $1`, [
       id
     ]);
     res.json(ticket.rows[0]);
@@ -56,13 +56,13 @@ app.get("/tickets/:id", async (req, res) => {
 });
 
 // update a ticket
-app.put("/tickets/:id", async (req, res) => {
+app.put("/:username/tickets/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const { description } = req.body;
+    const { id, username } = req.params;
+    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project } = req.body;
     const updateTicket = await pool.query(
-      "UPDATE ticket SET description = $1 WHERE ticket_id = $2 RETURNING *",
-      [description, id]
+      `UPDATE ${username}_tickets SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, project = $11 WHERE ticket_id = $12 RETURNING *`,
+      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project, id]
     );
 
     res.json(updateTicket.rows[0]);
@@ -72,10 +72,10 @@ app.put("/tickets/:id", async (req, res) => {
 });
 
 // delete a ticket
-app.delete("/tickets/:id", async (req, res) => {
+app.delete("/:username/tickets/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const deleteTicket = await pool.query("DELETE FROM ticket WHERE ticket_id = $1", [
+    const { id, username } = req.params;
+    const deleteTicket = await pool.query(`DELETE FROM ${username}_tickets WHERE ticket_id = $1`, [
       id
     ]);
     res.json("Ticket was deleted!");

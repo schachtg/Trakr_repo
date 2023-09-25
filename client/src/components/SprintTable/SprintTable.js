@@ -82,11 +82,16 @@ export default function SprintTable() {
         setDraggingTicketIndex(tickets.indexOf(ticket));
     }
 
-    const handleOnDrop = (e, col_name) => {
+    const handleOnDrop = async (e, col_name) => {
         if (col_name !== undefined) {
             const cloned = [...tickets];
             cloned[draggingTicketIndex].column_name = col_name;
             setTicketsWrapper(cloned);
+            await fetch(`http://localhost:5000/username/tickets/${cloned[draggingTicketIndex].ticket_id}`, {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(tickets[draggingTicketIndex])
+            });
         }
     }
 
@@ -127,41 +132,43 @@ export default function SprintTable() {
 
     return (
         <Fragment>
-            <div className={styles.sprint_row}>
-                {columns.map((column, colIndex) => (
-                    <div key={colIndex} className={column.name === "Impeded" ? styles.sprint_col_impeded : styles.sprint_col}>
-                        <div className={column.max > 0 && column.max <= column.size ? styles.warning_border : styles.empty_border}>
-                            <h1 className={smallScreen ? styles.col_name_sml : styles.col_name}>{column.name}</h1>
-                            {tickets.map((ticket, ticketIndex) => {
-                                if (ticket.column_name === column.name) {
-                                    return <div
-                                        key={ticketIndex}
+            <div className={styles.table_margins}>
+                <div className={styles.sprint_row}>
+                    {columns.map((column, colIndex) => (
+                        <div key={colIndex} className={column.name === "Impeded" ? styles.sprint_col_impeded : styles.sprint_col}>
+                            <div className={column.max > 0 && column.max <= column.size ? styles.warning_border : styles.empty_border}>
+                                <h1 className={smallScreen ? styles.col_name_sml : styles.col_name}>{column.name}</h1>
+                                {tickets.map((ticket, ticketIndex) => {
+                                    if (ticket.column_name === column.name) {
+                                        return <div
+                                            key={ticketIndex}
+                                            className={styles.sprint_box}
+                                            onDrop={(e) => handleOnDrop(e,column.name)}
+                                            onDragOver={handleOnDragOver}
+                                        >
+                                            <TicketBox
+                                                handleDragStart={(e) => handleOnDrag(e, ticket)}
+                                                ticket={ticket}
+                                            />
+                                        </div>
+                                    } else {
+                                        return null;
+                                    }
+                                })}
+                                {Array.from({ length: largestCol - column.size}, (item, boxIndex) => (
+                                    <div
+                                        key={boxIndex}
                                         className={styles.sprint_box}
                                         onDrop={(e) => handleOnDrop(e,column.name)}
                                         onDragOver={handleOnDragOver}
-                                    >
-                                        <TicketBox
-                                            handleDragStart={(e) => handleOnDrag(e, ticket)}
-                                            ticket={ticket}
-                                        />
-                                    </div>
-                                } else {
-                                    return null;
-                                }
-                            })}
-                            {Array.from({ length: largestCol - column.size}, (item, boxIndex) => (
-                                <div
-                                    key={boxIndex}
-                                    className={styles.sprint_box}
-                                    onDrop={(e) => handleOnDrop(e,column.name)}
-                                    onDragOver={handleOnDragOver}
-                                />
-                            ))}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
+                {tickets.length === 0 && <NoTicketsAvailable /> }
             </div>
-            {tickets.length === 0 && <NoTicketsAvailable /> }
         </Fragment>
     );
 }

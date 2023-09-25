@@ -1,3 +1,7 @@
+.table_margins {
+    margin-bottom: 1.5rem;
+}
+
 .sprint_row {
     display: flex;
     align-items: top;

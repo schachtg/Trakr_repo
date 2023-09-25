@@ -54,4 +54,13 @@
     align-items: center;
     justify-content: center;
     gap: 1rem;
+    margin-bottom: 4rem;
+}
+
+.next_sprint_row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 3rem;
 }
