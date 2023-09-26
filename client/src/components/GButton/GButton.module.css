@@ -3,7 +3,8 @@
     color: #111;
     padding: 10px 20px;
     font-size: 1rem;
-    border-radius: 50px;
+    font-weight: bold;
+    border-radius: 30px;
     display: flex;
     align-items: center; /* Vertically center items */
     justify-content: center; /* Horizontally center items */
@@ -17,7 +18,8 @@
     color: #111;
     padding: 10px 20px;
     font-size: 1rem;
-    border-radius: 50px;
+    font-weight: bold;
+    border-radius: 30px;
     display: flex;
     align-items: center; /* Vertically center items */
     justify-content: center; /* Horizontally center items */

@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import styles from './SprintPage.module.css';
+import styles from './BoardPage.module.css';
 import { useState, useEffect } from 'react';
 import { mdiPlus, mdiChevronRight } from '@mdi/js';
 
@@ -10,7 +10,7 @@ import SprintTable from '../../components/SprintTable/SprintTable';
 import CreateTicketForm from '../../components/TicketForm/TicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 
-export default function SprintPage() {
+export default function BoardPage() {
     const [openDialog, setOpenDialog] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < SMALL_WIDTH;
@@ -62,7 +62,7 @@ export default function SprintPage() {
                         Next Sprint
                     </GButton>
                 </div>
-                <GDialog openDialog={openDialog} setOpenDialog={setOpenDialog}>
+                <GDialog title="Create new ticket" openDialog={openDialog} setOpenDialog={setOpenDialog}>
                     <CreateTicketForm closeForm={closeCreateTicket}/>
                 </GDialog>
             </div>

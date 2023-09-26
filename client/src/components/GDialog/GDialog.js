@@ -5,7 +5,7 @@ import { mdiCloseCircle } from '@mdi/js';
 import { SMALL_WIDTH } from '../../Constants';
 import Divider from '@material-ui/core/Divider';
 
-export default function GDialog({openDialog, setOpenDialog, children}) {
+export default function GDialog({title, openDialog, setOpenDialog, children}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
@@ -31,7 +31,7 @@ export default function GDialog({openDialog, setOpenDialog, children}) {
             <div className={styles.dialog_container}>
                 <div className={`${styles.inner_dialog_container} ${smallScreen ? styles.inner_sml_padding : styles.inner_lrg_padding}`}>
                     <div className={styles.header_row}>
-                        <h1 className={styles.long_text}>Really Really Really long Title</h1>
+                        <h1 className={styles.long_text}>{title}</h1>
                         <GButton
                             icon={mdiCloseCircle}
                             transparent={true}

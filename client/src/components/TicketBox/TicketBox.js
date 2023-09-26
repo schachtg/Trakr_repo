@@ -51,7 +51,7 @@ export default function TicketBox({ticket, handleDragStart}) {
                     </div>
                 </div>
             </div>
-            <GDialog openDialog={openDialog} setOpenDialog={setOpenDialog}>
+            <GDialog title={ticket.name} openDialog={openDialog} setOpenDialog={setOpenDialog}>
                 <TicketForm ticket={ticket} closeForm={closeCreateTicket}/>
             </GDialog>
         </Fragment>

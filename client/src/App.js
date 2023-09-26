@@ -5,17 +5,19 @@ import Underglow from './components/Underglow/Underglow';
 import { Route, Routes } from 'react-router-dom';
 
 // Pages
-import SprintPage from './pages/SprintPage/SprintPage';
+import LoginPage from './pages/LoginPage/LoginPage';
+import BoardPage from './pages/BoardPage/BoardPage';
 import TicketsPage from './pages/TicketsPage/TicketsPage';
 import HistoryPage from './pages/HistoryPage/HistoryPage';
 import ProjectsPage from './pages/ProjectsPage/ProjectsPage';
 
-function App() {
+export default function App() {
   return (
     <Fragment>
-      <Navbar />
+      {window.location.pathname !== "/" && <Navbar />}
       <Routes>
-        <Route path="/" element={<SprintPage />} />
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/board" element={<BoardPage />} />
         <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
@@ -24,5 +26,3 @@ function App() {
     </Fragment>
   );
 }
-
-export default App;

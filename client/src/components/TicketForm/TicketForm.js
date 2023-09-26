@@ -50,7 +50,7 @@ const columnOptions = [
     "Impeded",
 ];
 
-export default function CreateTicketForm({closeForm, ticket}) {
+export default function TicketForm({closeForm, ticket}) {
     const [formData, setFormData] = useState(ticket || {
         name: "",
         type: "Task",
@@ -122,9 +122,7 @@ export default function CreateTicketForm({closeForm, ticket}) {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
         try{ 
-            closeForm();
             const body = {
                 name: formData.name,
                 type: formData.type,
@@ -152,8 +150,8 @@ export default function CreateTicketForm({closeForm, ticket}) {
                     body: JSON.stringify(body)
                 });
             }
-
-            window.location = "/";
+            closeForm();
+            window.location.reload();
         } catch (err) {
             console.error(err.message);
         }
@@ -163,11 +161,11 @@ export default function CreateTicketForm({closeForm, ticket}) {
         event.preventDefault();
 
         try{
-            closeForm();
             await fetch(`http://localhost:5000/username/tickets/${ticket.ticket_id}`, {
                 method: "DELETE"
             });
-            window.location = "/";
+            closeForm();
+            window.location.reload();
         } catch (err) {
             console.error(err.message);
         }

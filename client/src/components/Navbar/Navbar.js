@@ -51,7 +51,7 @@ export default function NavBar() {
             </Link>}
         </div>
         <ul className={smallScreen ? styles.ul_sml : styles.ul_lrg}>
-            <CustomLink to="/">Board</CustomLink>
+            <CustomLink to="/board">Board</CustomLink>
             <CustomLink to="/tickets">Tickets</CustomLink>
             <CustomLink to="/history">History</CustomLink>
             <CustomLink to="/projects">Projects</CustomLink>
