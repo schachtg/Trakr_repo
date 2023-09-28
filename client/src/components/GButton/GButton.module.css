@@ -13,6 +13,40 @@
     border: none;
   }
 
+  .btn_secondary {
+    background: transparent;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+    cursor: pointer;
+    border: double 4px transparent;
+    border-radius: 80px;
+    background-image: linear-gradient(#333, #333), linear-gradient(140deg, rgba(44,246,138,1) 0%, rgba(52,235,186,1) 25%, rgba(52,235,202,1) 67%, rgba(85,248,255,1) 100%);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+.btn_secondary_warning {
+    background: transparent;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+    cursor: pointer;
+    border: double 4px transparent;
+    border-radius: 80px;
+    background-image: linear-gradient(#333, #333), linear-gradient(140deg, rgb(248, 54, 203) 0%, rgb(244, 47, 123)67%, rgb(244, 59, 108) 100%);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
 .btn_warning {
     background: linear-gradient(140deg, rgb(248, 54, 203) 0%, rgb(244, 47, 123)67%, rgb(244, 59, 108) 100%);
     color: #111;

@@ -13,7 +13,8 @@ export default function LoginPage() {
         password: "",
     });
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-    const [openDialog, setOpenDialog] = useState(false);
+    const [openDemoDialog, setOpenDemoDialog] = useState(false);
+    const [openCreateDialog, setOpenCreateDialog] = useState(false);
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
     const handleOnChange = (e) => {
@@ -25,10 +26,6 @@ export default function LoginPage() {
 
     const directToBoard = () => {
         window.location.assign("/board");
-    };
-
-    const handleUsePublic = () => {
-        setOpenDialog(true);
     };
 
     useEffect(() => {
@@ -66,15 +63,15 @@ export default function LoginPage() {
                     <DividerWithText className={styles.divider}>OR</DividerWithText>
                     <div className={smallScreen ? styles.bottom_col_container : styles.bottom_row_container}>
                         <div className={styles.col_style}>
-                            <GButton givenWidth="80%" type="button">Create Account</GButton>
+                            <GButton alternate givenWidth="80%" type="button" onClick={() => setOpenCreateDialog(true)}>Create Account</GButton>
                         </div>
                         <div className={styles.col_style}>
-                            <GButton givenWidth="80%" type="button" onClick={handleUsePublic}>Use Public Demo</GButton>
+                            <GButton alternate givenWidth="80%" type="button" onClick={() => setOpenDemoDialog(true)}>Use Public Demo</GButton>
                         </div>
                     </div>
                 </div>
             </div>
-            <GDialog title="Use Public Demo" openDialog={openDialog} setOpenDialog={setOpenDialog}>
+            <GDialog title="Create Account" openDialog={openCreateDialog} setOpenDialog={setOpenCreateDialog}>
                 This feature allows you to try the application without the need to sign in. You will be
                 able to anonymously interact with the project that is available to everyone. The purpose
                 of this feature is for demoing purposes and is not to be used for actual projects. Please
@@ -82,8 +79,31 @@ export default function LoginPage() {
                 <div className={styles.button_row}>
                     <GButton
                         type="button"
+                        alternate
                         warning
-                        onClick={() => setOpenDialog(false)}
+                        onClick={() => setOpenCreateDialog(false)}
+                    >
+                        Back
+                    </GButton>
+                    <GButton
+                        onClick={directToBoard}
+                        type="button"
+                    >
+                        Continue
+                    </GButton>
+                </div>
+            </GDialog>
+            <GDialog title="Use Public Demo" openDialog={openDemoDialog} setOpenDialog={setOpenDemoDialog}>
+                This feature allows you to try the application without the need to sign in. You will be
+                able to anonymously interact with the project that is available to everyone. The purpose
+                of this feature is for demoing purposes and is not to be used for actual projects. Please
+                sign in if you want to create your own project.
+                <div className={styles.button_row}>
+                    <GButton
+                        type="button"
+                        alternate
+                        warning
+                        onClick={() => setOpenDemoDialog(false)}
                     >
                         Back
                     </GButton>
