@@ -13,6 +13,21 @@
     border: none;
   }
 
+  .btn_disabled {
+    background: #969696;
+    color: #535353;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 30px;
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+    cursor: pointer;
+    outline: none;
+    border: none;
+  }
+
   .btn_secondary {
     background: transparent;
     color: white;

@@ -8,18 +8,32 @@ import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
 
 export default function LoginPage() {
-    const [formData, setFormData] = useState({
+    const [loginFormData, setLoginFormData] = useState({
         email: "",
+        password: ""
+    });
+    const [createFormData, setCreateFormData] = useState({
+        email: "",
+        name: "",
         password: "",
+        confirmPassword: ""
     });
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [openDemoDialog, setOpenDemoDialog] = useState(false);
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
+    const [canCreate, setCanCreate] = useState(false);
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
-    const handleOnChange = (e) => {
-        setFormData({
-            ...formData,
+    const handleLoginOnChange = (e) => {
+        setLoginFormData({
+            ...loginFormData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleCreateOnChange = (e) => {
+        setCreateFormData({
+            ...createFormData,
             [e.target.name]: e.target.value
         });
     }
@@ -28,10 +42,45 @@ export default function LoginPage() {
         window.location.assign("/board");
     };
 
+    const handleCreateSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const body = {
+                email: createFormData.email,
+                name: createFormData.name,
+                password: createFormData.password
+            };
+            const response = await fetch("http://localhost:5000/user_info", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+            if (data === "User already exists") {
+                alert("User already exists");
+            } else {
+                alert("Account created successfully!");
+                setOpenCreateDialog(false);
+            }
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
     useEffect(() => {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
         };
+        if (openCreateDialog) {
+            if (createFormData.email.length > 0 &&
+                createFormData.name.length > 0 &&
+                createFormData.password.length > 0 &&
+                createFormData.password === createFormData.confirmPassword) {
+                setCanCreate(true);
+            } else {
+                setCanCreate(false);
+            }
+        }
 
         window.addEventListener('resize', handleWindowResize);
 
@@ -49,11 +98,11 @@ export default function LoginPage() {
                     <form id="loginForm" method="post" className={styles.col_style}>
                         <div className={styles.form_section}>
                             <label htmlFor="email">E-Mail:</label>
-                            <input className={styles.input_line} type="text" id="email" name="email" value={formData.email} onChange={handleOnChange}/>
+                            <input className={styles.input_line} type="text" id="email" name="email" value={loginFormData.email} onChange={handleLoginOnChange}/>
                         </div>
                         <div className={styles.form_section}>
                             <label htmlFor="password">Password:</label>
-                            <input className={styles.input_line} type="text" id="password" name="password" value={formData.password} onChange={handleOnChange}/>
+                            <input className={styles.input_line} type="password" id="password" name="password" value={loginFormData.password} onChange={handleLoginOnChange}/>
                             <p onClick={directToBoard} className={styles.forgot_password}>Forgot password?</p>
                         </div>
                         <div className={styles.form_section}>
@@ -72,32 +121,48 @@ export default function LoginPage() {
                 </div>
             </div>
             <GDialog title="Create Account" openDialog={openCreateDialog} setOpenDialog={setOpenCreateDialog}>
-                This feature allows you to try the application without the need to sign in. You will be
-                able to anonymously interact with the project that is available to everyone. The purpose
-                of this feature is for demoing purposes and is not to be used for actual projects. Please
-                sign in if you want to create your own project.
-                <div className={styles.button_row}>
-                    <GButton
-                        type="button"
-                        alternate
-                        warning
-                        onClick={() => setOpenCreateDialog(false)}
-                    >
-                        Back
-                    </GButton>
-                    <GButton
-                        onClick={directToBoard}
-                        type="button"
-                    >
-                        Continue
-                    </GButton>
-                </div>
+                <form id="createAccountForm" method="post" onSubmit={handleCreateSubmit}>
+                    <div className={styles.col_style}>
+                        <div className={styles.form_section}>
+                            <label htmlFor="createEmail">E-Mail:</label>
+                            <input className={styles.input_line} type="text" id="createEmail" name="email" value={createFormData.email} onChange={handleCreateOnChange}/>
+                        </div>
+                        <div className={styles.form_section}>
+                            <label htmlFor="createName">Display Name:</label>
+                            <input className={styles.input_line} type="text" id="createName" name="name" value={createFormData.name} onChange={handleCreateOnChange}/>
+                        </div>
+                        <div className={styles.form_section}>
+                            <label htmlFor="createPassword">Password:</label>
+                            <input className={styles.input_line} type="password" id="createPassword" name="password" value={createFormData.password} onChange={handleCreateOnChange}/>
+                        </div>
+                        <div className={styles.form_section}>
+                            <label htmlFor="createConfirmPassword">Confirm Password:</label>
+                            <input className={styles.input_line} type="password" id="createConfirmPassword" name="confirmPassword" value={createFormData.confirmPassword} onChange={handleCreateOnChange}/>
+                        </div>
+                    </div>
+                    <div className={styles.button_row}>
+                        <GButton
+                            type="button"
+                            alternate
+                            warning
+                            onClick={() => setOpenCreateDialog(false)}
+                        >
+                            Back
+                        </GButton>
+                        <GButton
+                            type="submit"
+                            disabled={!canCreate}
+                        >
+                            Create
+                        </GButton>
+                    </div>
+                </form>
             </GDialog>
             <GDialog title="Use Public Demo" openDialog={openDemoDialog} setOpenDialog={setOpenDemoDialog}>
                 This feature allows you to try the application without the need to sign in. You will be
                 able to anonymously interact with the project that is available to everyone. The purpose
                 of this feature is for demoing purposes and is not to be used for actual projects. Please
-                sign in if you want to create your own project.
+                sign in if you want to create your own project.         
                 <div className={styles.button_row}>
                     <GButton
                         type="button"

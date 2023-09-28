@@ -14,3 +14,9 @@ CREATE TABLE username_tickets(
     column_name VARCHAR(255),
     project VARCHAR(255)
 );
+
+CREATE TABLE user_info(
+    email VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255),
+    password VARCHAR(255)
+);

@@ -84,6 +84,33 @@ app.delete("/:username/tickets/:id", async (req, res) => {
   }
 });
 
+// create a user
+app.post("/user_info", async (req, res) => {
+  try {
+    const tableName = "user_info";
+    const { email, name, password } = req.body;
+
+    const checkUser = await pool.query(
+      `SELECT * FROM ${tableName} WHERE email = $1`,
+      [email]
+    );
+
+    if (checkUser.rowCount > 0) {
+      // If a user with the same email exists, return a response indicating that
+      res.status(409).json("User already exists");
+    } else {
+      // If the user doesn't exist, proceed to insert them into the database
+      const newUser = await pool.query(
+        `INSERT INTO ${tableName} (email, name, password) VALUES ($1, $2, $3) RETURNING *`,
+        [email, name, password]
+      );
+      res.status(201).json(newUser.rows[0]);
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.listen(process.env.DB_PORT, () => {
   console.log('Server has started on port ' + process.env.DB_PORT);
 });
