@@ -23,7 +23,7 @@
     display: flex;
     align-items: center; /* Vertically center items */
     justify-content: center; /* Horizontally center items */
-    cursor: pointer;
+    cursor: not-allowed;
     outline: none;
     border: none;
   }

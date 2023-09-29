@@ -1,6 +1,6 @@
 CREATE DATABASE bugtrackerdb;
 
-CREATE TABLE username_tickets(
+CREATE TABLE tickets(
     ticket_id SERIAL PRIMARY KEY,
     name VARCHAR(255),
     type VARCHAR(255),
@@ -12,7 +12,8 @@ CREATE TABLE username_tickets(
     assignee VARCHAR(255),
     sprint VARCHAR(255),
     column_name VARCHAR(255),
-    project VARCHAR(255)
+    project VARCHAR(255),
+    username VARCHAR(255)
 );
 
 CREATE TABLE user_info(

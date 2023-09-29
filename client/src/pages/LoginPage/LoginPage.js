@@ -2,10 +2,12 @@ import React, { Fragment, useState, useEffect } from 'react';
 import DividerWithText from '../../components/DividerWithText/DividerWithText';
 import styles from './LoginPage.module.css';
 import { SMALL_WIDTH } from '../../Constants';
+import { useSelector, useDispatch } from 'react-redux';
 
 // Components
 import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
+import { updateUser } from '../../userSlice';
 
 export default function LoginPage() {
     const [loginFormData, setLoginFormData] = useState({
@@ -22,6 +24,8 @@ export default function LoginPage() {
     const [openDemoDialog, setOpenDemoDialog] = useState(false);
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
     const [canCreate, setCanCreate] = useState(false);
+    const user = useSelector(state => state.user);
+    const dispatch = useDispatch();
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
     const handleLoginOnChange = (e) => {
@@ -42,6 +46,31 @@ export default function LoginPage() {
         window.location.assign("/board");
     };
 
+    const handleLoginSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const body = {
+                email: loginFormData.email,
+                password: loginFormData.password
+            };
+            const response = await fetch("http://localhost:5000/user_info/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+            if (data === "User not found") {
+                alert("Could not find user");
+            } else {
+                dispatch(updateUser({username: loginFormData.email}));
+                localStorage.setItem("username", loginFormData.email);
+                directToBoard();
+            }
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -50,7 +79,7 @@ export default function LoginPage() {
                 name: createFormData.name,
                 password: createFormData.password
             };
-            const response = await fetch("http://localhost:5000/user_info", {
+            const response = await fetch("http://localhost:5000/user_info/create", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body)
@@ -65,6 +94,11 @@ export default function LoginPage() {
         } catch (err) {
             console.error(err.message);
         }
+    }
+    const handleDemoSubmit = async (e) => {
+        dispatch(updateUser({username: "defaultUsername"}));
+        localStorage.setItem("username", "defaultUsername");
+        directToBoard();
     }
 
     useEffect(() => {
@@ -95,7 +129,7 @@ export default function LoginPage() {
             <div className={styles.outter_container}>
                 <div className={styles.inner_container}>
                     <h1 className={`text-center ${smallScreen ? "mb-2" : "my-4"}`}>Login</h1>
-                    <form id="loginForm" method="post" className={styles.col_style}>
+                    <form id="loginForm" method="post" className={styles.col_style} onSubmit={handleLoginSubmit}>
                         <div className={styles.form_section}>
                             <label htmlFor="email">E-Mail:</label>
                             <input className={styles.input_line} type="text" id="email" name="email" value={loginFormData.email} onChange={handleLoginOnChange}/>
@@ -173,7 +207,7 @@ export default function LoginPage() {
                         Back
                     </GButton>
                     <GButton
-                        onClick={directToBoard}
+                        onClick={handleDemoSubmit}
                         type="button"
                     >
                         Continue
