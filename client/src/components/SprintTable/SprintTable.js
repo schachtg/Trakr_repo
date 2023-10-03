@@ -9,7 +9,6 @@ import NoTicketsAvailable from '../NoTicketsAvailable/NoTicketsAvailable';
 
 let ticketsDefault = [];
 
-// Wil need to remove these
 let columnsDefault = [
     {
         name: "Impeded",
