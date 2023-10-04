@@ -58,9 +58,10 @@ export default function LoginPage() {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body)
             });
-            const data = await response.json();
-            if (data === "User not found") {
-                alert("Could not find user");
+
+            if (response.status !== 200) {
+                const output = await response.json();
+                alert(output);
             } else {
                 dispatch(updateUser({username: loginFormData.email}));
                 localStorage.setItem("username", loginFormData.email);

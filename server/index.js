@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const pool = require('./db');
+const bcrypt = require('bcrypt');
 require('dotenv');
 
 //middleware
@@ -95,6 +96,8 @@ app.post("/user_info/create", async (req, res) => {
     const tableName = "user_info";
     const { email, name, password } = req.body;
 
+    const saltedHash = await bcrypt.hash(password, 10);
+
     const checkUser = await pool.query(
       `SELECT * FROM ${tableName} WHERE email = $1`,
       [email]
@@ -107,7 +110,7 @@ app.post("/user_info/create", async (req, res) => {
       // If the user doesn't exist, proceed to insert them into the database
       const newUser = await pool.query(
         `INSERT INTO ${tableName} (email, name, password) VALUES ($1, $2, $3) RETURNING *`,
-        [email, name, password]
+        [email, name, saltedHash]
       );
       res.status(201).json(newUser.rows[0]);
     }
@@ -121,12 +124,17 @@ app.post("/user_info/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const checkUser = await pool.query(
-      `SELECT * FROM user_info WHERE email = $1 AND password = $2`,
-      [email, password]
+      `SELECT * FROM user_info WHERE email = $1`,
+      [email]
     );
 
     if (checkUser.rowCount > 0) {
-      res.status(200).json(checkUser.rows[0]);
+      const matching = await bcrypt.compare(password, checkUser.rows[0].password);
+      if (matching) {
+        res.status(200).json("Found user");
+      } else {
+        res.status(401).json("Invalid password");
+      }
     } else {
       res.status(404).json("User not found");
     }
