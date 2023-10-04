@@ -1,7 +1,6 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import styles from './SprintTable.module.css';
 import { SMALL_WIDTH } from '../../Constants';
-import { useSelector } from 'react-redux';
 
 // Components
 import TicketBox from '../TicketBox/TicketBox';
@@ -46,7 +45,6 @@ export default function SprintTable() {
     const [tickets, setTickets] = useState(ticketsDefault);
     const [columns, setColumns] = useState(columnsDefault);
     const [largestCol, setLargestCol] = useState(largestColTemp);
-    const user = useSelector(state => state.user);
     let smallScreen = windowWidth < SMALL_WIDTH;
 
     const getLargestCol = () => {
@@ -89,20 +87,21 @@ export default function SprintTable() {
             const cloned = [...tickets];
             cloned[draggingTicketIndex].column_name = col_name;
             setTicketsWrapper(cloned);
-            await fetch(`http://localhost:5000/${cloned[draggingTicketIndex].username}/tickets/${cloned[draggingTicketIndex].ticket_id}`, {
+            await fetch(`http://localhost:5000/tickets/${cloned[draggingTicketIndex].ticket_id}`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
+                credentials: "include",
                 body: JSON.stringify(tickets[draggingTicketIndex])
             });
         }
     }
 
     const getTicketsFromDB = async event => {
-        const userLink = `http://localhost:5000/${user === null ? "username" : user.username}/tickets`
         try{
-            const response = await fetch(userLink, {
+            const response = await fetch("http://localhost:5000/tickets", {
                 method: "GET",
-                headers: {"Content-Type": "application/json"}
+                headers: {"Content-Type": "application/json"},
+                credentials: "include"
             });
             const data = await response.json();
             ticketsDefault = data;

@@ -2,12 +2,10 @@ import React, { Fragment, useState, useEffect } from 'react';
 import DividerWithText from '../../components/DividerWithText/DividerWithText';
 import styles from './LoginPage.module.css';
 import { SMALL_WIDTH } from '../../Constants';
-import { useDispatch } from 'react-redux';
 
 // Components
 import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
-import { updateUser } from '../../userSlice';
 
 export default function LoginPage() {
     const [loginFormData, setLoginFormData] = useState({
@@ -24,7 +22,6 @@ export default function LoginPage() {
     const [openDemoDialog, setOpenDemoDialog] = useState(false);
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
     const [canCreate, setCanCreate] = useState(false);
-    const dispatch = useDispatch();
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
     const handleLoginOnChange = (e) => {
@@ -55,6 +52,7 @@ export default function LoginPage() {
             const response = await fetch("http://localhost:5000/user_info/login", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
+                credentials: "include",
                 body: JSON.stringify(body)
             });
 
@@ -62,8 +60,6 @@ export default function LoginPage() {
                 const output = await response.json();
                 alert(output);
             } else {
-                dispatch(updateUser({username: loginFormData.email}));
-                localStorage.setItem("username", loginFormData.email);
                 directToBoard();
             }
         } catch (err) {
@@ -96,8 +92,6 @@ export default function LoginPage() {
         }
     }
     const handleDemoSubmit = async (e) => {
-        dispatch(updateUser({username: "defaultUsername"}));
-        localStorage.setItem("username", "defaultUsername");
         directToBoard();
     }
 

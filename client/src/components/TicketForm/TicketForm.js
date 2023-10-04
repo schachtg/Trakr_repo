@@ -3,7 +3,6 @@ import styles from './TicketForm.module.css';
 import { useState } from 'react';
 import { mdiContentSave, mdiDelete } from '@mdi/js';
 import { Select } from 'antd';
-import { useSelector } from 'react-redux';
 
 // components
 import GButton from '../GButton/GButton';
@@ -66,7 +65,6 @@ export default function TicketForm({closeForm, ticket}) {
         project: "New Project"
     });
     const [errorMessage, setErrorMessage] = useState('');
-    const user = useSelector(state => state.user);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -124,7 +122,6 @@ export default function TicketForm({closeForm, ticket}) {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        console.log(user);
         try{ 
             const body = {
                 name: formData.name,
@@ -137,20 +134,21 @@ export default function TicketForm({closeForm, ticket}) {
                 assignee: formData.assignee,
                 sprint: formData.sprint,
                 column_name: formData.column_name,
-                project: formData.project,
-                username: user.username
+                project: formData.project
             };
             
             if (ticket) {
-                await fetch(`http://localhost:5000/${ticket.username}/tickets/${ticket.ticket_id}`, {
+                await fetch(`http://localhost:5000/tickets/${ticket.ticket_id}`, {
                     method: "PUT",
                     headers: {"Content-Type": "application/json"},
+                    credentials: "include",
                     body: JSON.stringify(body)
                 });
             } else {
                 await fetch("http://localhost:5000/tickets", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
+                    credentials: "include",
                     body: JSON.stringify(body)
                 });
             }
@@ -165,8 +163,9 @@ export default function TicketForm({closeForm, ticket}) {
         event.preventDefault();
 
         try{
-            await fetch(`http://localhost:5000/${ticket.username}/tickets/${ticket.ticket_id}`, {
-                method: "DELETE"
+            await fetch(`http://localhost:5000/tickets/${ticket.ticket_id}`, {
+                method: "DELETE",
+                credentials: "include"
             });
             closeForm();
             window.location.reload();

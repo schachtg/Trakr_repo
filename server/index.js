@@ -1,22 +1,31 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = express();
 const cors = require('cors');
 const pool = require('./db');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 require('dotenv');
 
-//middleware
-app.use(cors());
-app.use(express.json()); //req.body
+const allowedOrigins = ['http://localhost:3000'];
+const corsOptions = {
+  origin: allowedOrigins,
+  credentials: true,
+};
 
+//middleware
+app.use(cors(corsOptions));
+app.use(express.json()); //req.body
+app.use(cookieParser());
 
 //ROUTES//
 
 // create a ticket
-app.post("/tickets", async (req, res) => {
+app.post("/tickets", authenticateToken, async (req, res) => {
   try {
     const tableName = "tickets";
-    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project, username } = req.body;
+    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project } = req.body;
+    const username = req.user.email;
 
     const newTicket = await pool.query(
       `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
@@ -30,9 +39,9 @@ app.post("/tickets", async (req, res) => {
 });
 
 // get all tickets for a user
-app.get("/:username/tickets", async (req, res) => {
+app.get("/tickets", authenticateToken, async (req, res) => {
   try {
-    const { username } = req.params;
+    const username = req.user.email;
     const tableName = "tickets";
     const allTickets = await pool.query(
       `SELECT * FROM ${tableName} WHERE username = $1`,
@@ -46,9 +55,10 @@ app.get("/:username/tickets", async (req, res) => {
 
 
 // get a ticket
-app.get("/:username/tickets/:id", async (req, res) => {
+app.get("/tickets/:id", authenticateToken, async (req, res) => {
   try {
-    const { id, username } = req.params;
+    const { id } = req.params;
+    const username = req.user.email;
     const tableName = "tickets";
     const ticket = await pool.query(`SELECT * FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`, [
       id, username
@@ -60,9 +70,10 @@ app.get("/:username/tickets/:id", async (req, res) => {
 });
 
 // update a ticket
-app.put("/:username/tickets/:id", async (req, res) => {
+app.put("/tickets/:id", authenticateToken, async (req, res) => {
   try {
-    const { id, username } = req.params;
+    const { id } = req.params;
+    const username = req.user.email;
     const tableName = "tickets";
     const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project } = req.body;
     const updateTicket = await pool.query(
@@ -77,11 +88,12 @@ app.put("/:username/tickets/:id", async (req, res) => {
 });
 
 // delete a ticket
-app.delete("/:username/tickets/:id", async (req, res) => {
+app.delete("/tickets/:id", authenticateToken, async (req, res) => {
   try {
-    const { id, username } = req.params;
+    const { id } = req.params;
+    const username = req.user.email;
     const tableName = "tickets";
-    const deleteTicket = await pool.query(`DELETE FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`, [
+    await pool.query(`DELETE FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`, [
       id, username
     ]);
     res.json("Ticket was deleted!");
@@ -123,6 +135,7 @@ app.post("/user_info/create", async (req, res) => {
 app.post("/user_info/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    const user = { email: email };
     const checkUser = await pool.query(
       `SELECT * FROM user_info WHERE email = $1`,
       [email]
@@ -131,6 +144,8 @@ app.post("/user_info/login", async (req, res) => {
     if (checkUser.rowCount > 0) {
       const matching = await bcrypt.compare(password, checkUser.rows[0].password);
       if (matching) {
+        const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.cookie('token', token, { httpOnly: true });
         res.status(200).json("Found user");
       } else {
         res.status(401).json("Invalid password");
@@ -141,7 +156,22 @@ app.post("/user_info/login", async (req, res) => {
   } catch (err) {
     res.status(404).json("User not found");
   }
+
+  return;
 });
+
+function authenticateToken(req, res, next) {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: "Auth Error" });
+  try {
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = user;
+    next();
+  } catch (err) {
+    res.clearCookie('token');
+    res.status(500).send("Server Error");
+  }
+}
 
 app.listen(process.env.DB_PORT, () => {
   console.log('Server has started on port ' + process.env.DB_PORT);
