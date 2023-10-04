@@ -2,7 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react';
 import DividerWithText from '../../components/DividerWithText/DividerWithText';
 import styles from './LoginPage.module.css';
 import { SMALL_WIDTH } from '../../Constants';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 // Components
 import GButton from '../../components/GButton/GButton';
@@ -24,7 +24,6 @@ export default function LoginPage() {
     const [openDemoDialog, setOpenDemoDialog] = useState(false);
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
     const [canCreate, setCanCreate] = useState(false);
-    const user = useSelector(state => state.user);
     const dispatch = useDispatch();
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
