@@ -9,6 +9,7 @@ import GButton from '../GButton/GButton';
 
 const { Option } = Select;
 
+// Temp options
 const epicOptions = [
     "No epic",
     "Epic 1",
