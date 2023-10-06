@@ -21,3 +21,5 @@ CREATE TABLE user_info(
     name VARCHAR(255),
     password VARCHAR(255)
 );
+
+INSERT INTO user_info (email, name, password) VALUES ('PublicDemo', 'Public User', '$2b$10$DhH50LYvXHOYwTro5d2Nc.ImaPlfoldBxuRFX2p3ot2HRQvLABL0i');

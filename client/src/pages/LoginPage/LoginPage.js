@@ -75,6 +75,17 @@ export default function LoginPage() {
                 name: createFormData.name,
                 password: createFormData.password
             };
+
+            // Credentials hygeine
+            if (body.email.includes("@") === false) {
+                alert("Invalid email");
+                return;
+            }
+            if (body.password.length < 5) {
+                alert("Password must be at least 5 characters long");
+                return;
+            }
+
             const response = await fetch("http://localhost:5000/user_info/create", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -91,14 +102,37 @@ export default function LoginPage() {
             console.error(err.message);
         }
     }
+
     const handleDemoSubmit = async (e) => {
-        directToBoard();
+        e.preventDefault();
+        try {
+            const body = {
+                email: "PublicDemo",
+                password: "123456"
+            };
+            const response = await fetch("http://localhost:5000/user_info/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
+
+            if (response.status !== 200) {
+                const output = await response.json();
+                alert(output);
+            } else {
+                directToBoard();
+            }
+        } catch (err) {
+            console.error(err.message);
+        }
     }
 
     useEffect(() => {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
         };
+
         if (openCreateDialog) {
             if (createFormData.email.length > 0 &&
                 createFormData.name.length > 0 &&

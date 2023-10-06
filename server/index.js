@@ -144,8 +144,8 @@ app.post("/user_info/login", async (req, res) => {
     if (checkUser.rowCount > 0) {
       const matching = await bcrypt.compare(password, checkUser.rows[0].password);
       if (matching) {
-        const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.cookie('token', token, { httpOnly: true });
+        const token = jwt.sign(user, process.env.JWT_SECRET);
+        res.cookie('token', token, { expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)});
         res.status(200).json("Found user");
       } else {
         res.status(401).json("Invalid password");
@@ -160,16 +160,32 @@ app.post("/user_info/login", async (req, res) => {
   return;
 });
 
+app.get("/user_info/logout", (req, res) => {
+  res.clearCookie('token');
+  res.status(200).json("Logged out");
+});
+
+app.get("/user_info/verify", authenticateToken, (req, res) => {
+  res.status(200).json("Valid token");
+});
+
+app.get("/user_info", authenticateToken, async (req, res) => {
+  res.status(200).json(req.user.email);
+});
+
 function authenticateToken(req, res, next) {
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "Auth Error" });
+  if (!token) {
+    return res.status(401).json({ message: "Auth Error" })
+  }
+
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET);
     req.user = user;
     next();
   } catch (err) {
     res.clearCookie('token');
-    res.status(500).send("Server Error");
+    res.status(401).json({ message: "Auth Error" })
   }
 }
 

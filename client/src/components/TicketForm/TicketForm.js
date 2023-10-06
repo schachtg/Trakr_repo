@@ -94,9 +94,7 @@ export default function TicketForm({closeForm, ticket}) {
 
     const handleChangeBlockedBy = (value) => {
         let name = "blocked_by"
-        console.log(formData.blocked_by);
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
-        console.log(formData.blocked_by);
     };
 
     const handleChangeSprint = (value) => {

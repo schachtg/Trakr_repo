@@ -33,8 +33,11 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 1rem 1.75rem;
-    box-shadow: 1px 1px 16px 3px black;
     align-items: center;
+}
+
+.nav_outer {
+    box-shadow: 1px 1px 16px 3px black;
 }
   
 .ul_sml {
@@ -88,4 +91,12 @@
 
 .li:hover{
     background-color: #777;
+}
+
+.public_demo_banner {
+    display: flex;
+    background-color: #680d30;
+    color: white;
+    font-weight: bold;
+    justify-content: center;
 }
