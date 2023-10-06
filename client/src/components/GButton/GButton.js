@@ -26,17 +26,19 @@ export default function GButton({menu, children, icon, givenWidth="auto", iconSi
 
     return (
         <Fragment>
-            <button
-                onClick={props.onClick}
-                className={buttonStyle}
-                type={type}
-                disabled={disabled}
-                style={{ width: givenWidth }}
-            >
-                {children && <span className={haveBoth ? styles.gap : ""}>{children}</span>}
-                {icon && <Icon path={icon} size={iconSize}></Icon>}
-            </button>
-            {menu}
+            <div className={styles.btn_container}>
+                <button
+                    onClick={props.onClick}
+                    className={buttonStyle}
+                    type={type}
+                    disabled={disabled}
+                    style={{ width: givenWidth }}
+                >
+                    {children && <span className={haveBoth ? styles.gap : ""}>{children}</span>}
+                    {icon && <Icon path={icon} size={iconSize}></Icon>}
+                </button>
+                {menu}
+            </div>
         </Fragment>
     );
 }

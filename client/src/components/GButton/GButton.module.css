@@ -1,3 +1,12 @@
+.btn_container {
+    position: relative;
+    display: flex;
+    padding: 0;
+    margin: 0;
+    width: inherit;
+    justify-content: center;
+}
+
 .btn {
     background: linear-gradient(140deg, rgba(44,246,138,1) 0%, rgba(52,235,186,1) 25%, rgba(52,235,202,1) 67%, rgba(85,248,255,1) 100%);
     color: #111;

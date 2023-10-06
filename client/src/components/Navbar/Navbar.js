@@ -12,6 +12,7 @@ export default function NavBar() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [isPublicDemo, setIsPublicDemo] = useState(false);
     const [openProfile, setOpenProfile] = useState(false);
+    const [openNotifications, setOpenNotifications] = useState(false);
     let screenSlack = 50;
     let smallScreen = windowWidth < (SMALL_WIDTH + screenSlack);
 
@@ -91,7 +92,19 @@ export default function NavBar() {
                         <CustomLink to="/projects">Projects</CustomLink>
                     </ul>
                     <ul className={`${smallScreen ? styles.ul_sml : styles.ul_lrg} ${styles.button_group}`}>
-                        <GButton icon={mdiBell}></GButton>
+                        <GButton icon={mdiBell}
+                            onClick={() => setOpenNotifications(!openNotifications)}
+                            menu={
+                                <GMenu
+                                    openMenu={openNotifications}
+                                    dropDownItems={[
+                                        { icon: mdiLogout, text: "Logout", onClick: async () => await handleLogout()}
+                                    ]}
+                                >
+                                    <h4>Notifications: </h4>
+                                </GMenu>
+                            }
+                        />
                         <GButton
                             icon={mdiAccount}
                             onClick={() => setOpenProfile(!openProfile)}
