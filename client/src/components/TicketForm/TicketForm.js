@@ -108,16 +108,40 @@ export default function TicketForm({closeForm, ticket}) {
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
     };
 
+    const hasMoreThanOneDecimalPlace = (value) => {
+        const pattern = /^\d+\.\d{2,}$/;
+        return pattern.test(value);
+    };
+
+    const isValidNumber = (value) => {
+        return !isNaN(parseFloat(value)) && isFinite(value) && !hasMoreThanOneDecimalPlace(value) && value >= 0 && value <= 100;
+    };
+
     const handleChangePoints = (event) => {
         const { name, value } = event.target;
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
 
-        // Validate input and set error message
-        if (!isValidNumber(value)) {
-            setErrorMessage('Please enter a valid number');
-        } else {
-            setErrorMessage('');
+        if (isNaN(parseFloat(value))) {
+            setErrorMessage('Please enter a number');
+            return;
         }
+        if (hasMoreThanOneDecimalPlace(value)) {
+            setErrorMessage('Please enter a number with at most one decimal place');
+            return;
+        }
+        if (value < 0) {
+            setErrorMessage('Please enter a positive number');
+            return;
+        }
+        if (value > 100) {
+            setErrorMessage('Please enter a number less than or equal to 100');
+            return;
+        }
+        if (!isFinite(value)) {
+            setErrorMessage('Please enter a finite number');
+            return;
+        }
+        setErrorMessage('');
     };
 
     const getBranchName = () => {
@@ -130,41 +154,46 @@ export default function TicketForm({closeForm, ticket}) {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        try{ 
-            const body = {
-                name: formData.name,
-                type: formData.type,
-                epic: formData.epic,
-                description: formData.description,
-                blocks: formData.blocks,
-                blocked_by: formData.blocked_by,
-                points: formData.points,
-                assignee: formData.assignee,
-                sprint: formData.sprint,
-                column_name: formData.column_name,
-                pull_request: formData.pull_request,
-                project: formData.project
-            };
-            
-            if (ticket) {
-                await fetch(`http://localhost:5000/tickets/${ticket.ticket_id}`, {
-                    method: "PUT",
-                    headers: {"Content-Type": "application/json"},
-                    credentials: "include",
-                    body: JSON.stringify(body)
-                });
-            } else {
-                await fetch("http://localhost:5000/tickets", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    credentials: "include",
-                    body: JSON.stringify(body)
-                });
+        if (errorMessage !== '') {
+            alert('Please fix the errors in the form');
+            return;
+        } else {
+            try{ 
+                const body = {
+                    name: formData.name,
+                    type: formData.type,
+                    epic: formData.epic,
+                    description: formData.description,
+                    blocks: formData.blocks,
+                    blocked_by: formData.blocked_by,
+                    points: formData.points,
+                    assignee: formData.assignee,
+                    sprint: formData.sprint,
+                    column_name: formData.column_name,
+                    pull_request: formData.pull_request,
+                    project: formData.project
+                };
+                
+                if (ticket) {
+                    await fetch(`http://localhost:5000/tickets/${ticket.ticket_id}`, {
+                        method: "PUT",
+                        headers: {"Content-Type": "application/json"},
+                        credentials: "include",
+                        body: JSON.stringify(body)
+                    });
+                } else {
+                    await fetch("http://localhost:5000/tickets", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        credentials: "include",
+                        body: JSON.stringify(body)
+                    });
+                }
+                closeForm();
+                window.location.reload();
+            } catch (err) {
+                console.error(err.message);
             }
-            closeForm();
-            window.location.reload();
-        } catch (err) {
-            console.error(err.message);
         }
     };
 
@@ -183,17 +212,12 @@ export default function TicketForm({closeForm, ticket}) {
         }
     };
 
-    const isValidNumber = (value) => {
-        // Use regex or parseFloat to check if the input is a number
-        return !isNaN(parseFloat(value)) && isFinite(value);
-    };
-
     return (
         <Fragment>
             <form id="form" method="post" onSubmit={handleSubmit}>
                 <div className={styles.form_section}>
                     <label htmlFor="name">Name:</label>
-                    <input className={styles.dark_input} type="text" id="name" name="name" value={formData.name} onChange={handleChange}/>
+                    <input maxLength="50" className={styles.dark_input} type="text" id="name" name="name" value={formData.name} onChange={handleChange}/>
                 </div>
            
                 <div className={styles.form_section}>
@@ -234,7 +258,7 @@ export default function TicketForm({closeForm, ticket}) {
 
                 <div className={styles.form_section}>
                     <label htmlFor="description">Description:</label>
-                    <textarea className={styles.dark_description} id="description" name="description" value={formData.description} onChange={handleChange}/>
+                    <textarea maxLength="500" className={styles.dark_description} id="description" name="description" value={formData.description} onChange={handleChange}/>
                 </div>
 
                 <div className={styles.form_section}>
@@ -278,7 +302,7 @@ export default function TicketForm({closeForm, ticket}) {
                 <div className={styles.form_section}>
                     <label htmlFor="points">Challenge points:</label>
                     <input className={styles.dark_input} type="text" id="points" name="points" value={formData.points} onChange={handleChangePoints}/>
-                    {errorMessage && <p style={{ color: '#ff1f75' }}>{errorMessage}</p>}
+                    {errorMessage && <span className={styles.error_text}>{errorMessage}</span>}
                 </div>
 
                 <div className={styles.form_section}>

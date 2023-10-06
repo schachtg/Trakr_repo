@@ -68,3 +68,10 @@ input:-webkit-autofill{
     justify-content: space-between;
     margin-top: 3rem;
 }
+
+.error_text {
+    color: #ff529d;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    padding: 0.2rem;
+}

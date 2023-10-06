@@ -58,6 +58,7 @@ export default function BoardPage() {
                         icon={mdiChevronRight}
                         type="button"
                         warning
+                        alternate
                     >
                         Next Sprint
                     </GButton>

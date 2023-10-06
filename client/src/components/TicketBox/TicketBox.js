@@ -30,6 +30,29 @@ export default function TicketBox({ticket, handleDragStart}) {
         };
     });
 
+    const getFormattedPoints = (points) => {
+        if(points === "0.0") {
+            return "0";
+        }
+        if (typeof points === 'number') {
+            if (Number.isInteger(points)) {
+                return points.toFixed(0);
+            } else {
+                return points.toFixed(1);
+            }
+        } else {
+            if (parseFloat(points)) {
+                if (Number.isInteger(parseFloat(points))) {
+                    return parseFloat(points).toFixed(0);
+                } else {
+                    return parseFloat(points).toFixed(1);
+                }
+            } else {
+                return '';
+            }
+        }
+    }
+
     return (
         <Fragment>
             <div className={styles.outer_container}>
@@ -45,7 +68,9 @@ export default function TicketBox({ticket, handleDragStart}) {
                         <div className={styles.ticket_footer}>
                             <h1 className={styles.ticket_asignee}>{ticket.assignee !== "No assignee" && ticket.assignee}</h1>
                             <div className={styles.points_container}>
-                                <h1 className={styles.ticket_points}>{ticket.points}</h1>
+                                <h1 className={styles.ticket_points}>
+                                    {getFormattedPoints(ticket.points)}
+                                </h1>
                             </div>
                         </div>
                     </div>
