@@ -63,6 +63,7 @@ export default function TicketForm({closeForm, ticket}) {
         assignee: "No assignee",
         sprint: "Current sprint",
         column_name: "To Do",
+        pull_request: "",
         project: "New Project"
     });
     const [errorMessage, setErrorMessage] = useState('');
@@ -119,6 +120,14 @@ export default function TicketForm({closeForm, ticket}) {
         }
     };
 
+    const getBranchName = () => {
+        let branchName = "";
+        if (formData.name !== "") {
+            branchName = `git checkout -b ${formData.name.toLowerCase().replace(/ /g, "-")}`;
+        }
+        return branchName;
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         try{ 
@@ -133,6 +142,7 @@ export default function TicketForm({closeForm, ticket}) {
                 assignee: formData.assignee,
                 sprint: formData.sprint,
                 column_name: formData.column_name,
+                pull_request: formData.pull_request,
                 project: formData.project
             };
             
@@ -324,6 +334,17 @@ export default function TicketForm({closeForm, ticket}) {
                         {columnOptions.map((column_name, index) => <Option key={index} value={column_name}>{column_name}</Option>)}
                     </Select>
                 </div>
+
+                <div className={styles.form_section}>
+                    <label htmlFor="pull_request">Link to pull request:</label>
+                    <input className={styles.dark_input} type="text" id="pull_request" name="pull_request" value={formData.pull_request} onChange={handleChange}/>
+                </div>
+
+                <div className={styles.form_section}>
+                    <label htmlFor="create_branch">Create branch:</label>
+                    <input readOnly className={styles.dark_input_readonly} type="text" id="pull_request" name="pull_request" value={getBranchName()}/>
+                </div>
+
                 <div className={styles.button_row}>
                     <GButton
                         icon={mdiContentSave}

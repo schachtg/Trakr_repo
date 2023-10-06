@@ -12,6 +12,7 @@ CREATE TABLE tickets(
     assignee VARCHAR(255),
     sprint VARCHAR(255),
     column_name VARCHAR(255),
+    pull_request VARCHAR(255),
     project VARCHAR(255),
     username VARCHAR(255)
 );

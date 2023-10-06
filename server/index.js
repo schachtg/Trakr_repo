@@ -24,12 +24,12 @@ app.use(cookieParser());
 app.post("/tickets", authenticateToken, async (req, res) => {
   try {
     const tableName = "tickets";
-    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project } = req.body;
+    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project } = req.body;
     const username = req.user.email;
 
     const newTicket = await pool.query(
-      `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
-      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project, username]
+      `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project, username]
     );
 
     res.json(newTicket.rows[0]);
@@ -75,10 +75,10 @@ app.put("/tickets/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
     const username = req.user.email;
     const tableName = "tickets";
-    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project } = req.body;
+    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project } = req.body;
     const updateTicket = await pool.query(
-      `UPDATE ${tableName} SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, project = $11 WHERE (ticket_id = $12 AND username = $13) RETURNING *`,
-      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, project, id, username]
+      `UPDATE ${tableName} SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, pull_request = $11, project = $12 WHERE (ticket_id = $13 AND username = $14) RETURNING *`,
+      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project, id, username]
     );
 
     res.json(updateTicket.rows[0]);
