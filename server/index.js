@@ -135,7 +135,6 @@ app.post("/user_info/create", async (req, res) => {
 app.post("/user_info/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = { email: email };
     const checkUser = await pool.query(
       `SELECT * FROM user_info WHERE email = $1`,
       [email]
@@ -144,6 +143,7 @@ app.post("/user_info/login", async (req, res) => {
     if (checkUser.rowCount > 0) {
       const matching = await bcrypt.compare(password, checkUser.rows[0].password);
       if (matching) {
+        const user = { email: email, name: checkUser.rows[0].name };
         const token = jwt.sign(user, process.env.JWT_SECRET);
         res.cookie('token', token, { expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)});
         res.status(200).json("Found user");
@@ -170,7 +170,7 @@ app.get("/user_info/verify", authenticateToken, (req, res) => {
 });
 
 app.get("/user_info", authenticateToken, async (req, res) => {
-  res.status(200).json(req.user.email);
+  res.status(200).json({email: req.user.email, name: req.user.name});
 });
 
 function authenticateToken(req, res, next) {

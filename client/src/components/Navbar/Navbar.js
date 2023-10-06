@@ -13,6 +13,7 @@ export default function NavBar() {
     const [isPublicDemo, setIsPublicDemo] = useState(false);
     const [openProfile, setOpenProfile] = useState(false);
     const [openNotifications, setOpenNotifications] = useState(false);
+    const [userData, setUserData] = useState({email: "", name: ""});
     let screenSlack = 50;
     let smallScreen = windowWidth < (SMALL_WIDTH + screenSlack);
 
@@ -25,18 +26,32 @@ export default function NavBar() {
         window.location.assign("/login");
     }
 
+    const handleNotificationClick = () => {
+        setOpenNotifications(!openNotifications);
+        setOpenProfile(false);
+    }
+
+    const handleProfileClick = () => {
+        setOpenProfile(!openProfile);
+        setOpenNotifications(false);
+    }
+
+    const getUserData = async () => {
+        const response = await fetch("http://localhost:5000/user_info", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
+        });
+
+        return await response.json();
+    }
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch("http://localhost:5000/user_info", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include"
-                });
-
-                const data = await response.json();
-                setIsPublicDemo(data === "PublicDemo");
-
+                const data = await getUserData();
+                setIsPublicDemo(data.email === "PublicDemo");
+                setUserData(data);
             } catch (error) {
                 // Handle any network or fetch related errors here
                 console.error("Fetch error:", error);
@@ -55,7 +70,7 @@ export default function NavBar() {
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    });
+    }, []);
 
     function CustomLink({ to, children, ...props }) {
         const resolvedPath = useResolvedPath(to);
@@ -93,30 +108,41 @@ export default function NavBar() {
                     </ul>
                     <ul className={`${smallScreen ? styles.ul_sml : styles.ul_lrg} ${styles.button_group}`}>
                         <GButton icon={mdiBell}
-                            onClick={() => setOpenNotifications(!openNotifications)}
+                            onClick={handleNotificationClick}
                             menu={
                                 <GMenu
                                     openMenu={openNotifications}
-                                    dropDownItems={[
-                                        { icon: mdiLogout, text: "Logout", onClick: async () => await handleLogout()}
+                                    textItems={[
+                                        { title: "Notifications:"},
+                                        { segmented: true, text: "This is ySUPER DUPER LOOOONG ITS LONG our first notification" },
+                                        { segmented: true, text: "This is your first notification" },
+                                        { segmented: true, text: "This is your first notification" },
+                                        { segmented: true, text: "This is yoADJAOIJD  OASIDJ OASIDJA OIDJOASIDJ ur first notification" },
+                                        { segmented: true, text: "This is your first notification" },
+                                        { segmented: true, text: "This is your first notification" },
+                                        { segmented: true, text: "This is your first notification" },
+                                        { segmented: true, text: "This is your first notification" },
+                                        { segmented: true, text: "This is your first notification" },
+                                        { segmented: true, text: "This is your first notification" },
+                                        { segmented: true, text: "This is your first notification" }
                                     ]}
-                                >
-                                    <h4>Notifications: </h4>
-                                </GMenu>
+                                />
                             }
                         />
                         <GButton
                             icon={mdiAccount}
-                            onClick={() => setOpenProfile(!openProfile)}
+                            onClick={handleProfileClick}
                             menu={
                                 <GMenu
                                     openMenu={openProfile}
-                                    dropDownItems={[
+                                    textItems={[
+                                        { noWrap: true, title: "Email:", text: userData.email },
+                                        { noWrap: true, title: "Name:", text: userData.name }
+                                    ]}
+                                    selectableItems={[
                                         { icon: mdiLogout, text: "Logout", onClick: async () => await handleLogout()}
                                     ]}
-                                >
-                                    <h4>Email: </h4>
-                                </GMenu>
+                                />
                             }
                         />
                     </ul>
