@@ -44,7 +44,7 @@ app.get("/tickets", authenticateToken, async (req, res) => {
     const username = req.user.email;
     const tableName = "tickets";
     const allTickets = await pool.query(
-      `SELECT * FROM ${tableName} WHERE username = $1`,
+      `SELECT * FROM ${tableName} WHERE username = $1 ORDER BY epic ASC`,
       [username]
     );
     res.json(allTickets.rows);

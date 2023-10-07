@@ -6,6 +6,7 @@ import { Select } from 'antd';
 
 // components
 import GButton from '../GButton/GButton';
+import DangerDialog from '../DangerDialog/DangerDialog';
 
 const { Option } = Select;
 
@@ -67,6 +68,7 @@ export default function TicketForm({closeForm, ticket}) {
         project: "New Project"
     });
     const [errorMessage, setErrorMessage] = useState('');
+    const [deleteDialog, setDeleteDialog] = useState(false);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -111,10 +113,6 @@ export default function TicketForm({closeForm, ticket}) {
     const hasMoreThanOneDecimalPlace = (value) => {
         const pattern = /^\d+\.\d{2,}$/;
         return pattern.test(value);
-    };
-
-    const isValidNumber = (value) => {
-        return !isNaN(parseFloat(value)) && isFinite(value) && !hasMoreThanOneDecimalPlace(value) && value >= 0 && value <= 100;
     };
 
     const handleChangePoints = (event) => {
@@ -197,9 +195,13 @@ export default function TicketForm({closeForm, ticket}) {
         }
     };
 
+    const handleDeleteWarning = () => {
+        setDeleteDialog(true);
+    }
+
     const handleDeleteTicket = async (event) => {
         event.preventDefault();
-
+        setDeleteDialog(false)
         try{
             await fetch(`http://localhost:5000/tickets/${ticket.ticket_id}`, {
                 method: "DELETE",
@@ -378,7 +380,7 @@ export default function TicketForm({closeForm, ticket}) {
                     </GButton>
                     {ticket && <GButton
                         icon={mdiDelete}
-                        onClick={handleDeleteTicket}
+                        onClick={handleDeleteWarning}
                         type="button"
                         warning
                     >
@@ -386,6 +388,27 @@ export default function TicketForm({closeForm, ticket}) {
                     </GButton>}
                 </div>
             </form>
+            <DangerDialog
+                title="Delete ticket"
+                openDialog={deleteDialog}
+                buttons={[
+                    <GButton
+                        onClick={() => setDeleteDialog(false)}
+                        type="button"
+                    >
+                        Cancel
+                    </GButton>,
+                    <GButton
+                        onClick={handleDeleteTicket}
+                        type="button"
+                        warning
+                    >
+                        Delete
+                    </GButton>
+                ]}
+            >
+                <span>Are you sure you want to delete this ticket?</span>
+            </DangerDialog>
         </Fragment>
     );
 }

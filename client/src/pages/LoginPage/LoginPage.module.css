@@ -77,10 +77,3 @@
 .divider {
     margin: 5rem 0;
 }
-
-.button_row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    margin-top: 3rem;
-}

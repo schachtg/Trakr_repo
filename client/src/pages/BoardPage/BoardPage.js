@@ -2,17 +2,19 @@ import React, { Fragment } from 'react';
 import styles from './BoardPage.module.css';
 import { useState, useEffect } from 'react';
 import { mdiPlus, mdiChevronRight } from '@mdi/js';
+import { SMALL_WIDTH } from '../../Constants';
 
 // components
 import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
 import SprintTable from '../../components/SprintTable/SprintTable';
 import CreateTicketForm from '../../components/TicketForm/TicketForm';
-import { SMALL_WIDTH } from '../../Constants';
+import DangerDialog from '../../components/DangerDialog/DangerDialog';
 
 export default function BoardPage() {
     const [openDialog, setOpenDialog] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [nextSprintDialog, setNextSprintDialog] = useState(false);
     let smallScreen = windowWidth < SMALL_WIDTH;
 
     const openCreateTicket = () => {
@@ -21,6 +23,10 @@ export default function BoardPage() {
 
     const closeCreateTicket = () => {
         setOpenDialog(false);
+    }
+
+    const handleNextSprintWarning = () => {
+        setNextSprintDialog(true);
     }
 
     useEffect(() => {
@@ -59,6 +65,7 @@ export default function BoardPage() {
                         type="button"
                         warning
                         alternate
+                        onClick={handleNextSprintWarning}
                     >
                         Next Sprint
                     </GButton>
@@ -67,6 +74,30 @@ export default function BoardPage() {
                     <CreateTicketForm closeForm={closeCreateTicket}/>
                 </GDialog>
             </div>
+            <DangerDialog
+                title="Delete ticket"
+                openDialog={nextSprintDialog}
+                buttons={[
+                    <GButton
+                        onClick={() => setNextSprintDialog(false)}
+                        type="button"
+                    >
+                        Cancel
+                    </GButton>,
+                    <GButton
+                        type="button"
+                        warning
+                    >
+                        Next Sprint
+                    </GButton>
+                ]}
+            >
+                <span>
+                    Are you sure you want to end the current sprint?
+                    All unfinished tickets will be moved to the next sprint
+                    while the finished tickets are deleted.
+                </span>
+            </DangerDialog>
         </Fragment>
     );
 }

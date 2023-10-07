@@ -182,7 +182,28 @@ export default function LoginPage() {
                     </div>
                 </div>
             </div>
-            <GDialog title="Create Account" openDialog={openCreateDialog} setOpenDialog={setOpenCreateDialog}>
+            <GDialog
+                title="Create Account"
+                openDialog={openCreateDialog}
+                setOpenDialog={setOpenCreateDialog}
+                buttons={[
+                    <GButton
+                        type="button"
+                        alternate
+                        warning
+                        onClick={() => setOpenCreateDialog(false)}
+                    >
+                        Back
+                    </GButton>,
+                    <GButton
+                        type="submit"
+                        disabled={!canCreate}
+                        onClick={handleCreateSubmit}
+                    >
+                        Create
+                    </GButton>
+                ]}
+            >
                 <form id="createAccountForm" method="post" onSubmit={handleCreateSubmit}>
                     <div className={styles.col_style}>
                         <div className={styles.form_section}>
@@ -202,30 +223,13 @@ export default function LoginPage() {
                             <input className={styles.input_line} type="password" id="createConfirmPassword" name="confirmPassword" value={createFormData.confirmPassword} onChange={handleCreateOnChange}/>
                         </div>
                     </div>
-                    <div className={styles.button_row}>
-                        <GButton
-                            type="button"
-                            alternate
-                            warning
-                            onClick={() => setOpenCreateDialog(false)}
-                        >
-                            Back
-                        </GButton>
-                        <GButton
-                            type="submit"
-                            disabled={!canCreate}
-                        >
-                            Create
-                        </GButton>
-                    </div>
                 </form>
             </GDialog>
-            <GDialog title="Use Public Demo" openDialog={openDemoDialog} setOpenDialog={setOpenDemoDialog}>
-                This feature allows you to try the application without the need to sign in. You will be
-                able to anonymously interact with the project that is available to everyone. The purpose
-                of this feature is for demoing purposes and is not to be used for actual projects. Please
-                sign in if you want to create your own project.         
-                <div className={styles.button_row}>
+            <GDialog
+                title="Use Public Demo"
+                openDialog={openDemoDialog}
+                setOpenDialog={setOpenDemoDialog}
+                buttons={[
                     <GButton
                         type="button"
                         alternate
@@ -233,14 +237,19 @@ export default function LoginPage() {
                         onClick={() => setOpenDemoDialog(false)}
                     >
                         Back
-                    </GButton>
+                    </GButton>,
                     <GButton
+                        type="submit"
                         onClick={handleDemoSubmit}
-                        type="button"
                     >
                         Continue
                     </GButton>
-                </div>
+                ]}
+            >
+                This feature allows you to try the application without the need to sign in. You will be
+                able to anonymously interact with the project that is available to everyone. The purpose
+                of this feature is for demoing purposes and is not to be used for actual projects. Please
+                sign in if you want to create your own project.         
             </GDialog>
         </Fragment>
     );
