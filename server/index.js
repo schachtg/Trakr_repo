@@ -5,11 +5,13 @@ const cors = require('cors');
 const pool = require('./db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 require('dotenv');
 
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000'];
 const corsOptions = {
   origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true,
 };
 
@@ -131,6 +133,45 @@ app.post("/user_info/create", async (req, res) => {
   }
 });
 
+app.patch("/reset_password", async (req, res) => {
+  try {
+    const tableName = "user_info";
+    const { recipient_email, password, token } = req.body;
+
+    if (!token) {
+      return res.status(401).json("No password reset token provided");
+    }
+
+    // Verify password reset token
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    if (decodedToken.recipient_email !== recipient_email) {
+      await pool.query(
+        `UPDATE ${tableName} SET token = NULL WHERE email = $1`,
+        [recipient_email]
+      );
+      return res.status(401).json("Invalid password reset token");
+    }
+    if (decodedToken.exp < Date.now() / 1000) {
+      await pool.query(
+        `UPDATE ${tableName} SET token = NULL WHERE email = $1`,
+        [recipient_email]
+      );
+      return res.status(401).json("Password reset token has expired");
+    }
+
+    // Update user's password
+    const saltedHash = await bcrypt.hash(password, 10);
+    await pool.query(
+      `UPDATE ${tableName} SET password = $1, token = NULL WHERE email = $2`,
+      [saltedHash, recipient_email]
+    );
+    res.status(200).json("Password reset successful");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json("Server error");
+  }
+});
+
 // Check if username password is in the db
 app.post("/user_info/login", async (req, res) => {
   try {
@@ -173,6 +214,36 @@ app.get("/user_info", authenticateToken, async (req, res) => {
   res.status(200).json({email: req.user.email, name: req.user.name});
 });
 
+app.post("/forgot_password", async (req, res) => {
+  try {
+    const tableName = "user_info";
+    const { recipient_email } = req.body;
+
+    // Generate password reset token
+    const resetToken = jwt.sign({ recipient_email, exp: Math.floor(Date.now() / 1000) + 3600 }, process.env.JWT_SECRET);
+    await pool.query(
+      `UPDATE ${tableName} SET token = $1 WHERE email = $2`,
+      [resetToken, recipient_email]
+    );
+    // Token expires in 1 hour
+
+    // Code to send email
+    sendRecoveryEmail(req.body)
+    .then((response) => res.status(200).json({message: response.message, resetToken: resetToken}))
+    .catch((err) => res.status(500).send(err.message));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+app.listen(process.env.DB_PORT, () => {
+  console.log('Server has started on port ' + process.env.DB_PORT);
+});
+
+
+//FUNCTIONS//
+
 function authenticateToken(req, res, next) {
   const token = req.cookies.token;
   if (!token) {
@@ -189,6 +260,54 @@ function authenticateToken(req, res, next) {
   }
 }
 
-app.listen(process.env.DB_PORT, () => {
-  console.log('Server has started on port ' + process.env.DB_PORT);
-});
+function sendRecoveryEmail({ recipient_email, otp }) {
+  return new Promise((resolve, reject) => {
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.MY_EMAIL,
+        pass: process.env.MY_EMAIL_PASSWORD,
+      },
+    });
+
+    const mail_configs = {
+      from: process.env.MY_EMAIL,
+      to: recipient_email,
+      subject: "Trakr Password Recovery",
+      html: `<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Trakr Password Recovery</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+  <div style="margin:50px auto;width:70%;padding:20px 0">
+    <p style="font-size:1.1em">Hi,</p>
+    <p>Thank you for choosing Trakr. Use the following code to complete your password recovery procedure. Code is valid for 5 minutes</p>
+    <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${otp}</h2>
+    <p style="font-size:0.9em;">Regards,<br />Trakr</p>
+    <hr style="border:none;border-top:1px solid #eee" />
+    <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
+      <p>Trakr</p>
+      <p>${process.env.MY_EMAIL}</p>
+    </div>
+  </div>
+</div>
+<!-- partial -->
+  
+</body>
+</html>`,
+    };
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log(error);
+        return reject({ message: `An error has occured` });
+      }
+      return resolve({ message: "Email sent succesfuly" });
+    });
+  });
+}

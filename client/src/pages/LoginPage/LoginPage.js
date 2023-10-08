@@ -1,13 +1,16 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect, useContext } from 'react';
 import DividerWithText from '../../components/DividerWithText/DividerWithText';
 import styles from './LoginPage.module.css';
 import { SMALL_WIDTH } from '../../Constants';
+import { RecoveryContext } from '../LoginPageWrapper/LoginPageWrapper';
 
 // Components
 import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
 
 export default function LoginPage() {
+    const { setEmail, setPage, setOTP, setResetToken } = useContext(RecoveryContext);
+
     const [loginFormData, setLoginFormData] = useState({
         email: "",
         password: ""
@@ -23,6 +26,34 @@ export default function LoginPage() {
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
     const [canCreate, setCanCreate] = useState(false);
     let smallScreen = windowWidth < (SMALL_WIDTH);
+
+    const handleForgotPassword = async () => {
+        if (loginFormData.email.length > 0) {
+            setEmail(loginFormData.email);
+
+            const newOTP = Math.floor(Math.random() * 900000 + 100000);
+            setOTP(newOTP);
+            const body = {
+                recipient_email: loginFormData.email,
+                otp: newOTP
+            };
+            try {
+            const data = await fetch("http://localhost:5000/forgot_password", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            });
+
+            const output = await data.json();
+            setResetToken(output.resetToken);
+            setPage("otp");
+            } catch (err) {
+                console.error(err.message);
+            }
+            return;
+        }
+        return alert("Please enter your email");
+    };
 
     const handleLoginOnChange = (e) => {
         setLoginFormData({
@@ -165,7 +196,7 @@ export default function LoginPage() {
                         <div className={styles.form_section}>
                             <label htmlFor="password">Password:</label>
                             <input className={styles.input_line} type="password" id="password" name="password" value={loginFormData.password} onChange={handleLoginOnChange}/>
-                            <p onClick={directToBoard} className={styles.forgot_password}>Forgot password?</p>
+                            <p onClick={handleForgotPassword} className={styles.forgot_password}>Forgot password?</p>
                         </div>
                         <div className={styles.form_section}>
                             <GButton givenWidth="100%" type="submit" form="loginForm">Login</GButton>

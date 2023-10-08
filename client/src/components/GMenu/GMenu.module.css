@@ -22,7 +22,7 @@
 }
 
 .dropdown_menu::-webkit-scrollbar-thumb:hover {
-    background-color: #555; /* Color of the thumb on hover */
+    background-color: #7b7b7b; /* Color of the thumb on hover */
 }
 
 .dropdown_menu::-webkit-scrollbar-track {
