@@ -9,7 +9,7 @@ export default function OTPInputPage() {
     const { setPage, email, otp, setOTP, setResetToken } = useContext(RecoveryContext);
     const [code, setCode] = useState("");
     const [timer, setTimer] = useState(60);
-    const [disable, setDisable] = useState(false);
+    const [disable, setDisable] = useState(true);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -43,9 +43,9 @@ export default function OTPInputPage() {
 
             const output = await data.json();
             setResetToken(output.resetToken);
-            setDisable(true)
-            alert(`A new code has been sent to your email ${email}`)
-            setTimer(60)
+            setDisable(true);
+            alert(`A new code has been sent to your email ${email}`);
+            setTimer(60);
         } catch (err) {
             console.error(err.message);
         }
@@ -76,25 +76,20 @@ export default function OTPInputPage() {
                 <div className={styles.inner_container}>
                     <h1 className="text-center">Email Verification</h1>
                     <p className="text-center">A code has been sent to your email {email}</p>
-                    <form id="otpForm" method="post" onSubmit={handleSubmit}>
+                    <form className={styles.form_class} id="otpForm" method="post" onSubmit={handleSubmit}>
                         <div className={styles.col_style}>
                             <div className={styles.form_section}>
-                                <label htmlFor="enterOTP">New password:</label>
+                                <label htmlFor="enterOTP">Verification code:</label>
                                 <input className={styles.input_line} type="text" id="enterOTP" name="enterOTP" value={code} onChange={handleOnChange}/>
                             </div>
                             <GButton type="submit">Verify Account</GButton>
                         </div>
                     </form>
-                    <div>
+                    <div className="flex-row">
                         <span>Didn't recieve a code? </span>
                         <span
                             onClick={resendCode}
                             className={styles.resend_otp}
-                            seyle={{
-                                color: disable ? "gray" : "blue",
-                                cursor: disable ? "none" : "pointer",
-                                textDecorationLine: disable ? "none" : "underline"
-                            }}
                         >
                             {disable ? `Resend code in ${timer}s` : "Resend code"}
                         </span>

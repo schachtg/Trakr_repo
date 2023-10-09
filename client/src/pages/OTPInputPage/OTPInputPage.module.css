@@ -46,3 +46,19 @@
     border: none;
     height: 2.5rem;
 }
+
+.resend_otp {
+    color: #1dffdd;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
+}
+
+.resend_otp:hover {
+    color: white;
+    text-decoration: none;
+}
+
+.form_class {
+    margin: 2rem 0;
+}
