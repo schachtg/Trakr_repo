@@ -48,6 +48,7 @@ export default function LoginPage() {
             setResetToken(output.resetToken);
             setPage("otp");
             } catch (err) {
+                alert("An error has occurred.");
                 console.error(err.message);
             }
             return;
