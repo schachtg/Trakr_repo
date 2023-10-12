@@ -1,5 +1,6 @@
 .section_container {
-    width: 200px;
+    min-width: 350px;
     height: fit-content;
     border: 3px solid #181818;
+    padding: 2rem;
 }
