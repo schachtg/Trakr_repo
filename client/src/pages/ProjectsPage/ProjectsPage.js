@@ -64,7 +64,9 @@ export default function ProjectsPage() {
                             },
                         ]}
                     />
-                    <GButton icon={mdiPlus}>Invite User</GButton>
+                    <div className={styles.invite_btn_container}>
+                        <GButton icon={mdiPlus}>Invite User</GButton>
+                    </div>
                 </div>
                 <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
                     <PermissionsTable />

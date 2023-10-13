@@ -114,17 +114,7 @@ export default function NavBar() {
                                     openMenu={openNotifications}
                                     textItems={[
                                         { title: "Notifications:"},
-                                        { segmented: true, text: "This is ySUPER DUPER LOOOONG ITS LONG our first notification" },
-                                        { segmented: true, text: "This is your first notification" },
-                                        { segmented: true, text: "This is your first notification" },
-                                        { segmented: true, text: "This is yoADJAOIJD  OASIDJ OASIDJA OIDJOASIDJ ur first notification" },
-                                        { segmented: true, text: "This is your first notification" },
-                                        { segmented: true, text: "This is your first notification" },
-                                        { segmented: true, text: "This is your first notification" },
-                                        { segmented: true, text: "This is your first notification" },
-                                        { segmented: true, text: "This is your first notification" },
-                                        { segmented: true, text: "This is your first notification" },
-                                        { segmented: true, text: "This is your first notification" }
+                                        { segmented: true, text: "Notifications are still in development." }
                                     ]}
                                 />
                             }

@@ -12,6 +12,7 @@
 
 .table {
     border-collapse: collapse;
+    margin-bottom: 1rem;
 }
 
 .table th, .table td {
@@ -42,4 +43,9 @@
 
 .table__container::-webkit-scrollbar-track {
     background-color: #222; /* Color of the track */
+}
+
+.selectable_role:hover {
+    background-color: #333;
+    cursor: pointer;
 }

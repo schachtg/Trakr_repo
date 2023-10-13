@@ -2,7 +2,7 @@ import React, {Fragment} from 'react';
 import styles from './GButton.module.css';
 import Icon from '@mdi/react';
 
-export default function GButton({menu, children, icon, givenWidth="auto", iconSize=0.8, disabled=false, warning=false, alternate=false, transparent=false, type=null, ...props}) {
+export default function GButton({menu, children, icon, givenWidth="auto", iconSize=0.8, centered=false, disabled=false, warning=false, alternate=false, transparent=false, type=null, ...props}) {
     let haveBoth = children && icon;
     let buttonStyle = null;
 
@@ -26,7 +26,7 @@ export default function GButton({menu, children, icon, givenWidth="auto", iconSi
 
     return (
         <Fragment>
-            <div className={styles.btn_container}>
+            <div style={{"justifyContent": centered ? "center" : "flex-start"}} className={styles.btn_container}>
                 <button
                     onClick={props.onClick}
                     className={buttonStyle}

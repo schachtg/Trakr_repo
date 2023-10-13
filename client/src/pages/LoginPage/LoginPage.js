@@ -206,10 +206,10 @@ export default function LoginPage() {
                     <DividerWithText className={styles.divider}>OR</DividerWithText>
                     <div className={smallScreen ? styles.bottom_col_container : styles.bottom_row_container}>
                         <div className={styles.col_style}>
-                            <GButton alternate givenWidth="80%" type="button" onClick={() => setOpenCreateDialog(true)}>Create Account</GButton>
+                            <GButton centered alternate givenWidth="80%" type="button" onClick={() => setOpenCreateDialog(true)}>Create Account</GButton>
                         </div>
                         <div className={styles.col_style}>
-                            <GButton alternate givenWidth="80%" type="button" onClick={() => setOpenDemoDialog(true)}>Use Public Demo</GButton>
+                            <GButton centered alternate givenWidth="80%" type="button" onClick={() => setOpenDemoDialog(true)}>Use Public Demo</GButton>
                         </div>
                     </div>
                 </div>
