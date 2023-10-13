@@ -9,43 +9,53 @@
 
 .row_item {
     display: flex;
-    justify-content: space-between;
     padding: 0.2rem 1rem;
     width: 100%;
     height: 2.5rem;
     color: black;
     align-items: baseline;
-    background-color: #9c9c9c;
+    justify-content: space-between;
+    background-color: #c9c9c9;
+    border: 1px solid rgba(0, 0, 0, 0.6);
 }
 
 .row_item:hover {
-    background-color: #858585;
+    background-color: #a9a9a9;
 }
 
 .title_container {
     display: flex;
     gap: 2rem;
     align-items: baseline;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
+    width: 90%;
 }
 
 .row_item_title {
     font-size: 1.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: fit-content;
 }
 
 .row_item_subtitle {
     font-size: 1.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: rgb(47, 47, 47);
 }
 
-.icon_container {
+.prepend_container {
+    color: black;
+}
+
+.append_container {
     color: black;
 }
 
 .row_children {
     width: 95%;
     align-self: flex-end;
+    
 }

@@ -4,7 +4,7 @@ import Icon from '@mdi/react';
 import { mdiChevronDown } from '@mdi/js';
 import { SMALL_WIDTH } from '../../Constants';
 
-export default function RowItem({title, subtitle, icon, iconSize=0.8, childRows=[], onClick, ...props}) {
+export default function RowItem({title, subtitle, prependIcon, appendIcon, iconSize=0.8, childRows=[], onClick, ...props}) {
     const [openRow, setOpenRow] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < (SMALL_WIDTH);
@@ -30,13 +30,16 @@ export default function RowItem({title, subtitle, icon, iconSize=0.8, childRows=
     return (
         <Fragment>
             <div className={styles.row_container}>
-                <div className={styles.row_item} onClick={handleClickRow}>
+                <div className={styles.row_item} onClick={handleClickRow} path={mdiChevronDown} size={iconSize}>
                     <div className={styles.title_container} style={{gap: smallScreen ? "1rem" : "2rem"}}>
+                        {prependIcon && <div className={styles.prepend_container}>
+                            <Icon path={prependIcon} size={iconSize}></Icon>
+                        </div>}
                         <h1 className={styles.row_item_title}>{title}</h1>
                         <h1 className={styles.row_item_subtitle}>{subtitle}</h1>
                     </div>
-                    <div className={styles.icon_container}>
-                        {icon && <Icon path={icon} size={iconSize}></Icon>}
+                    <div className={styles.append_container}>
+                        {appendIcon && <Icon path={appendIcon} size={iconSize}></Icon>}
                         {childRows.length > 0 && <Icon style={{ transform: openRow ? "rotate(180deg)" : "rotate(0deg)" }} path={mdiChevronDown} size={iconSize}></Icon>}
                     </div>
                 </div>
@@ -47,7 +50,7 @@ export default function RowItem({title, subtitle, icon, iconSize=0.8, childRows=
                                 key={index}
                                 title={row.title}
                                 subtitle={row.subtitle}
-                                icon={row.icon}
+                                appendIcon={row.appendIcon}
                                 iconSize={row.iconSize}
                                 childRows={row.childRows}
                             />
