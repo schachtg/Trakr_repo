@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import styles from './PermissionsTable.module.css';
-import { mdiPlus, mdiPencil } from '@mdi/js';
+import { mdiPlus, mdiPencil, mdiDelete, mdiContentSave } from '@mdi/js';
 import Icon from '@mdi/react';
 
 // COMPONENTS
@@ -49,6 +49,7 @@ export default function PermissionsTable() {
     const [editRoleIndex, setEditRoleIndex] = useState(0);
     const [permissions] = useState(defaultPermissions);
     const [roles, setRoles] = useState(defaultRoles);
+    const [deleteDialog, setDeleteDialog] = useState(false);
 
 
     const handleSelectRole = (role) => {
@@ -64,6 +65,18 @@ export default function PermissionsTable() {
         const updatedRoles = [...roles];
         updatedRoles[roleIndex].permissions[permissionIndex] = event.target.checked;
         setRoles(updatedRoles);
+    }
+
+    const handleDeleteWarning = () => {
+        setDeleteDialog(true);
+    }
+
+    const handleDeleteRole = () => {
+        const updatedRoles = [...roles];
+        updatedRoles.splice(editRoleIndex, 1);
+        setRoles(updatedRoles);
+        setDeleteDialog(false);
+        setOpenDialog(false);
     }
 
     return (
@@ -110,18 +123,18 @@ export default function PermissionsTable() {
                     >
                         Save
                     </GButton>
-                    {ticket && <GButton
+                    <GButton
                         icon={mdiDelete}
                         onClick={handleDeleteWarning}
                         type="button"
                         warning
                     >
                         Delete
-                    </GButton>}
+                    </GButton>
                 </div>
             </GDialog>
             <DangerDialog
-                title="Delete ticket"
+                title="Delete role"
                 openDialog={deleteDialog}
                 buttons={[
                     <GButton
@@ -131,7 +144,7 @@ export default function PermissionsTable() {
                         Cancel
                     </GButton>,
                     <GButton
-                        onClick={handleDeleteTicket}
+                        onClick={handleDeleteRole}
                         type="button"
                         warning
                     >
