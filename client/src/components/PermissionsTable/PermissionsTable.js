@@ -115,7 +115,7 @@ export default function PermissionsTable() {
             <GButton icon={mdiPlus}>Create Role</GButton>
             <GDialog title="Edit Role" openDialog={openDialog} setOpenDialog={setOpenDialog}>
                 <h1>Role Name</h1>
-                <input type="text" value={roles[editRoleIndex].name} onChange={handleNameChange}/>
+                <input className={styles.roleInput} type="text" value={roles[editRoleIndex].name} onChange={handleNameChange}/>
                 <div className={styles.button_row}>
                     <GButton
                         icon={mdiContentSave}

@@ -56,3 +56,8 @@
     justify-content: space-between;
     margin-top: 3rem;
 }
+
+.role_input {
+    display: flex;
+    justify-self: center;
+}
