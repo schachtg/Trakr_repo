@@ -6,12 +6,16 @@ import { mdiChevronLeft, mdiChevronRight, mdiDelete } from '@mdi/js';
 import GButton from '../GButton/GButton';
 
 function ColumnBox(props) {
-    const iconSize = 1; 
+    const iconSize = 1.1; 
+
     return(
         <Fragment>
             <div className={styles.column_box}>
-                <h1 className={styles.title_text}>{props.title}</h1>
-                <div className={styles.max_row}>
+                <div className={styles.input_row}>
+                    <span>Name:</span>
+                    <input className={styles.max_input} type="text" />
+                </div>
+                <div className={styles.input_row}>
                     <span>Max:</span>
                     <input className={styles.max_input} type="text" />
                 </div>

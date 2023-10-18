@@ -2,7 +2,7 @@ import React, {Fragment} from 'react';
 import styles from './GButton.module.css';
 import Icon from '@mdi/react';
 
-export default function GButton({menu, children, icon, givenWidth="auto", iconSize=0.8, centered=false, disabled=false, warning=false, alternate=false, transparent=false, type=null, ...props}) {
+export default function GButton({menu, children, icon, givenWidth="auto", iconSize=0.8, noWrap=false, centered=false, disabled=false, warning=false, alternate=false, transparent=false, type=null, ...props}) {
     let haveBoth = children && icon;
     let buttonStyle = null;
 
@@ -32,7 +32,7 @@ export default function GButton({menu, children, icon, givenWidth="auto", iconSi
                     className={buttonStyle}
                     type={type}
                     disabled={disabled}
-                    style={{ width: givenWidth }}
+                    style={{ width: givenWidth, whiteSpace: noWrap ? "nowrap" : "normal"}}
                 >
                     {children && <span className={haveBoth ? styles.gap : ""}>{children}</span>}
                     {icon && <Icon path={icon} size={iconSize}></Icon>}

@@ -26,8 +26,16 @@ export default function ProjectsPage() {
 
     return (
         <Fragment>
-            <div className={styles.project_container}>
-                <h1 className={styles.project_header}>Project 1</h1>
+            <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
+                <div className={styles.button_row}>
+                    <h1 className={styles.project_header}>Project 1</h1>
+                    <GButton
+                        type="button"
+                        noWrap
+                    >
+                        Open Project
+                    </GButton>
+                </div>
                 <div className={styles.section_container} style={{ "width": "100%" }}>
                     <h1 className={styles.table__title}>Columns</h1>
                     <ColumnOrder />
@@ -85,6 +93,14 @@ export default function ProjectsPage() {
                             <GButton icon={mdiPlus}>Create Role</GButton>
                         </div>
                     </div>
+                </div>
+                <div className={styles.button_row}>
+                    <GButton
+                        type="button"
+                        warning
+                    >
+                        Delete Project
+                    </GButton>
                 </div>
             </div>
         </Fragment>
