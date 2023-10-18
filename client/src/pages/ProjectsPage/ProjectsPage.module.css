@@ -9,15 +9,34 @@
 }
 
 .project_container {
+    height: fit-content;
+    padding: 0;
+    border: 3px solid #181818;
+    margin: 1rem;
+    box-shadow: 0px 0px 30px 7px rgba(0, 0, 0, 0.5);
+}
+
+.project_row {
     display: flex;
     flex-direction: row;
     gap: 0;
     width: 100%;
     height: fit-content;
     padding: 0;
-    border: 3px solid #181818;
+    margin: 0;
 }
 
 .invite_btn_container {
     width: 100%;
 }
+
+.table__title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+.project_header {
+    width: 100%;
+    padding: 1rem;
+}
+  

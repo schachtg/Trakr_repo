@@ -81,7 +81,6 @@ export default function PermissionsTable() {
 
     return (
         <div className={styles.table__container}>
-            <h1 className={styles.table__title}>Permissions</h1>
             <table className={styles.table}>
             <thead>
                 <tr>
@@ -112,10 +111,10 @@ export default function PermissionsTable() {
                 );})}
             </tbody>
             </table>
-            <GButton icon={mdiPlus}>Create Role</GButton>
-            <GDialog title="Edit Role" openDialog={openDialog} setOpenDialog={setOpenDialog}>
-                <h1>Role Name</h1>
-                <input className={styles.roleInput} type="text" value={roles[editRoleIndex].name} onChange={handleNameChange}/>
+            <GDialog fitContent title="Edit Role" openDialog={openDialog} setOpenDialog={setOpenDialog}>
+                <div className={styles.role_input}>
+                    <input type="text" value={roles[editRoleIndex].name} onChange={handleNameChange}/>
+                </div>
                 <div className={styles.button_row}>
                     <GButton
                         icon={mdiContentSave}

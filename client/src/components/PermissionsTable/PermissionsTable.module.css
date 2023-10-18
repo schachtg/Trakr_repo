@@ -12,7 +12,6 @@
 
 .table {
     border-collapse: collapse;
-    margin-bottom: 1rem;
 }
 
 .table th, .table td {
@@ -55,9 +54,11 @@
     flex-direction: row;
     justify-content: space-between;
     margin-top: 3rem;
+    gap: 2rem;
 }
 
 .role_input {
     display: flex;
-    justify-self: center;
+    justify-content: center;
+    width: 100%;
 }

@@ -146,6 +146,29 @@
 /* Active (clicked) state */
 .btn_trnsp:active {
     outline: none;
+    color: #178164; /* Darker background color on hover */
+}
+
+.btn_warning_trnsp {
+    background: transparent;
+    color: #ff1f5f;
+    padding: 0;
+    font-size: 1rem;
+    border: none;
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+}
+
+/* Hover state */
+.btn_warning_trnsp:hover {
+    color: #c52073; /* Darker background color on hover */
+}
+
+/* Active (clicked) state */
+.btn_warning_trnsp:active {
+    outline: none;
+    color: #87154e; /* Darker background color on hover */
 }
 
 .gap {

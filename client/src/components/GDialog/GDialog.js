@@ -5,7 +5,7 @@ import { mdiCloseCircle } from '@mdi/js';
 import { SMALL_WIDTH } from '../../Constants';
 import Divider from '@material-ui/core/Divider';
 
-export default function GDialog({title, openDialog, setOpenDialog, buttons=[], children}) {
+export default function GDialog({title, openDialog, setOpenDialog, buttons=[], fitContent, children}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
@@ -29,7 +29,7 @@ export default function GDialog({title, openDialog, setOpenDialog, buttons=[], c
     return (openDialog) ? (
         <Fragment>
             <div className={styles.dialog_container}>
-                <div className={`${styles.inner_dialog_container} ${smallScreen ? styles.inner_sml_padding : styles.inner_lrg_padding}`}>
+                <div style={{ maxWidth: fitContent ? "fit-content" : "800px" }} className={`${styles.inner_dialog_container} ${smallScreen ? styles.inner_sml_padding : styles.inner_lrg_padding}`}>
                     <div className={styles.header_row}>
                         <h1 className={styles.long_text}>{title}</h1>
                         <GButton
