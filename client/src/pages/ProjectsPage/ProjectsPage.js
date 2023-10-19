@@ -60,7 +60,7 @@ export default function ProjectsPage() {
                             ]}
                         />
                         <RowItem
-                            title="Person 1"
+                            title="Person A"
                             subtitle="Perm Level 1"
                             childRows={[
                                 {
