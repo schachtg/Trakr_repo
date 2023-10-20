@@ -1,4 +1,4 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, useState} from 'react';
 import styles from './ColumnOrder.module.css';
 import { mdiChevronLeft, mdiChevronRight, mdiDelete } from '@mdi/js';
 
@@ -6,7 +6,20 @@ import { mdiChevronLeft, mdiChevronRight, mdiDelete } from '@mdi/js';
 import GButton from '../GButton/GButton';
 
 function ColumnBox(props) {
+    const [inputValue, setInputValue] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const iconSize = 1.1; 
+
+    const handleInputChange = (event) => {
+      const value = event.target.value;
+      setInputValue(value);
+  
+      if (!/^\d+$/.test(value) || parseInt(value) <= 0) {
+        setErrorMessage("Please enter a positive integer");
+      } else {
+        setErrorMessage("");
+      }
+    };
 
     return(
         <Fragment>
@@ -14,10 +27,17 @@ function ColumnBox(props) {
                 <div className={styles.input_row}>
                     <span>Name:</span>
                     <input className={styles.max_input} type="text" />
+                    {errorMessage && <div className={styles.error_message}>{errorMessage}</div>}
                 </div>
                 <div className={styles.input_row}>
                     <span>Max:</span>
-                    <input className={styles.max_input} type="text" />
+                    <input
+                        className={styles.max_input}
+                        type="text"
+                        value={inputValue}
+                        onChange={handleInputChange}
+                    />
+                    {errorMessage && <div className={styles.error_message}>{errorMessage}</div>}
                 </div>
                 <div className={styles.btn_row}>
                     <div className={styles.grouped_btn}>

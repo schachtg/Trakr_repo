@@ -58,7 +58,9 @@ export default function PermissionsTable() {
     }
 
     const handleNameChange = (event) => {
-        roles[editRoleIndex].name = event.target.value;
+        const updatedRoles = [...roles];
+        updatedRoles[editRoleIndex].name = event.target.value;
+        setRoles(updatedRoles);
     }
 
     const handleChangeChecked = (event, roleIndex, permissionIndex) => {
