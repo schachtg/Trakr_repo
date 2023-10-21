@@ -57,6 +57,10 @@
     gap: 0.5rem;
 }
 
+.error_message {
+    color: red;
+}
+
 .scroll_container::-webkit-scrollbar {
     width: 8px; /* Width of the scrollbar */
     height: 8px;
