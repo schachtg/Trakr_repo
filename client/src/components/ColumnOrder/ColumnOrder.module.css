@@ -58,7 +58,7 @@
 }
 
 .error_message {
-    color: red;
+    color: #ff1f5f;
 }
 
 .scroll_container::-webkit-scrollbar {
