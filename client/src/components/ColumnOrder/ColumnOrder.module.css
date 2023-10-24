@@ -22,12 +22,13 @@
 }
 
 .column_box {
-    background-color: #181818;
+    background-color: #333;
     border-radius: 5px;
     padding: 0.5rem 1rem;
     width: 150px;
     min-width: 150px;
     height: 100%;
+    border: 2px solid rgb(0, 0, 0);
 }
 
 .title_text {
@@ -38,6 +39,10 @@
 
 .max_input {
     width: 100%;
+    background-color: #555;
+    color: white;
+    border: none;
+    height: 2rem;
 }
 
 .input_row {
@@ -77,4 +82,13 @@
 
 .scroll_container::-webkit-scrollbar-track {
     background-color: #222; /* Color of the track */
+}
+
+.input_readonly {
+    background-color: #181818;
+    width: 100%;
+    color: white;
+    border: none;
+    height: 2rem;
+    cursor: default;
 }

@@ -26,7 +26,7 @@ function ColumnBox(props) {
             <div className={styles.column_box}>
                 <div className={styles.input_row}>
                     <span>Name:</span>
-                    <input className={styles.max_input} type="text" />
+                    <input readOnly={props.permanent} className={props.permanent ? styles.input_readonly : styles.max_input} defaultValue={props.title} type="text" />
                 </div>
                 <div className={styles.input_row}>
                     <span>Max:</span>
@@ -43,7 +43,7 @@ function ColumnBox(props) {
                         <GButton icon={mdiChevronLeft} iconSize={iconSize} transparent />
                         <GButton icon={mdiChevronRight} iconSize={iconSize} transparent />
                     </div>
-                    <GButton icon={mdiDelete} iconSize={iconSize} warning transparent />
+                    <GButton disabled={props.permanent} icon={mdiDelete} iconSize={iconSize} warning transparent />
                 </div>
             </div>
         </Fragment>
@@ -57,10 +57,10 @@ export default function ColumnOrder() {
                 <div className={styles.columns_container}>
                     <div className={styles.outer_container}>
                         <ColumnBox title="Impeded" />
-                        <ColumnBox title="To Do" />
-                        <ColumnBox title="In Progress" />
+                        <ColumnBox permanent title="To Do" />
+                        <ColumnBox />
                         <ColumnBox title="Testing" />
-                        <ColumnBox title="Done" />
+                        <ColumnBox permanent title="Done" />
                     </div>
                 </div>
             </div>

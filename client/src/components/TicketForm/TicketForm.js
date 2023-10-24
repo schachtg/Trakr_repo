@@ -260,7 +260,7 @@ export default function TicketForm({closeForm, ticket}) {
 
                 <div className={styles.form_section}>
                     <label htmlFor="description">Description:</label>
-                    <textarea maxLength="500" className={styles.dark_description} id="description" name="description" value={formData.description} onChange={handleChange}/>
+                    <textarea maxLength="250" className={styles.dark_description} id="description" name="description" value={formData.description} onChange={handleChange}/>
                 </div>
 
                 <div className={styles.form_section}>

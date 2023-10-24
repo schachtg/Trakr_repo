@@ -42,7 +42,7 @@ input:-webkit-autofill{
     color: white;
     border: none;
     resize: none;
-    height: 100px;
+    height:130px
 }
 
 .dark_description::-webkit-scrollbar {
@@ -70,7 +70,7 @@ input:-webkit-autofill{
 }
 
 .error_text {
-    color: #ff529d;
+    color: #ff1f5f;
     font-size: 1rem;
     margin-top: 0.5rem;
     padding: 0.2rem;

@@ -8,7 +8,7 @@ export default function GButton({menu, children, icon, givenWidth="auto", iconSi
 
     if (warning) {
         if (transparent) {
-            buttonStyle = styles.btn_warning_trnsp;
+            buttonStyle = disabled ? styles.btn_trnsp_disabled : styles.btn_warning_trnsp;
         } else if (alternate) {
             buttonStyle = disabled ? styles.btn_secondary_warning_disabled : styles.btn_secondary_warning;
         } else {
@@ -16,7 +16,7 @@ export default function GButton({menu, children, icon, givenWidth="auto", iconSi
         }
     } else {
         if (transparent) {
-            buttonStyle = styles.btn_trnsp;
+            buttonStyle = disabled ? styles.btn_trnsp_disabled : styles.btn_trnsp;
         } else if (alternate) {
             buttonStyle = disabled ? styles.btn_secondary_disabled : styles.btn_secondary;
         } else {

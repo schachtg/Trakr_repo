@@ -137,6 +137,7 @@
     display: flex;
     align-items: center; /* Vertically center items */
     justify-content: center; /* Horizontally center items */
+    cursor: pointer;
 }
 
 /* Hover state */
@@ -150,6 +151,18 @@
     color: #178164; /* Darker background color on hover */
 }
 
+.btn_trnsp_disabled {
+    background: transparent;
+    color: #969696;
+    padding: 0;
+    font-size: 1rem;
+    border: none;
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+    cursor: not-allowed;
+}
+
 .btn_warning_trnsp {
     background: transparent;
     color: #ff1f5f;
@@ -159,6 +172,7 @@
     display: flex;
     align-items: center; /* Vertically center items */
     justify-content: center; /* Horizontally center items */
+    cursor: pointer;
 }
 
 /* Hover state */
