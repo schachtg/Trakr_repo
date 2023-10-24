@@ -27,7 +27,6 @@ function ColumnBox(props) {
                 <div className={styles.input_row}>
                     <span>Name:</span>
                     <input className={styles.max_input} type="text" />
-                    {errorMessage && <div className={styles.error_message}>{errorMessage}</div>}
                 </div>
                 <div className={styles.input_row}>
                     <span>Max:</span>

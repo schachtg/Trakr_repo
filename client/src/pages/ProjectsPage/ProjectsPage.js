@@ -32,6 +32,7 @@ export default function ProjectsPage() {
                     <GButton
                         type="button"
                         noWrap
+                        disabled
                     >
                         Open Project
                     </GButton>
@@ -94,12 +95,34 @@ export default function ProjectsPage() {
                         </div>
                     </div>
                 </div>
-                <div className={styles.button_row}>
+                <div className={styles.delete_proj_btn}>
                     <GButton
                         type="button"
                         warning
                     >
                         Delete Project
+                    </GButton>
+                </div>
+            </div>
+            <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
+                <div className={styles.button_row}>
+                    <h1 className={styles.project_header}>Project 2</h1>
+                    <GButton
+                        type="button"
+                        noWrap
+                    >
+                        Open Project
+                    </GButton>
+                </div>
+            </div>
+            <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
+                <div className={styles.button_row}>
+                    <h1 className={styles.project_header}>Project 3</h1>
+                    <GButton
+                        type="button"
+                        noWrap
+                    >
+                        Open Project
                     </GButton>
                 </div>
             </div>
