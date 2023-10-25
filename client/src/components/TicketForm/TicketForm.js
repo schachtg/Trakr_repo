@@ -119,6 +119,7 @@ export default function TicketForm({closeForm, ticket}) {
         const { name, value } = event.target;
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
 
+        // Checks for correct format
         if (isNaN(parseFloat(value))) {
             setErrorMessage('Please enter a number');
             return;
