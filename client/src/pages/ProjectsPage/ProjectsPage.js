@@ -11,6 +11,22 @@ export default function ProjectsPage() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < MEDIUM_WIDTH;
 
+    const createProject = async () => {
+        try{ 
+            const body = {
+                name: "New Project",
+            };
+            await fetch("http://localhost:5000/tickets", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
+        } catch (err) {
+            console.error(err.message);
+        }
+    };
+
     useEffect(() => {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
@@ -125,6 +141,9 @@ export default function ProjectsPage() {
                         Open Project
                     </GButton>
                 </div>
+            </div>
+            <div style={{margin: "3rem 0"}}>
+                <GButton centered icon={mdiPlus} onClick={createProject}>Create New Project</GButton>
             </div>
         </Fragment>
     );
