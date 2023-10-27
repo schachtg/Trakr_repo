@@ -215,6 +215,7 @@ app.get("/user_info", authenticateToken, async (req, res) => {
   const { email } = req.user;
   const tableName = "user_info";
 
+  // Use email to get user's data
   const userData = await pool.query(
     `SELECT * FROM ${tableName} WHERE email = $1`,
     [email]
