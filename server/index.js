@@ -280,6 +280,7 @@ function sendRecoveryEmail({ recipient_email, otp }) {
       },
     });
 
+    // Template for email
     const mail_configs = {
       from: process.env.MY_EMAIL,
       to: recipient_email,
