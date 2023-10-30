@@ -11,6 +11,7 @@ export default function ProjectsPage() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < MEDIUM_WIDTH;
 
+    // Create a new project
     const createProject = async () => {
         try{ 
             const body = {
