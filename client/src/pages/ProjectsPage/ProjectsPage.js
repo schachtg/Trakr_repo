@@ -17,7 +17,7 @@ export default function ProjectsPage() {
             const body = {
                 name: "New Project",
             };
-            await fetch("http://localhost:5000/tickets", {
+            await fetch("http://localhost:5000/projects", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

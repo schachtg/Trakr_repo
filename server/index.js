@@ -224,6 +224,51 @@ app.get("/user_info", authenticateToken, async (req, res) => {
   res.status(200).json({email: req.user.email, name: userData.rows[0].name, id: userData.rows[0].user_id});
 });
 
+// Check if username password is in the db
+app.post("/projects", authenticateToken, async (req, res) => {
+  try {
+    console.log("Made it here");
+    const { name } = req.body;
+    const email = req.user.email;
+    console.log("Made it here1");
+    // Get user's id
+    const checkUser = await pool.query(
+      `SELECT * FROM user_info WHERE email = $1`,
+      [email]
+    );
+    console.log("Made it here2");
+    if(checkUser.rowCount === 0) {
+      res.status(404).json("User not found");
+      return;
+    }
+    console.log("Made it here3");
+    const user_id = checkUser.rows[0].user_id;
+    console.log("ID: " + user_id);
+    console.log("NAME: " + name);
+    console.log("Made it here31");
+    const checkProject = await pool.query(
+      `SELECT * FROM projects WHERE (name = $1 AND user_id = $2)`,
+      [name, user_id]
+    );
+    console.log("Made it here32");
+    console.log("Made it here4");
+    if (checkProject.rowCount > 0) {
+      res.status(409).json("Project already exists");
+    } else {
+      const newProject = await pool.query(
+        `INSERT INTO ${tableName} (name, user_ids) VALUES ($1, $2) RETURNING *`,
+        [name, [user_id]]
+      );
+      res.status(201).json(newProject.rows[0]);
+    }
+    console.log("Made it here5");
+  } catch (err) {
+    res.status(404).json("An error occured");
+  }
+
+  return;
+});
+
 app.post("/forgot_password", async (req, res) => {
   try {
     const tableName = "user_info";
