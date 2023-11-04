@@ -225,6 +225,7 @@ app.get("/user_info", authenticateToken, async (req, res) => {
 });
 
 // Check if username password is in the db
+// Working on finding out how to get a SQL search to return null and not crash
 app.post("/projects", authenticateToken, async (req, res) => {
   try {
     console.log("Made it here");
