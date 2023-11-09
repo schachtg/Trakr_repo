@@ -28,6 +28,17 @@ export default function ProjectsPage() {
         }
     };
 
+    const deleteProject = async (id) => {
+        try {
+            await fetch(`http://localhost:5000/projects/${id}`, {
+                method: "DELETE",
+                credentials: "include",
+            });
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
     useEffect(() => {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
@@ -116,6 +127,7 @@ export default function ProjectsPage() {
                     <GButton
                         type="button"
                         warning
+                        onClick={() => deleteProject(3)}
                     >
                         Delete Project
                     </GButton>
@@ -143,6 +155,7 @@ export default function ProjectsPage() {
                     </GButton>
                 </div>
             </div>
+
             <div style={{margin: "3rem 0"}}>
                 <GButton centered icon={mdiPlus} onClick={createProject}>Create New Project</GButton>
             </div>
