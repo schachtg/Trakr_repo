@@ -5,17 +5,44 @@ import { mdiChevronLeft, mdiChevronRight, mdiDelete } from '@mdi/js';
 // Components
 import GButton from '../GButton/GButton';
 
+let columnsDefault = [
+    {
+        name: "Impeded",
+        permanent: false,
+        max: 1
+    },
+    {
+        name: "To Do",
+        permanent: true,
+        max: 0
+    },
+    {
+        name: "In Progress",
+        permanent: false,
+        max: 0
+    },
+    {
+        name: "Testing",
+        permanent: false,
+        max: 0
+    },
+    {
+        name: "Done",
+        permanent: true,
+        max: 0
+    }
+];
+
 function ColumnBox(props) {
-    const [inputValue, setInputValue] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const iconSize = 1.1; 
 
-    const handleInputChange = (event) => {
+    const handleMaxChange = (event) => {
       const value = event.target.value;
-      setInputValue(value);
+      props.updateMax(value)
   
-      if (!/^\d+$/.test(value) || parseInt(value) <= 0) {
-        setErrorMessage("Please enter a positive integer");
+      if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 100) {
+        setErrorMessage("Must be an integer between 0 and 100");
       } else {
         setErrorMessage("");
       }
@@ -26,22 +53,40 @@ function ColumnBox(props) {
             <div className={styles.column_box}>
                 <div className={styles.input_row}>
                     <span>Name:</span>
-                    <input readOnly={props.permanent} className={props.permanent ? styles.input_readonly : styles.max_input} defaultValue={props.title} type="text" />
+                    <input
+                        readOnly={props.permanent}
+                        className={props.permanent ? styles.input_readonly : styles.max_input}
+                        value={props.title}
+                        type="text"
+                        onChange={(event) => props.updateName(event.target.value)}
+                    />
                 </div>
                 <div className={styles.input_row}>
                     <span>Max:</span>
                     <input
                         className={styles.max_input}
                         type="text"
-                        value={inputValue}
-                        onChange={handleInputChange}
+                        value={props.max}
+                        onChange={handleMaxChange}
                     />
                     {errorMessage && <div className={styles.error_message}>{errorMessage}</div>}
                 </div>
                 <div className={styles.btn_row}>
                     <div className={styles.grouped_btn}>
-                        <GButton icon={mdiChevronLeft} iconSize={iconSize} transparent />
-                        <GButton icon={mdiChevronRight} iconSize={iconSize} transparent />
+                        <GButton
+                            onClick={props.moveLeft}
+                            disabled={props.position === "first"}
+                            icon={mdiChevronLeft}
+                            iconSize={iconSize}
+                            transparent
+                        />
+                        <GButton
+                            onClick={props.moveRight}
+                            disabled={props.position === "last"}
+                            icon={mdiChevronRight}
+                            iconSize={iconSize}
+                            transparent
+                        />
                     </div>
                     <GButton disabled={props.permanent} icon={mdiDelete} iconSize={iconSize} warning transparent />
                 </div>
@@ -51,16 +96,64 @@ function ColumnBox(props) {
 }
 
 export default function ColumnOrder() {
+    const [columns, setColumns] = useState(columnsDefault);
+
+    function setColumnName(index, name) {
+        let newColumns = [...columns];
+        newColumns[index].name = name;
+        setColumns(newColumns);
+    }
+
+    function setColumnMax(index, max) {
+        let newColumns = [...columns];
+        newColumns[index].max = max;
+        setColumns(newColumns);
+    }
+
+    function moveColumnLeft(index) {
+        let newColumns = [...columns];
+        let temp = newColumns[index - 1];
+        newColumns[index - 1] = newColumns[index];
+        newColumns[index] = temp;
+        setColumns(newColumns);
+    }
+
+    function moveColumnRight(index) {
+        let newColumns = [...columns];
+        let temp = newColumns[index + 1];
+        newColumns[index + 1] = newColumns[index];
+        newColumns[index] = temp;
+        setColumns(newColumns);
+    }
+
+    function getPosition(index) {
+        if (index === 0) {
+            return "first";
+        } else if (index === columns.length - 1) {
+            return "last";
+        } else {
+            return "middle";
+        }
+    }
+
     return (
         <Fragment>
             <div className={styles.scroll_container}>
                 <div className={styles.columns_container}>
                     <div className={styles.outer_container}>
-                        <ColumnBox title="Impeded" />
-                        <ColumnBox permanent title="To Do" />
-                        <ColumnBox />
-                        <ColumnBox title="Testing" />
-                        <ColumnBox permanent title="Done" />
+                        {columns.map((column, index) => {
+                            return <ColumnBox
+                                key={index}
+                                position={getPosition(index)}
+                                title={column.name}
+                                max={column.max}
+                                permanent={column.permanent}
+                                updateName={(name) => setColumnName(index, name)}
+                                updateMax={(max) => setColumnMax(index, max)}
+                                moveLeft={() => moveColumnLeft(index)}
+                                moveRight={() => moveColumnRight(index)}
+                            />
+                        })}
                     </div>
                 </div>
             </div>

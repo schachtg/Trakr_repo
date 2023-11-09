@@ -184,7 +184,7 @@ app.post("/user_info/login", async (req, res) => {
     if (checkUser.rowCount > 0) {
       const matching = await bcrypt.compare(password, checkUser.rows[0].password);
       if (matching) {
-        const user = { email: email, name: checkUser.rows[0].name };
+        const user = { email: email };
         const token = jwt.sign(user, process.env.JWT_SECRET);
         res.cookie('token', token, { expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)});
         res.status(200).json("Found user");
@@ -211,7 +211,96 @@ app.get("/user_info/verify", authenticateToken, (req, res) => {
 });
 
 app.get("/user_info", authenticateToken, async (req, res) => {
-  res.status(200).json({email: req.user.email, name: req.user.name});
+  
+  const { email } = req.user;
+  const tableName = "user_info";
+
+  // Use email to get user's data
+  const userData = await pool.query(
+    `SELECT * FROM ${tableName} WHERE email = $1`,
+    [email]
+  );
+
+  res.status(200).json({email: req.user.email, name: userData.rows[0].name, id: userData.rows[0].user_id});
+});
+
+// Create a project
+app.post("/projects", authenticateToken, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const email = req.user.email;
+
+    // Get user's id
+    const checkUser = await pool.query(
+      `SELECT * FROM user_info WHERE email = $1`,
+      [email]
+    );
+    if(checkUser.rowCount === 0) {
+      res.status(404).json("User not found");
+      return;
+    }
+    const user_id = checkUser.rows[0].user_id;
+
+    const checkProject = await pool.query(
+      `SELECT * FROM projects WHERE name = $1 AND user_ids = $2`,
+      [name, [user_id]]
+    );
+    if (checkProject.rowCount > 0) {
+      res.status(409).json("Project already exists");
+    } else {
+      const newProject = await pool.query(
+        `INSERT INTO projects (name, user_ids) VALUES ($1, $2) RETURNING *`,
+        [name, [user_id]]
+      );
+      res.status(201).json(newProject.rows[0]);
+    }
+  } catch (err) {
+    res.status(404).json("An error occured");
+  }
+
+  return;
+});
+
+// delete a project
+app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
+  try {
+    const { project_id } = req.params;
+    const email = req.user.email;
+    console.log(project_id);
+
+    // Get user's id
+    const checkUser = await pool.query(
+      `SELECT * FROM user_info WHERE email = $1`,
+      [email]
+    );
+    if(checkUser.rowCount === 0) {
+      res.status(404).json("User not found");
+      return;
+    }
+    const user_id = checkUser.rows[0].user_id;
+
+    // Check if user is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+    console.log(user_list.rows);
+    if (user_list.rows[0].user_ids.includes(user_id)) {
+      try {
+        await pool.query(
+          `DELETE FROM projects WHERE project_id = $1`,
+          [project_id]
+        );
+        res.status(200).json("Project was deleted!");
+      } catch (err) {
+        console.log(err.message);
+      }
+    } else {
+      res.status(401).json("User is not in the project");
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
 });
 
 app.post("/forgot_password", async (req, res) => {
@@ -270,6 +359,7 @@ function sendRecoveryEmail({ recipient_email, otp }) {
       },
     });
 
+    // Template for email
     const mail_configs = {
       from: process.env.MY_EMAIL,
       to: recipient_email,

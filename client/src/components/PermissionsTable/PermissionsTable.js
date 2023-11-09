@@ -9,9 +9,16 @@ import GDialog from '../../components/GDialog/GDialog';
 import DangerDialog from '../../components/DangerDialog/DangerDialog';
 
 let defaultPermissions = [
-    "Permission 1",
-    "Permission 2",
-    "Permission 3"
+    "Edit tickets",
+    "Edit epics",
+    "End sprint",
+    "Edit columns",
+    "Invite users",
+    "Change user roles",
+    "Create roles",
+    "Delete roles",
+    "Edit role permissions",
+    "Delete project",
 ]
 
 let defaultRoles = [
@@ -22,6 +29,13 @@ let defaultRoles = [
             true,
             true,
             false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
         ],
     },
     {
@@ -31,12 +45,26 @@ let defaultRoles = [
             true,
             false,
             true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
         ],
     },
     {
         id: 2,
         name: "Role 3",
         permissions: [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
             false,
             false,
             false,
@@ -98,6 +126,14 @@ export default function PermissionsTable() {
                     {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
                         <td key={innerPermIndex}>
                             <input disabled type="checkbox" value={true} checked={true} onChange={() => {}} />
+                        </td>
+                    );})}
+                </tr>
+                <tr>
+                    <td>Default:</td>
+                    {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
+                        <td key={innerPermIndex}>
+                            <input disabled type="checkbox" value={false} checked={false} onChange={() => {}} />
                         </td>
                     );})}
                 </tr>
