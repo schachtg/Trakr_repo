@@ -262,6 +262,7 @@ app.post("/projects", authenticateToken, async (req, res) => {
 });
 
 // delete a project
+// Heyyyeyyyyeyyyyeyyy
 app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
