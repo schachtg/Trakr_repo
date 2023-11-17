@@ -14,6 +14,7 @@ export default function ProjectsPage() {
     let smallScreen = windowWidth < MEDIUM_WIDTH;
 
     // Create a new project
+    // Adding columns in db next
     const createProject = async () => {
         try{ 
             const body = {
@@ -114,16 +115,7 @@ export default function ProjectsPage() {
     return (
         <Fragment>
             {openProject && <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
-                <div className={styles.button_row}>
-                    <h1 className={styles.project_header}>{currentProject().name}</h1>
-                    <GButton
-                        type="button"
-                        noWrap
-                        disabled
-                    >
-                        Open Project
-                    </GButton>
-                </div>
+                <h1 className={styles.project_header}>{currentProject().name}</h1>
                 <div className={styles.section_container} style={{ "width": "100%" }}>
                     <h1 className={styles.table__title}>Columns</h1>
                     <ColumnOrder />
