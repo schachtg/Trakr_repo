@@ -14,7 +14,6 @@ export default function ProjectsPage() {
     let smallScreen = windowWidth < MEDIUM_WIDTH;
 
     // Create a new project
-    // Adding columns in db next
     const createProject = async () => {
         try{ 
             const body = {
