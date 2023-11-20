@@ -14,6 +14,7 @@ export default function ProjectsPage() {
     let smallScreen = windowWidth < MEDIUM_WIDTH;
 
     // Create a new project
+    // How could this happen to meeeeeee ive made my musttakkews got no where to ruuun
     const createProject = async () => {
         try{ 
             const body = {
