@@ -5,34 +5,6 @@ import { mdiChevronLeft, mdiChevronRight, mdiDelete } from '@mdi/js';
 // Components
 import GButton from '../GButton/GButton';
 
-let columnsDefault = [
-    {
-        name: "Impeded",
-        permanent: false,
-        max: 1
-    },
-    {
-        name: "To Do",
-        permanent: true,
-        max: 0
-    },
-    {
-        name: "In Progress",
-        permanent: false,
-        max: 0
-    },
-    {
-        name: "Testing",
-        permanent: false,
-        max: 0
-    },
-    {
-        name: "Done",
-        permanent: true,
-        max: 0
-    }
-];
-
 function ColumnBox(props) {
     const [errorMessage, setErrorMessage] = useState("");
     const iconSize = 1.1; 
@@ -95,8 +67,8 @@ function ColumnBox(props) {
     );
 }
 
-export default function ColumnOrder() {
-    const [columns, setColumns] = useState(columnsDefault);
+export default function ColumnOrder(project_id) {
+    const [columns, setColumns] = useState([]);
 
     function setColumnName(index, name) {
         let newColumns = [...columns];
@@ -133,6 +105,24 @@ export default function ColumnOrder() {
             return "last";
         } else {
             return "middle";
+        }
+    }
+
+    const getColumnsFromDB = async event => {
+        try{
+            const body = {
+                project_id: project_id,
+            };
+            const response = await fetch("http://localhost:5000/columns", {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+            setColumns(data);
+        } catch (err) {
+            console.error(err.message);
         }
     }
 

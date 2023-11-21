@@ -210,6 +210,25 @@ app.get("/user_info/verify", authenticateToken, (req, res) => {
   res.status(200).json("Valid token");
 });
 
+app.put("/user_info/open_project", authenticateToken, async (req, res) => {
+  try {
+    const { open_project } = req.body;
+    const email = req.user.email;
+    const tableName = "user_info";
+
+    // Update user's info
+    const updatedUser = await pool.query(
+      `UPDATE ${tableName} SET open_project=$1 WHERE email = $2 RETURNING *`,
+      [open_project, email]
+    );
+    res.status(200).json(updatedUser.rows[0]);
+  } catch (err) {
+    res.status(404).json("An error occured");
+  }
+
+  return;
+});
+
 app.get("/user_info", authenticateToken, async (req, res) => {
   
   const { email } = req.user;
@@ -221,7 +240,7 @@ app.get("/user_info", authenticateToken, async (req, res) => {
     [email]
   );
 
-  res.status(200).json({email: req.user.email, name: userData.rows[0].name, id: userData.rows[0].user_id});
+  res.status(200).json({email: req.user.email, name: userData.rows[0].name, id: userData.rows[0].user_id, open_project: userData.rows[0].open_project});
 });
 
 // Create a project
@@ -241,19 +260,12 @@ app.post("/projects", authenticateToken, async (req, res) => {
     }
     const user_id = checkUser.rows[0].user_id;
 
-    const checkProject = await pool.query(
-      `SELECT * FROM projects WHERE name = $1 AND user_ids = $2`,
+    // Create a new project (name can be duplicated but will have different id)
+    const newProject = await pool.query(
+      `INSERT INTO projects (name, user_ids) VALUES ($1, $2) RETURNING *`,
       [name, [user_id]]
     );
-    if (checkProject.rowCount > 0) {
-      res.status(409).json("Project already exists");
-    } else {
-      const newProject = await pool.query(
-        `INSERT INTO projects (name, user_ids) VALUES ($1, $2) RETURNING *`,
-        [name, [user_id]]
-      );
-      res.status(201).json(newProject.rows[0]);
-    }
+    res.status(201).json(newProject.rows[0]);
   } catch (err) {
     res.status(404).json("An error occured");
   }
@@ -261,12 +273,36 @@ app.post("/projects", authenticateToken, async (req, res) => {
   return;
 });
 
+app.get("/projects", authenticateToken, async (req, res) => {
+  try {
+    const email = req.user.email;
+
+    // Get user's id
+    const checkUser = await pool.query(
+      `SELECT * FROM user_info WHERE email = $1`,
+      [email]
+    );
+    if(checkUser.rowCount === 0) {
+      res.status(404).json("User not found");
+      return;
+    }
+    const user_id = checkUser.rows[0].user_id;
+
+    const allProjects = await pool.query(
+      `SELECT * FROM projects WHERE user_ids = $1`,
+      [[user_id]]
+    );
+    res.json(allProjects.rows);
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 // delete a project
 app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const email = req.user.email;
-    console.log(project_id);
 
     // Get user's id
     const checkUser = await pool.query(
@@ -284,7 +320,6 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
       `SELECT * FROM projects WHERE project_id = $1`,
       [project_id]
     );
-    console.log(user_list.rows);
     if (user_list.rows[0].user_ids.includes(user_id)) {
       try {
         await pool.query(
@@ -292,6 +327,95 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
           [project_id]
         );
         res.status(200).json("Project was deleted!");
+      } catch (err) {
+        console.log(err.message);
+      }
+    } else {
+      res.status(401).json("User is not in the project");
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
+app.post("/cols/add_single", authenticateToken, async (req, res) => {
+  const { name, max, project_id } = req.body;
+  const size = 0;
+  const location = 0
+  const email = req.user.email;
+
+  try {
+    const newCol = await pool.query(
+      `INSERT INTO cols (name, max, project_id, size, location) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [name, max, project_id, size, location]
+    );
+    
+    res.status(201).json(newCol.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get("/cols", authenticateToken, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { project_id } = req.body;
+
+    const columns = await pool.query(
+      `SELECT * FROM cols WHERE project_id = $1`,
+      [project_id]
+    );
+    res.json(columns.rows);
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.put("/cols", authenticateToken, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { column_id, name, max, size, location } = req.body;
+
+    const updatedColumn = await pool.query(
+      `UPDATE cols SET (name, max, size, location) VALUES ($1, $2, $3, $4) RETURNING * WHERE column_id = $5`,
+      [name, max, size, location, column_id]
+    );
+    res.status(200).json(updatedColumn.rows[0]);
+
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+// delete a column
+app.delete("/cols", authenticateToken, async (req, res) => {
+  try {
+    const { column_id, project_id } = req.body;
+    const email = req.user.email;
+
+    // Get user's id
+    const checkUser = await pool.query(
+      `SELECT * FROM user_info WHERE email = $1`,
+      [email]
+    );
+    if(checkUser.rowCount === 0) {
+      res.status(404).json("User not found");
+      return;
+    }
+    const user_id = checkUser.rows[0].user_id;
+
+    // Check if user is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+    if (user_list.rows[0].user_ids.includes(user_id)) {
+      try {
+        await pool.query(
+          `DELETE FROM cols WHERE column_id = $1`,
+          [column_id]
+        );
+        res.status(200).json("Column was deleted!");
       } catch (err) {
         console.log(err.message);
       }

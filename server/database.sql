@@ -50,3 +50,10 @@ CREATE TABLE roles(
 
 -- Set up public user
 INSERT INTO user_info (email, name, password) VALUES ('PublicDemo', 'Public User', '');
+
+-- Clear tables from db
+DROP TABLE IF EXISTS projects CASCADE;
+DROP TABLE IF EXISTS tickets CASCADE;
+DROP TABLE IF EXISTS user_info CASCADE;
+DROP TABLE IF EXISTS cols CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
