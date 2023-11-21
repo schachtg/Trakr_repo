@@ -95,6 +95,24 @@ export default function ProjectsPage() {
         return projects.find(project => project.project_id === openProject);
     }
 
+    const addColumn = async () => {
+        try{ 
+            const body = {
+                project_id: openProject,
+                name: "New Column",
+                max: 0,
+            };
+            await fetch("http://localhost:5000/cols/add_single", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
     useEffect(() => {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
@@ -117,9 +135,9 @@ export default function ProjectsPage() {
                 <h1 className={styles.project_header}>{currentProject().name}</h1>
                 <div className={styles.section_container} style={{ "width": "100%" }}>
                     <h1 className={styles.table__title}>Columns</h1>
-                    <ColumnOrder />
+                    <ColumnOrder project_id={openProject}/>
                     <div className={styles.invite_btn_container}>
-                        <GButton icon={mdiPlus}>Add Column</GButton>
+                        <GButton onClick={addColumn} icon={mdiPlus}>Add Column</GButton>
                     </div>
                 </div>
                 <div className={styles.project_row} style={{ "flexDirection": smallScreen ? "column" : "row" }}>
@@ -206,7 +224,7 @@ export default function ProjectsPage() {
                 </div>
             </div>
             {projects.map((project, index) => (
-                project.project_id != openProject && <div key={index} className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
+                project.project_id !== openProject && <div key={index} className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
                     <div className={styles.button_row}>
                         <h1 className={styles.project_header}>{project.name}</h1>
                         <GButton

@@ -356,10 +356,9 @@ app.post("/cols/add_single", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/cols", authenticateToken, async (req, res) => {
+app.get("/cols/:project_id", authenticateToken, async (req, res) => {
   try {
-    const email = req.user.email;
-    const { project_id } = req.body;
+    const { project_id } = req.params;
 
     const columns = await pool.query(
       `SELECT * FROM cols WHERE project_id = $1`,

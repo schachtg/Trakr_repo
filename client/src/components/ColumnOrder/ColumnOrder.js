@@ -1,4 +1,4 @@
-import React, {Fragment, useState} from 'react';
+import React, {Fragment, useState, useEffect} from 'react';
 import styles from './ColumnOrder.module.css';
 import { mdiChevronLeft, mdiChevronRight, mdiDelete } from '@mdi/js';
 
@@ -69,6 +69,7 @@ function ColumnBox(props) {
 
 export default function ColumnOrder(project_id) {
     const [columns, setColumns] = useState([]);
+    const projectID = project_id.project_id;
 
     function setColumnName(index, name) {
         let newColumns = [...columns];
@@ -109,22 +110,26 @@ export default function ColumnOrder(project_id) {
     }
 
     const getColumnsFromDB = async event => {
+        console.log("Getting cols");
+        console.log(project_id);
         try{
-            const body = {
-                project_id: project_id,
-            };
-            const response = await fetch("http://localhost:5000/columns", {
+            const response = await fetch(`http://localhost:5000/cols/${projectID}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
-                body: JSON.stringify(body)
             });
             const data = await response.json();
             setColumns(data);
+            console.log("Got cols");
+            console.log(columns);
         } catch (err) {
             console.error(err.message);
         }
     }
+
+    useEffect(() => {
+        getColumnsFromDB();
+    }, []);
 
     return (
         <Fragment>
