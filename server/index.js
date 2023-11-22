@@ -320,16 +320,29 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
       `SELECT * FROM projects WHERE project_id = $1`,
       [project_id]
     );
+
+
     if (user_list.rows[0].user_ids.includes(user_id)) {
+      // Deletes everything referencing the project
+      const client = await pool.connect();
+
       try {
-        await pool.query(
-          `DELETE FROM projects WHERE project_id = $1`,
-          [project_id]
-        );
-        res.status(200).json("Project was deleted!");
-      } catch (err) {
-        console.log(err.message);
+        await client.query('BEGIN');
+      
+        await client.query('DELETE FROM tickets WHERE project_id = $1', [project_id]);
+        await client.query('DELETE FROM cols WHERE project_id = $1', [project_id]);
+        await client.query('DELETE FROM roles WHERE project_id = $1', [project_id]);
+        await client.query('DELETE FROM projects WHERE project_id = $1', [project_id]);
+      
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
       }
+
+      res.status(200).json("Project was deleted!");
     } else {
       res.status(401).json("User is not in the project");
     }
@@ -372,15 +385,35 @@ app.get("/cols/:project_id", authenticateToken, async (req, res) => {
 
 app.put("/cols", authenticateToken, async (req, res) => {
   try {
+    const { column_id, project_id, name, max, size, location } = req.body;
     const email = req.user.email;
-    const { column_id, name, max, size, location } = req.body;
 
-    const updatedColumn = await pool.query(
-      `UPDATE cols SET (name, max, size, location) VALUES ($1, $2, $3, $4) RETURNING * WHERE column_id = $5`,
-      [name, max, size, location, column_id]
+    // Get user's id
+    const checkUser = await pool.query(
+      `SELECT * FROM user_info WHERE email = $1`,
+      [email]
     );
-    res.status(200).json(updatedColumn.rows[0]);
+    if(checkUser.rowCount === 0) {
+      res.status(404).json("User not found");
+      return;
+    }
+    const user_id = checkUser.rows[0].user_id;
 
+    // Check if user is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (user_list.rows[0].user_ids.includes(user_id)) {
+      const updatedColumn = await pool.query(
+        `UPDATE cols SET (name, max, size, location) VALUES ($1, $2, $3, $4) RETURNING * WHERE column_id = $5`,
+        [name, max, size, location, column_id]
+      );
+      res.status(200).json(updatedColumn.rows[0]);
+    } else {
+      res.status(401).json("User is not in the project");
+    }
   } catch (err) {
     console.error(err.message);
   }
@@ -408,10 +441,12 @@ app.delete("/cols", authenticateToken, async (req, res) => {
       `SELECT * FROM projects WHERE project_id = $1`,
       [project_id]
     );
+
+
     if (user_list.rows[0].user_ids.includes(user_id)) {
       try {
         await pool.query(
-          `DELETE FROM cols WHERE column_id = $1`,
+          `DELETE FROM cols WHERE col_id = $1`,
           [column_id]
         );
         res.status(200).json("Column was deleted!");

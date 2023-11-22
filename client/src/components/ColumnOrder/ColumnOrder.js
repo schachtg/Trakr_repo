@@ -1,6 +1,6 @@
 import React, {Fragment, useState, useEffect} from 'react';
 import styles from './ColumnOrder.module.css';
-import { mdiChevronLeft, mdiChevronRight, mdiDelete } from '@mdi/js';
+import { mdiChevronLeft, mdiChevronRight, mdiDelete, mdiPlus } from '@mdi/js';
 
 // Components
 import GButton from '../GButton/GButton';
@@ -60,7 +60,7 @@ function ColumnBox(props) {
                             transparent
                         />
                     </div>
-                    <GButton disabled={props.permanent} icon={mdiDelete} iconSize={iconSize} warning transparent />
+                    <GButton disabled={props.permanent} onClick={props.deleteColumn} icon={mdiDelete} iconSize={iconSize} warning transparent />
                 </div>
             </div>
         </Fragment>
@@ -110,8 +110,6 @@ export default function ColumnOrder(project_id) {
     }
 
     const getColumnsFromDB = async event => {
-        console.log("Getting cols");
-        console.log(project_id);
         try{
             const response = await fetch(`http://localhost:5000/cols/${projectID}`, {
                 method: "GET",
@@ -120,8 +118,64 @@ export default function ColumnOrder(project_id) {
             });
             const data = await response.json();
             setColumns(data);
-            console.log("Got cols");
-            console.log(columns);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const addColumn = async () => {
+        try{ 
+            const body = {
+                project_id: projectID,
+                name: "New Column",
+                max: 0,
+            };
+            await fetch("http://localhost:5000/cols/add_single", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
+            setColumns([...columns, body]);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const deleteColumn = async (index) => {
+        try {
+            const body = {
+                project_id: projectID,
+                column_id: columns[index].col_id
+            };
+            await fetch(`http://localhost:5000/cols`, {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
+            setColumns(columns.filter((column, i) => i !== index));
+        } catch (err) {
+            console.error(err.message);
+        }
+    
+    }
+
+    const updateColumn = async (index) => {
+        try {
+            const body = {
+                name: columns[index].name,
+                max: columns[index].max,
+                location: columns[index].location,
+                column_id: columns[index].col_id,
+                project_id: projectID,
+            };
+            await fetch(`http://localhost:5000/cols/${columns[index].col_id}`, {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
         } catch (err) {
             console.error(err.message);
         }
@@ -133,7 +187,7 @@ export default function ColumnOrder(project_id) {
 
     return (
         <Fragment>
-            <div className={styles.scroll_container}>
+            {columns.length > 0 && <div className={styles.scroll_container}>
                 <div className={styles.columns_container}>
                     <div className={styles.outer_container}>
                         {columns.map((column, index) => {
@@ -147,10 +201,14 @@ export default function ColumnOrder(project_id) {
                                 updateMax={(max) => setColumnMax(index, max)}
                                 moveLeft={() => moveColumnLeft(index)}
                                 moveRight={() => moveColumnRight(index)}
+                                deleteColumn={() => deleteColumn(index)}
                             />
                         })}
                     </div>
                 </div>
+            </div>}
+            <div className={styles.invite_btn_container}>
+                <GButton onClick={addColumn} icon={mdiPlus}>Add Column</GButton>
             </div>
         </Fragment>
     );

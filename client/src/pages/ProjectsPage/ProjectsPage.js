@@ -92,25 +92,7 @@ export default function ProjectsPage() {
     }
 
     const currentProject = () => {
-        return projects.find(project => project.project_id === openProject);
-    }
-
-    const addColumn = async () => {
-        try{ 
-            const body = {
-                project_id: openProject,
-                name: "New Column",
-                max: 0,
-            };
-            await fetch("http://localhost:5000/cols/add_single", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                credentials: "include",
-                body: JSON.stringify(body)
-            });
-        } catch (err) {
-            console.error(err.message);
-        }
+        return projects.find(project => project.project_id === openProject) || {name: ""};
     }
 
     useEffect(() => {
@@ -136,9 +118,6 @@ export default function ProjectsPage() {
                 <div className={styles.section_container} style={{ "width": "100%" }}>
                     <h1 className={styles.table__title}>Columns</h1>
                     <ColumnOrder project_id={openProject}/>
-                    <div className={styles.invite_btn_container}>
-                        <GButton onClick={addColumn} icon={mdiPlus}>Add Column</GButton>
-                    </div>
                 </div>
                 <div className={styles.project_row} style={{ "flexDirection": smallScreen ? "column" : "row" }}>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
@@ -201,28 +180,7 @@ export default function ProjectsPage() {
                     </GButton>
                 </div>
             </div>}
-            <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
-                <div className={styles.button_row}>
-                    <h1 className={styles.project_header}>Project 2</h1>
-                    <GButton
-                        type="button"
-                        noWrap
-                    >
-                        Open Project
-                    </GButton>
-                </div>
-            </div>
-            <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
-                <div className={styles.button_row}>
-                    <h1 className={styles.project_header}>Project 3</h1>
-                    <GButton
-                        type="button"
-                        noWrap
-                    >
-                        Open Project
-                    </GButton>
-                </div>
-            </div>
+
             {projects.map((project, index) => (
                 project.project_id !== openProject && <div key={index} className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
                     <div className={styles.button_row}>
