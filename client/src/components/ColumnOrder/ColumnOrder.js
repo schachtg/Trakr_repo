@@ -74,16 +74,25 @@ export default function ColumnOrder(project_id) {
     function setColumnName(index, name) {
         let newColumns = [...columns];
         newColumns[index].name = name;
+        updateColumn(index, newColumns[index]);
         setColumns(newColumns);
     }
 
     function setColumnMax(index, max) {
         let newColumns = [...columns];
         newColumns[index].max = max;
+        updateColumn(index, newColumns[index]);
         setColumns(newColumns);
     }
 
     function moveColumnLeft(index) {
+        let updatedCurrCol = columns[index];
+        let updatedPrevCol = columns[index - 1];
+        updatedCurrCol.previous = columns[index - 1].col_id;
+        updatedPrevCol.previous = columns[index].col_id;
+        updateColumn(index, updatedCurrCol);
+        updateColumn(index - 1, updatedPrevCol);
+
         let newColumns = [...columns];
         let temp = newColumns[index - 1];
         newColumns[index - 1] = newColumns[index];
@@ -92,6 +101,13 @@ export default function ColumnOrder(project_id) {
     }
 
     function moveColumnRight(index) {
+        let updatedCurrCol = columns[index];
+        let updatedNextCol = columns[index + 1];
+        updatedCurrCol.previous = columns[index + 1].col_id;
+        updatedNextCol.previous = columns[index].col_id;
+        updateColumn(index, updatedCurrCol);
+        updateColumn(index + 1, updatedNextCol);
+
         let newColumns = [...columns];
         let temp = newColumns[index + 1];
         newColumns[index + 1] = newColumns[index];
@@ -117,7 +133,7 @@ export default function ColumnOrder(project_id) {
                 credentials: "include",
             });
             const data = await response.json();
-            setColumns(data);
+            return data;
         } catch (err) {
             console.error(err.message);
         }
@@ -130,13 +146,16 @@ export default function ColumnOrder(project_id) {
                 name: "New Column",
                 max: 0,
             };
-            await fetch("http://localhost:5000/cols/add_single", {
+            const response = await fetch("http://localhost:5000/cols/add_single", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(body)
             });
-            setColumns([...columns, body]);
+            const data = await response.json();
+            console.log("Made it here");
+            setColumns([data, ...columns]);
+            console.log("Made it and here");
         } catch (err) {
             console.error(err.message);
         }
@@ -154,23 +173,24 @@ export default function ColumnOrder(project_id) {
                 credentials: "include",
                 body: JSON.stringify(body)
             });
-            setColumns(columns.filter((column, i) => i !== index));
+            const data = columns.filter((column) => column.col_id !== columns[index].col_id)
+            setColumns(data);
         } catch (err) {
             console.error(err.message);
         }
     
     }
 
-    const updateColumn = async (index) => {
+    const updateColumn = async (index, updatedCol) => {
         try {
             const body = {
-                name: columns[index].name,
-                max: columns[index].max,
-                location: columns[index].location,
+                name: updatedCol.name,
+                max: updatedCol.max,
+                previous: updatedCol.previous,
                 column_id: columns[index].col_id,
                 project_id: projectID,
             };
-            await fetch(`http://localhost:5000/cols/${columns[index].col_id}`, {
+            await fetch(`http://localhost:5000/cols`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -181,8 +201,34 @@ export default function ColumnOrder(project_id) {
         }
     }
 
+    const orderColumnsByLocation = (param) => {
+        let oldArray = [...param];
+        let newArray = [];
+      
+        // Find and remove the first element where previous is -1
+        let firstElementIndex = oldArray.findIndex((item) => item.previous === -1);
+        if (firstElementIndex !== -1) {
+          newArray.push(oldArray.splice(firstElementIndex, 1)[0]);
+        }
+      
+        while (oldArray.length > 0) {
+          // Find and remove the next element where previous is the last element's col_id
+          let nextElementIndex = oldArray.findIndex((item) => item.previous === newArray[newArray.length - 1].col_id);
+          if (nextElementIndex !== -1) {
+            newArray.push(oldArray.splice(nextElementIndex, 1)[0]);
+          } else {
+            break;
+          }
+        }
+      
+        return newArray;
+    }
+
     useEffect(() => {
-        getColumnsFromDB();
+        getColumnsFromDB()
+            .then((data) => {
+                setColumns(orderColumnsByLocation(data));
+            });
     }, []);
 
     return (
@@ -196,6 +242,7 @@ export default function ColumnOrder(project_id) {
                                 position={getPosition(index)}
                                 title={column.name}
                                 max={column.max}
+                                previous={column.previous}
                                 permanent={column.permanent}
                                 updateName={(name) => setColumnName(index, name)}
                                 updateMax={(max) => setColumnMax(index, max)}

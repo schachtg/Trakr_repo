@@ -354,13 +354,26 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
 app.post("/cols/add_single", authenticateToken, async (req, res) => {
   const { name, max, project_id } = req.body;
   const size = 0;
-  const location = 0
+  const previous = -1;
   const email = req.user.email;
 
   try {
+    const firstCol = await pool.query(
+      `SELECT * FROM cols WHERE project_id = $1 AND previous = -1`,
+      [project_id]
+    );
     const newCol = await pool.query(
-      `INSERT INTO cols (name, max, project_id, size, location) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, max, project_id, size, location]
+      `INSERT INTO cols (name, max, project_id, size, previous) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [name, max, project_id, size, previous]
+    );
+
+    if(firstCol.rowCount === 0) {
+      res.status(201).json(newCol.rows[0]);
+      return;
+    }
+    await pool.query(
+      `UPDATE cols SET previous = $1 WHERE col_id = $2 RETURNING *`,
+      [newCol.rows[0].col_id, firstCol.rows[0].col_id]
     );
     
     res.status(201).json(newCol.rows[0]);
@@ -385,7 +398,7 @@ app.get("/cols/:project_id", authenticateToken, async (req, res) => {
 
 app.put("/cols", authenticateToken, async (req, res) => {
   try {
-    const { column_id, project_id, name, max, size, location } = req.body;
+    const { column_id, project_id, name, max, size, previous } = req.body;
     const email = req.user.email;
 
     // Get user's id
@@ -407,8 +420,8 @@ app.put("/cols", authenticateToken, async (req, res) => {
 
     if (user_list.rows[0].user_ids.includes(user_id)) {
       const updatedColumn = await pool.query(
-        `UPDATE cols SET (name, max, size, location) VALUES ($1, $2, $3, $4) RETURNING * WHERE column_id = $5`,
-        [name, max, size, location, column_id]
+        `UPDATE cols SET name = $1, max = $2, size = $3, previous = $4 WHERE col_id = $5 RETURNING *`,
+        [name, max, size, previous, column_id]
       );
       res.status(200).json(updatedColumn.rows[0]);
     } else {
@@ -445,6 +458,28 @@ app.delete("/cols", authenticateToken, async (req, res) => {
 
     if (user_list.rows[0].user_ids.includes(user_id)) {
       try {
+        const currCol = await pool.query(
+          `SELECT * FROM cols WHERE project_id = $1 AND col_id = $2`,
+          [project_id, column_id]
+        );
+
+        if (currCol.rowCount === 0) {
+          res.status(404).json("Column not found");
+          return;
+        }
+
+        const nextCol = await pool.query(
+          `SELECT * FROM cols WHERE project_id = $1 AND previous = $2`,
+          [project_id, column_id]
+        );
+
+        if (nextCol.rowCount > 0) {
+          await pool.query(
+            `UPDATE cols SET previous = $1 WHERE col_id = $2`,
+            [currCol.rows[0].previous, nextCol.rows[0].col_id]
+          );
+        }
+
         await pool.query(
           `DELETE FROM cols WHERE col_id = $1`,
           [column_id]

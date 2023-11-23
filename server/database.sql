@@ -38,7 +38,7 @@ CREATE TABLE cols(
     name VARCHAR(255) NOT NULL,
     size INT,
     max INT,
-    location INT
+    previous INT
 );
 
 CREATE TABLE roles(
