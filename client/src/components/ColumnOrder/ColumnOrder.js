@@ -71,44 +71,66 @@ export default function ColumnOrder(project_id) {
     const [columns, setColumns] = useState([]);
     const projectID = project_id.project_id;
 
-    function setColumnName(index, name) {
+    const setColumnName = async (index, name) => {
         let newColumns = [...columns];
         newColumns[index].name = name;
-        updateColumn(index, newColumns[index]);
+        await updateColumn(index, newColumns[index]);
         setColumns(newColumns);
     }
 
-    function setColumnMax(index, max) {
+    const setColumnMax = async (index, max) => {
         let newColumns = [...columns];
         newColumns[index].max = max;
-        updateColumn(index, newColumns[index]);
+        await updateColumn(index, newColumns[index]);
         setColumns(newColumns);
     }
 
-    function moveColumnLeft(index) {
-        let updatedCurrCol = columns[index];
-        let updatedPrevCol = columns[index - 1];
-        updatedCurrCol.previous = columns[index - 1].col_id;
-        updatedPrevCol.previous = columns[index].col_id;
-        updateColumn(index, updatedCurrCol);
-        updateColumn(index - 1, updatedPrevCol);
-
+    const moveColumnLeft = async (index) => {
         let newColumns = [...columns];
+        let updatedCurrCol = {...columns[index]};
+        let updatedPrevCol = {...columns[index - 1]};
+        updatedCurrCol.previous = columns[index - 1].previous;
+        updatedPrevCol.previous = columns[index].col_id;
+
+        if (index + 1 < columns.length) {
+            let updatedNextCol = {...columns[index + 1]};
+            updatedNextCol.previous = columns[index-1].col_id;
+            newColumns[index + 1] = updatedNextCol;
+            await updateColumn(index + 1, updatedNextCol);
+        }
+
+        newColumns[index] = updatedCurrCol;
+        newColumns[index - 1] = updatedPrevCol;
+
+        await updateColumn(index, updatedCurrCol);
+        await updateColumn(index - 1, updatedPrevCol);
+
         let temp = newColumns[index - 1];
         newColumns[index - 1] = newColumns[index];
         newColumns[index] = temp;
         setColumns(newColumns);
     }
 
-    function moveColumnRight(index) {
-        let updatedCurrCol = columns[index];
-        let updatedNextCol = columns[index + 1];
-        updatedCurrCol.previous = columns[index + 1].col_id;
-        updatedNextCol.previous = columns[index].col_id;
-        updateColumn(index, updatedCurrCol);
-        updateColumn(index + 1, updatedNextCol);
-
+    const moveColumnRight = async (index) => {
         let newColumns = [...columns];
+        let updatedCurrCol = {...columns[index]};
+        let updatedNextCol = {...columns[index + 1]};
+        updatedCurrCol.previous = columns[index + 1].col_id;
+        updatedNextCol.previous = columns[index].previous;
+
+        if (index + 2 < columns.length) {
+            let updatedNextNextCol = {...columns[index + 2]};
+            updatedNextNextCol.previous = columns[index].col_id;
+            newColumns[index + 2] = updatedNextNextCol;
+            await updateColumn(index + 2, updatedNextNextCol);
+        }
+
+        newColumns[index] = updatedCurrCol;
+        newColumns[index + 1] = updatedNextCol;
+
+        await updateColumn(index, updatedCurrCol);
+        await updateColumn(index + 1, updatedNextCol);
+
         let temp = newColumns[index + 1];
         newColumns[index + 1] = newColumns[index];
         newColumns[index] = temp;
@@ -153,9 +175,7 @@ export default function ColumnOrder(project_id) {
                 body: JSON.stringify(body)
             });
             const data = await response.json();
-            console.log("Made it here");
             setColumns([data, ...columns]);
-            console.log("Made it and here");
         } catch (err) {
             console.error(err.message);
         }
@@ -173,7 +193,8 @@ export default function ColumnOrder(project_id) {
                 credentials: "include",
                 body: JSON.stringify(body)
             });
-            const data = columns.filter((column) => column.col_id !== columns[index].col_id)
+            const newColumns = [...columns];
+            const data = newColumns.filter((column) => column.col_id !== columns[index].col_id)
             setColumns(data);
         } catch (err) {
             console.error(err.message);
@@ -204,23 +225,23 @@ export default function ColumnOrder(project_id) {
     const orderColumnsByLocation = (param) => {
         let oldArray = [...param];
         let newArray = [];
-      
+        
         // Find and remove the first element where previous is -1
         let firstElementIndex = oldArray.findIndex((item) => item.previous === -1);
         if (firstElementIndex !== -1) {
-          newArray.push(oldArray.splice(firstElementIndex, 1)[0]);
+            newArray.push(oldArray.splice(firstElementIndex, 1)[0]);
         }
-      
+        
         while (oldArray.length > 0) {
-          // Find and remove the next element where previous is the last element's col_id
-          let nextElementIndex = oldArray.findIndex((item) => item.previous === newArray[newArray.length - 1].col_id);
-          if (nextElementIndex !== -1) {
+            // Find and remove the next element where previous is the last element's col_id
+            let nextElementIndex = oldArray.findIndex((item) => item.previous === newArray[newArray.length - 1].col_id);
+            if (nextElementIndex !== -1) {
             newArray.push(oldArray.splice(nextElementIndex, 1)[0]);
-          } else {
+            } else {
             break;
-          }
+            }
         }
-      
+        
         return newArray;
     }
 
