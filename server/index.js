@@ -496,6 +496,7 @@ app.delete("/cols", authenticateToken, async (req, res) => {
   }
 });
 
+// projects updates
 app.post("/forgot_password", async (req, res) => {
   try {
     const tableName = "user_info";
