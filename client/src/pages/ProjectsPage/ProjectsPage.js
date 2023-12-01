@@ -71,7 +71,6 @@ export default function ProjectsPage() {
         } catch (err) {
             console.error(err.message);
         }
-    
     }
 
     const setOpenProjectDB = async (id) => {

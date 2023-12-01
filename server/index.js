@@ -248,6 +248,7 @@ app.post("/projects", authenticateToken, async (req, res) => {
   try {
     const { name } = req.body;
     const email = req.user.email;
+    const curr_sprint = 1;
 
     // Get user's id
     const checkUser = await pool.query(
@@ -262,8 +263,8 @@ app.post("/projects", authenticateToken, async (req, res) => {
 
     // Create a new project (name can be duplicated but will have different id)
     const newProject = await pool.query(
-      `INSERT INTO projects (name, user_ids) VALUES ($1, $2) RETURNING *`,
-      [name, [user_id]]
+      `INSERT INTO projects (name, user_ids, curr_sprint) VALUES ($1, $2, $3) RETURNING *`,
+      [name, [user_id], curr_sprint]
     );
     res.status(201).json(newProject.rows[0]);
   } catch (err) {
@@ -293,6 +294,37 @@ app.get("/projects", authenticateToken, async (req, res) => {
       [[user_id]]
     );
     res.json(allProjects.rows);
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get("/projects/:project_id", authenticateToken, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { project_id } = req.params;
+
+    // Get user's id
+    const checkUser = await pool.query(
+      `SELECT * FROM user_info WHERE email = $1`,
+      [email]
+    );
+    if(checkUser.rowCount === 0) {
+      res.status(404).json("User not found");
+      return;
+    }
+    const user_id = checkUser.rows[0].user_id;
+
+    const project = await pool.query(
+      `SELECT * FROM projects WHERE user_ids = $1 AND project_id = $2`,
+      [[user_id], project_id]
+    );
+
+    if (project.rowCount === 0) {
+      res.status(404).json("Project not found");
+      return;
+    }
+    res.json(project.rows[0]);
   } catch (err) {
     console.error(err.message);
   }
@@ -438,6 +470,7 @@ app.delete("/cols", authenticateToken, async (req, res) => {
     const { column_id, project_id } = req.body;
     const email = req.user.email;
 
+    console.log("Checking user");
     // Get user's id
     const checkUser = await pool.query(
       `SELECT * FROM user_info WHERE email = $1`,
@@ -454,10 +487,12 @@ app.delete("/cols", authenticateToken, async (req, res) => {
       `SELECT * FROM projects WHERE project_id = $1`,
       [project_id]
     );
+    console.log("Checked user");
 
 
     if (user_list.rows[0].user_ids.includes(user_id)) {
       try {
+        console.log("Getting curr col");
         const currCol = await pool.query(
           `SELECT * FROM cols WHERE project_id = $1 AND col_id = $2`,
           [project_id, column_id]
@@ -467,23 +502,30 @@ app.delete("/cols", authenticateToken, async (req, res) => {
           res.status(404).json("Column not found");
           return;
         }
+        console.log("Got curr col");
 
+        console.log("Getting next col");
         const nextCol = await pool.query(
           `SELECT * FROM cols WHERE project_id = $1 AND previous = $2`,
           [project_id, column_id]
         );
+        console.log("Got next col");
 
+        console.log("Patching next col");
         if (nextCol.rowCount > 0) {
           await pool.query(
             `UPDATE cols SET previous = $1 WHERE col_id = $2`,
             [currCol.rows[0].previous, nextCol.rows[0].col_id]
           );
         }
+        console.log("Patched next col");
 
+        console.log("Deleting curr col");
         await pool.query(
           `DELETE FROM cols WHERE col_id = $1`,
           [column_id]
         );
+        console.log("Deleted curr col");
         res.status(200).json("Column was deleted!");
       } catch (err) {
         console.log(err.message);
@@ -496,8 +538,6 @@ app.delete("/cols", authenticateToken, async (req, res) => {
   }
 });
 
-// projects updates
-// UPDATTESSS
 app.post("/forgot_password", async (req, res) => {
   try {
     const tableName = "user_info";

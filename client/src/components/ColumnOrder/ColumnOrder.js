@@ -47,14 +47,14 @@ function ColumnBox(props) {
                     <div className={styles.grouped_btn}>
                         <GButton
                             onClick={props.moveLeft}
-                            disabled={props.position === "first"}
+                            disabled={props.position === "first" || props.position === "only"}
                             icon={mdiChevronLeft}
                             iconSize={iconSize}
                             transparent
                         />
                         <GButton
                             onClick={props.moveRight}
-                            disabled={props.position === "last"}
+                            disabled={props.position === "last" || props.position === "only"}
                             icon={mdiChevronRight}
                             iconSize={iconSize}
                             transparent
@@ -74,6 +74,7 @@ export default function ColumnOrder(project_id) {
     const setColumnName = async (index, name) => {
         let newColumns = [...columns];
         newColumns[index].name = name;
+        console.log(newColumns);
         await updateColumn(index, newColumns[index]);
         setColumns(newColumns);
     }
@@ -138,7 +139,9 @@ export default function ColumnOrder(project_id) {
     }
 
     function getPosition(index) {
-        if (index === 0) {
+        if (columns.length === 1) {
+            return "only";
+        } else if (index === 0) {
             return "first";
         } else if (index === columns.length - 1) {
             return "last";
@@ -175,7 +178,11 @@ export default function ColumnOrder(project_id) {
                 body: JSON.stringify(body)
             });
             const data = await response.json();
-            setColumns([data, ...columns]);
+            const newColumns = [...columns];
+            if (newColumns.length > 0) {
+                newColumns[0].previous = data.col_id;
+            }
+            setColumns([data, ...newColumns]);
         } catch (err) {
             console.error(err.message);
         }

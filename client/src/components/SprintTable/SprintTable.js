@@ -7,39 +7,12 @@ import TicketBox from '../TicketBox/TicketBox';
 import NoTicketsAvailable from '../NoTicketsAvailable/NoTicketsAvailable';
 
 let ticketsDefault = [];
-
-let columnsDefault = [
-    {
-        name: "Impeded",
-        size: 0,
-        max: 1
-    },
-    {
-        name: "To Do",
-        size: 0,
-        max: 0
-    },
-    {
-        name: "In Progress",
-        size: 0,
-        max: 0
-    },
-    {
-        name: "Testing",
-        size: 0,
-        max: 0
-    },
-    {
-        name: "Done",
-        size: 0,
-        max: 0
-    }
-];
+let columnsDefault = [];
 
 let initialized = false;
 let largestColTemp = 0;
 
-export default function SprintTable() {
+export default function SprintTable(projectID) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [draggingTicketIndex, setDraggingTicketIndex] = useState(-1);
     const [tickets, setTickets] = useState(ticketsDefault);
@@ -58,6 +31,7 @@ export default function SprintTable() {
     }
 
     const setColumnsWrapper = (newColumns) => {
+        columnsDefault = newColumns;
         setColumns(newColumns);
         getLargestCol();
     }
@@ -111,12 +85,53 @@ export default function SprintTable() {
         }
     }
 
+    const getColumnsFromDB = async event => {
+        try{
+            const response = await fetch(`http://localhost:5000/cols/${projectID}`, {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+            });
+            const data = await response.json();
+            return data;
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const orderColumnsByLocation = (param) => {
+        let oldArray = [...param];
+        let newArray = [];
+        
+        // Find and remove the first element where previous is -1
+        let firstElementIndex = oldArray.findIndex((item) => item.previous === -1);
+        if (firstElementIndex !== -1) {
+            newArray.push(oldArray.splice(firstElementIndex, 1)[0]);
+        }
+        
+        while (oldArray.length > 0) {
+            // Find and remove the next element where previous is the last element's col_id
+            let nextElementIndex = oldArray.findIndex((item) => item.previous === newArray[newArray.length - 1].col_id);
+            if (nextElementIndex !== -1) {
+            newArray.push(oldArray.splice(nextElementIndex, 1)[0]);
+            } else {
+            break;
+            }
+        }
+        
+        return newArray;
+    }
+
     const handleOnDragOver = (e) => {
         e.preventDefault();
     }
 
     useEffect(() => {
         if (!initialized) {
+            getColumnsFromDB()
+                .then((data) => {
+                    setColumnsWrapper(orderColumnsByLocation(data));
+                });
             getTicketsFromDB();
             initialized = true;
         }

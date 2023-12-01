@@ -15,7 +15,39 @@ export default function BoardPage() {
     const [openDialog, setOpenDialog] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [nextSprintDialog, setNextSprintDialog] = useState(false);
+    const [openProject, setOpenProject] = useState(null);
     let smallScreen = windowWidth < SMALL_WIDTH;
+
+    const getProjectFromDB = async (id) => {
+        try{
+            const response = await fetch(`http://localhost:5000/projects/${id}`, {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include"
+            });
+            const data = await response.json();
+            setOpenProject(data);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const initializeOpenProject = async () => {
+        try{
+            const response = await fetch(`http://localhost:5000/user_info`, {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include"
+            });
+            const data = await response.json();
+            if (!data.open_project) {
+                return;
+            }
+            await getProjectFromDB(data.open_project);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
 
     const openCreateTicket = () => {
         setOpenDialog(true);
@@ -33,6 +65,7 @@ export default function BoardPage() {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
         };
+        initializeOpenProject();
 
         window.addEventListener('resize', handleWindowResize);
 
@@ -40,16 +73,16 @@ export default function BoardPage() {
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    });
+    }, []);
 
     return (
         <Fragment>
-            <div className={smallScreen ? styles.page_content_sml : styles.page_content}>
+            {openProject && <div className={smallScreen ? styles.page_content_sml : styles.page_content}>
                 <div className={styles.title_row}>
-                    {!smallScreen && <h1 className={styles.long_text}>Sprint 1</h1>}
-                    <h1 className={styles.long_text}>New Project</h1>
+                    {!smallScreen && <h1 className={styles.long_text}>Sprint {openProject.curr_sprint}</h1>}
+                    <h1 className={styles.long_text}>{openProject.name}</h1>
                 </div>
-                <SprintTable />
+                <SprintTable projectID={openProject.openProject}/>
                 <div className={styles.create_ticket_row}>
                     <GButton
                         onClick={openCreateTicket}
@@ -73,9 +106,9 @@ export default function BoardPage() {
                 <GDialog title="Create new ticket" openDialog={openDialog} setOpenDialog={setOpenDialog}>
                     <CreateTicketForm closeForm={closeCreateTicket}/>
                 </GDialog>
-            </div>
+            </div>}
             <DangerDialog
-                title="Delete ticket"
+                title="End sprint"
                 openDialog={nextSprintDialog}
                 buttons={[
                     <GButton

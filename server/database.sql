@@ -3,6 +3,7 @@ CREATE DATABASE bugtrackerdb;
 CREATE TABLE projects(
     project_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    curr_sprint INT,
     user_ids INT[]
 );
 
