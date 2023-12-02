@@ -103,6 +103,7 @@ export default function SprintTable(projectID) {
         let oldArray = [...param];
         let newArray = [];
         
+        // Hey
         // Find and remove the first element where previous is -1
         let firstElementIndex = oldArray.findIndex((item) => item.previous === -1);
         if (firstElementIndex !== -1) {
