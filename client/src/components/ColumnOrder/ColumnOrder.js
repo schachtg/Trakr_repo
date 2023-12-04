@@ -74,7 +74,6 @@ export default function ColumnOrder(project_id) {
     const setColumnName = async (index, name) => {
         let newColumns = [...columns];
         newColumns[index].name = name;
-        console.log(newColumns);
         await updateColumn(index, newColumns[index]);
         setColumns(newColumns);
     }

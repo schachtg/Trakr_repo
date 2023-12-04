@@ -26,12 +26,12 @@ app.use(cookieParser());
 app.post("/tickets", authenticateToken, async (req, res) => {
   try {
     const tableName = "tickets";
-    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project } = req.body;
+    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
     const username = req.user.email;
 
     const newTicket = await pool.query(
-      `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
-      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project, username]
+      `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, username]
     );
 
     res.json(newTicket.rows[0]);

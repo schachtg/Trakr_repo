@@ -1,5 +1,6 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import styles from './SprintTable.module.css';
+import { useLocation } from 'react-router-dom';
 import { SMALL_WIDTH } from '../../Constants';
 
 // Components
@@ -18,6 +19,8 @@ export default function SprintTable(projectID) {
     const [tickets, setTickets] = useState(ticketsDefault);
     const [columns, setColumns] = useState(columnsDefault);
     const [largestCol, setLargestCol] = useState(largestColTemp);
+    const project_id = projectID.projectID;
+    const location = useLocation();
     let smallScreen = windowWidth < SMALL_WIDTH;
 
     const getLargestCol = () => {
@@ -87,7 +90,7 @@ export default function SprintTable(projectID) {
 
     const getColumnsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/cols/${projectID}`, {
+            const response = await fetch(`http://localhost:5000/cols/${project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -102,7 +105,7 @@ export default function SprintTable(projectID) {
     const orderColumnsByLocation = (param) => {
         let oldArray = [...param];
         let newArray = [];
-        
+
         // Hey
         // Find and remove the first element where previous is -1
         let firstElementIndex = oldArray.findIndex((item) => item.previous === -1);
@@ -146,7 +149,7 @@ export default function SprintTable(projectID) {
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    });
+    }, [location]);
 
     return (
         <Fragment>

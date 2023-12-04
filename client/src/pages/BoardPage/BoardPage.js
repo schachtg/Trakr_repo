@@ -82,7 +82,7 @@ export default function BoardPage() {
                     {!smallScreen && <h1 className={styles.long_text}>Sprint {openProject.curr_sprint}</h1>}
                     <h1 className={styles.long_text}>{openProject.name}</h1>
                 </div>
-                <SprintTable projectID={openProject.openProject}/>
+                <SprintTable projectID={openProject.project_id}/>
                 <div className={styles.create_ticket_row}>
                     <GButton
                         onClick={openCreateTicket}
@@ -104,7 +104,7 @@ export default function BoardPage() {
                     </GButton>
                 </div>
                 <GDialog title="Create new ticket" openDialog={openDialog} setOpenDialog={setOpenDialog}>
-                    <CreateTicketForm closeForm={closeCreateTicket}/>
+                    <CreateTicketForm projectInfo={openProject} closeForm={closeCreateTicket}/>
                 </GDialog>
             </div>}
             <DangerDialog

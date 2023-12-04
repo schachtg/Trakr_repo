@@ -52,7 +52,7 @@ const columnOptions = [
     "Impeded",
 ];
 
-export default function TicketForm({closeForm, ticket}) {
+export default function TicketForm({closeForm, ticket, projectInfo}) {
     const [formData, setFormData] = useState(ticket || {
         name: "",
         type: "Task",
@@ -62,10 +62,10 @@ export default function TicketForm({closeForm, ticket}) {
         blocked_by: [],
         points: 0,
         assignee: "No assignee",
-        sprint: "Current sprint",
+        sprint: projectInfo.curr_sprint,
         column_name: "To Do",
         pull_request: "",
-        project: "New Project"
+        project_id: projectInfo.project_id
     });
     const [errorMessage, setErrorMessage] = useState('');
     const [deleteDialog, setDeleteDialog] = useState(false);
@@ -170,7 +170,7 @@ export default function TicketForm({closeForm, ticket}) {
                     sprint: formData.sprint,
                     column_name: formData.column_name,
                     pull_request: formData.pull_request,
-                    project: formData.project
+                    project_id: formData.project_id
                 };
                 
                 if (ticket) {

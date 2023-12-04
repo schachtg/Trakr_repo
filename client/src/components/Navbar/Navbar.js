@@ -78,9 +78,9 @@ export default function NavBar() {
     
         return (
             <li className={styles.li}>
-                <Link className={`${styles.a} ${smallScreen ? styles.a_pad_sml : styles.a_pad_big} ${isActive ? styles.a_active : ""}`} to={to} {...props}>
+                <a className={`${styles.a} ${smallScreen ? styles.a_pad_sml : styles.a_pad_big} ${isActive ? styles.a_active : ""}`} href={to} {...props}>
                     {children}
-                </Link>
+                </a>
             </li>
         );
     }
