@@ -214,6 +214,7 @@ export default function ColumnOrder(project_id) {
                 name: updatedCol.name,
                 max: updatedCol.max,
                 previous: updatedCol.previous,
+                size: updatedCol.size,
                 column_id: columns[index].col_id,
                 project_id: projectID,
             };

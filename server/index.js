@@ -77,10 +77,10 @@ app.put("/tickets/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
     const username = req.user.email;
     const tableName = "tickets";
-    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project } = req.body;
+    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
     const updateTicket = await pool.query(
-      `UPDATE ${tableName} SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, pull_request = $11, project = $12 WHERE (ticket_id = $13 AND username = $14) RETURNING *`,
-      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project, id, username]
+      `UPDATE ${tableName} SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, pull_request = $11, project_id = $12 WHERE (ticket_id = $13 AND username = $14) RETURNING *`,
+      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, id, username]
     );
 
     res.json(updateTicket.rows[0]);

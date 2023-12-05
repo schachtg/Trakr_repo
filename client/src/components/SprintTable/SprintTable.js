@@ -1,14 +1,10 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import styles from './SprintTable.module.css';
-import { useLocation } from 'react-router-dom';
 import { SMALL_WIDTH } from '../../Constants';
 
 // Components
 import TicketBox from '../TicketBox/TicketBox';
 import NoTicketsAvailable from '../NoTicketsAvailable/NoTicketsAvailable';
-
-let ticketsDefault = [];
-let columnsDefault = [];
 
 let initialized = false;
 let largestColTemp = 0;
@@ -16,16 +12,15 @@ let largestColTemp = 0;
 export default function SprintTable(projectID) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [draggingTicketIndex, setDraggingTicketIndex] = useState(-1);
-    const [tickets, setTickets] = useState(ticketsDefault);
-    const [columns, setColumns] = useState(columnsDefault);
+    const [tickets, setTickets] = useState([]);
+    const [columns, setColumns] = useState([]);
     const [largestCol, setLargestCol] = useState(largestColTemp);
     const project_id = projectID.projectID;
-    const location = useLocation();
     let smallScreen = windowWidth < SMALL_WIDTH;
 
     const getLargestCol = () => {
         largestColTemp = 0;
-        columnsDefault.forEach(column => {
+        columns.forEach(column => {
             if (column.size > largestColTemp) {
                 largestColTemp = column.size;
             }
@@ -33,25 +28,26 @@ export default function SprintTable(projectID) {
         setLargestCol(largestColTemp);
     }
 
-    const setColumnsWrapper = (newColumns) => {
-        columnsDefault = newColumns;
+    const setColumnsWrapper = async (newColumns) => {
         setColumns(newColumns);
         getLargestCol();
     }
 
     const setTicketsWrapper = (newTickets) => {
-        
-        columnsDefault.forEach(column => {
+        let newColumns = [...columns];
+        console.log(newColumns);
+        newColumns.forEach(column => {
             column.size = 0;
         });
         let colIndex = 0;
         newTickets.forEach(ticket => {
-            colIndex = columnsDefault.findIndex(column => column.name === ticket.column_name);
+            colIndex = newColumns.findIndex(column => column.name === ticket.column_name);
             if(colIndex !== -1) {
-                columnsDefault[colIndex].size++;
+                newColumns[colIndex].size += 1;
             }
         });
-        setColumnsWrapper(columnsDefault);
+        console.log(newColumns);
+        setColumnsWrapper(newColumns);
         setTickets(newTickets);
     }
 
@@ -74,6 +70,7 @@ export default function SprintTable(projectID) {
     }
 
     const getTicketsFromDB = async event => {
+        console.log("Starting ticket");
         try{
             const response = await fetch("http://localhost:5000/tickets", {
                 method: "GET",
@@ -81,14 +78,15 @@ export default function SprintTable(projectID) {
                 credentials: "include"
             });
             const data = await response.json();
-            ticketsDefault = data;
-            setTicketsWrapper(ticketsDefault);
+            setTicketsWrapper(data);
         } catch (err) {
             console.error(err.message);
         }
+        console.log("Stopping ticket");
     }
 
     const getColumnsFromDB = async event => {
+        console.log("Starting col");
         try{
             const response = await fetch(`http://localhost:5000/cols/${project_id}`, {
                 method: "GET",
@@ -106,7 +104,6 @@ export default function SprintTable(projectID) {
         let oldArray = [...param];
         let newArray = [];
 
-        // Hey
         // Find and remove the first element where previous is -1
         let firstElementIndex = oldArray.findIndex((item) => item.previous === -1);
         if (firstElementIndex !== -1) {
@@ -126,17 +123,21 @@ export default function SprintTable(projectID) {
         return newArray;
     }
 
+    const initializeTable = async () => {
+        await getColumnsFromDB().then((data) => {
+            setColumns(orderColumnsByLocation(data));
+        });
+        await getTicketsFromDB();
+    }
+
     const handleOnDragOver = (e) => {
         e.preventDefault();
     }
 
+    // lethgal companty
     useEffect(() => {
         if (!initialized) {
-            getColumnsFromDB()
-                .then((data) => {
-                    setColumnsWrapper(orderColumnsByLocation(data));
-                });
-            getTicketsFromDB();
+            initializeTable();
             initialized = true;
         }
         const handleWindowResize = () => {
@@ -149,7 +150,7 @@ export default function SprintTable(projectID) {
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    }, [location]);
+    }, []);
 
     return (
         <Fragment>
