@@ -135,6 +135,7 @@ export default function SprintTable(projectID) {
     }
 
     // lethgal companty
+    //sup
     useEffect(() => {
         if (!initialized) {
             initializeTable();
