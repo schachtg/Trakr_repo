@@ -1,22 +1,41 @@
 import React, {Fragment, useState, useEffect} from 'react';
 import styles from './ColumnOrder.module.css';
-import { mdiChevronLeft, mdiChevronRight, mdiDelete, mdiPlus } from '@mdi/js';
+import { mdiChevronLeft, mdiChevronRight, mdiDelete, mdiPlus, mdiContentSave } from '@mdi/js';
 
 // Components
 import GButton from '../GButton/GButton';
+import GDialog from '../GDialog/GDialog';
+import DangerDialog from '../DangerDialog/DangerDialog';
 
 function ColumnBox(props) {
-    const [errorMessage, setErrorMessage] = useState("");
-    const iconSize = 1.1; 
+    const [topErrorMessage, setTopBottomErrorMessage] = useState("");
+    const [bottomErrorMessage, setBottomErrorMessage] = useState("");
+    const iconSize = 1.1;
+    const isPermanent = props.permanent || props.name === "To Do" || props.name === "Done";
+
+    const handleNameChange = (event) => {
+        const value = event.target.value;
+        props.updateName(value)
+
+        if (value.length >= 15) {
+            setTopBottomErrorMessage("Must be less than 15 characters");
+        } else if (value.length === 0) {
+            setTopBottomErrorMessage("Must not be empty");
+        } else if (props.columns.filter((column) => column.name === value).length > 1) {
+            setTopBottomErrorMessage("Must be unique");
+        } else {
+            setTopBottomErrorMessage("");
+        }
+    };
 
     const handleMaxChange = (event) => {
       const value = event.target.value;
       props.updateMax(value)
   
       if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 100) {
-        setErrorMessage("Must be an integer between 0 and 100");
+        setBottomErrorMessage("Must be an integer between 0 and 100");
       } else {
-        setErrorMessage("");
+        setBottomErrorMessage("");
       }
     };
 
@@ -26,12 +45,13 @@ function ColumnBox(props) {
                 <div className={styles.input_row}>
                     <span>Name:</span>
                     <input
-                        readOnly={props.permanent}
-                        className={props.permanent ? styles.input_readonly : styles.max_input}
+                        readOnly={isPermanent}
+                        className={isPermanent ? styles.input_readonly : styles.max_input}
                         value={props.title}
                         type="text"
-                        onChange={(event) => props.updateName(event.target.value)}
+                        onChange={handleNameChange}
                     />
+                    {topErrorMessage && <div className={styles.error_message}>{topErrorMessage}</div>}
                 </div>
                 <div className={styles.input_row}>
                     <span>Max:</span>
@@ -41,7 +61,7 @@ function ColumnBox(props) {
                         value={props.max}
                         onChange={handleMaxChange}
                     />
-                    {errorMessage && <div className={styles.error_message}>{errorMessage}</div>}
+                    {bottomErrorMessage && <div className={styles.error_message}>{bottomErrorMessage}</div>}
                 </div>
                 <div className={styles.btn_row}>
                     <div className={styles.grouped_btn}>
@@ -60,7 +80,7 @@ function ColumnBox(props) {
                             transparent
                         />
                     </div>
-                    <GButton disabled={props.permanent} onClick={props.deleteColumn} icon={mdiDelete} iconSize={iconSize} warning transparent />
+                    <GButton disabled={isPermanent} onClick={props.deleteColumn} icon={mdiDelete} iconSize={iconSize} warning transparent />
                 </div>
             </div>
         </Fragment>
@@ -69,19 +89,53 @@ function ColumnBox(props) {
 
 export default function ColumnOrder(project_id) {
     const [columns, setColumns] = useState([]);
+    const [openDialog, setOpenDialog] = useState(false);
+    const [openDeleteWarning, setOpenDeleteWarning] = useState(false);
+    const [deletingColumn, setDeletingColumn] = useState(0);
+    const [addNameErrorMsg, setAddNameErrorMsg] = useState("");
+    const [addMaxErrorMsg, setAddMaxErrorMsg] = useState("");
+    const [newColumn, setNewColumn] = useState({name: "", max: 0});
     const projectID = project_id.project_id;
+
+    const handleNameChange = (event) => {
+        const value = event.target.value;
+        setNewColumn({name: value, max: newColumn.max})
+        if (value.length >= 15) {
+            setAddNameErrorMsg("Must be less than 15 characters");
+        } else if (value.length === 0) {
+            setAddNameErrorMsg("Must not be empty");
+        } else if (columns.filter((column) => column.name === value).length >= 1) {
+            setAddNameErrorMsg("Must be unique");
+        } else {
+            setAddNameErrorMsg("");
+        }
+    };
+
+    const handleMaxChange = (event) => {
+        const value = event.target.value;
+        setNewColumn({name: newColumn.name, max: value})
+        if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 100) {
+            setAddMaxErrorMsg("Must be an integer between 0 and 100");
+        } else {
+            setAddMaxErrorMsg("");
+        }
+    };
 
     const setColumnName = async (index, name) => {
         let newColumns = [...columns];
         newColumns[index].name = name;
-        await updateColumn(index, newColumns[index]);
+        if (newColumns.filter((column) => column.name === name).length <= 1 && name.length < 15 && name.length > 0) {
+            await updateColumn(index, newColumns[index]);
+        }
         setColumns(newColumns);
     }
 
     const setColumnMax = async (index, max) => {
         let newColumns = [...columns];
         newColumns[index].max = max;
-        await updateColumn(index, newColumns[index]);
+        if (!(!/^\d+$/.test(max) || parseInt(max) < 0 || parseInt(max) > 100)) {
+            await updateColumn(index, newColumns[index]);
+        }
         setColumns(newColumns);
     }
 
@@ -89,14 +143,14 @@ export default function ColumnOrder(project_id) {
         let newColumns = [...columns];
         let updatedCurrCol = {...columns[index]};
         let updatedPrevCol = {...columns[index - 1]};
-        updatedCurrCol.previous = columns[index - 1].previous;
-        updatedPrevCol.previous = columns[index].col_id;
+        updatedCurrCol.next_col = columns[index - 1].col_id;
+        updatedPrevCol.next_col = columns[index].next_col;
 
-        if (index + 1 < columns.length) {
-            let updatedNextCol = {...columns[index + 1]};
-            updatedNextCol.previous = columns[index-1].col_id;
-            newColumns[index + 1] = updatedNextCol;
-            await updateColumn(index + 1, updatedNextCol);
+        if (index - 1 >= 0) {
+            let updatedPrevPrevCol = {...columns[index - 2]};
+            updatedPrevPrevCol.next_col = columns[index].col_id;
+            newColumns[index - 2] = updatedPrevPrevCol;
+            await updateColumn(index - 2, updatedPrevPrevCol);
         }
 
         newColumns[index] = updatedCurrCol;
@@ -115,14 +169,14 @@ export default function ColumnOrder(project_id) {
         let newColumns = [...columns];
         let updatedCurrCol = {...columns[index]};
         let updatedNextCol = {...columns[index + 1]};
-        updatedCurrCol.previous = columns[index + 1].col_id;
-        updatedNextCol.previous = columns[index].previous;
+        updatedCurrCol.next_col = columns[index + 1].next_col;
+        updatedNextCol.next_col = columns[index].col_id;
 
-        if (index + 2 < columns.length) {
-            let updatedNextNextCol = {...columns[index + 2]};
-            updatedNextNextCol.previous = columns[index].col_id;
-            newColumns[index + 2] = updatedNextNextCol;
-            await updateColumn(index + 2, updatedNextNextCol);
+        if (index - 1 >= 0) {
+            let updatedPrevCol = {...columns[index - 1]};
+            updatedPrevCol.next_col = columns[index + 1].col_id;
+            newColumns[index - 1] = updatedPrevCol;
+            await updateColumn(index - 1, updatedPrevCol);
         }
 
         newColumns[index] = updatedCurrCol;
@@ -167,8 +221,8 @@ export default function ColumnOrder(project_id) {
         try{ 
             const body = {
                 project_id: projectID,
-                name: "New Column",
-                max: 0,
+                name: newColumn.name,
+                max: newColumn.max,
             };
             const response = await fetch("http://localhost:5000/cols/add_single", {
                 method: "POST",
@@ -179,7 +233,7 @@ export default function ColumnOrder(project_id) {
             const data = await response.json();
             const newColumns = [...columns];
             if (newColumns.length > 0) {
-                newColumns[0].previous = data.col_id;
+                newColumns[0].next_col = data.col_id;
             }
             setColumns([data, ...newColumns]);
         } catch (err) {
@@ -189,6 +243,8 @@ export default function ColumnOrder(project_id) {
 
     const deleteColumn = async (index) => {
         try {
+            setDeletingColumn(0);
+            setOpenDeleteWarning(false);
             const body = {
                 project_id: projectID,
                 column_id: columns[index].col_id
@@ -213,7 +269,7 @@ export default function ColumnOrder(project_id) {
             const body = {
                 name: updatedCol.name,
                 max: updatedCol.max,
-                previous: updatedCol.previous,
+                next_col: updatedCol.next_col,
                 size: updatedCol.size,
                 column_id: columns[index].col_id,
                 project_id: projectID,
@@ -233,23 +289,38 @@ export default function ColumnOrder(project_id) {
         let oldArray = [...param];
         let newArray = [];
         
-        // Find and remove the first element where previous is -1
-        let firstElementIndex = oldArray.findIndex((item) => item.previous === -1);
+        // Find and remove the first element where next_col is -1
+        let firstElementIndex = oldArray.findIndex((item) => item.next_col === -1);
         if (firstElementIndex !== -1) {
             newArray.push(oldArray.splice(firstElementIndex, 1)[0]);
         }
         
         while (oldArray.length > 0) {
-            // Find and remove the next element where previous is the last element's col_id
-            let nextElementIndex = oldArray.findIndex((item) => item.previous === newArray[newArray.length - 1].col_id);
+            // Find and remove the next element where next_col is the last element's col_id
+            let nextElementIndex = oldArray.findIndex((item) => item.next_col === newArray[newArray.length - 1].col_id);
             if (nextElementIndex !== -1) {
             newArray.push(oldArray.splice(nextElementIndex, 1)[0]);
             } else {
             break;
             }
         }
+
+        // Reverse the array
+        newArray = newArray.reverse();
         
         return newArray;
+    }
+
+    const openAddColumn = () => {
+        setNewColumn({name: "", max: 0});
+        handleNameChange({target: {value: ""}});
+        handleMaxChange({target: {value: 0}});
+        setOpenDialog(true);
+    }
+
+    const openDeleteColumn = (index) => {
+        setDeletingColumn(index);
+        setOpenDeleteWarning(true);
     }
 
     useEffect(() => {
@@ -270,21 +341,75 @@ export default function ColumnOrder(project_id) {
                                 position={getPosition(index)}
                                 title={column.name}
                                 max={column.max}
-                                previous={column.previous}
+                                next_col={column.next_col}
                                 permanent={column.permanent}
                                 updateName={(name) => setColumnName(index, name)}
                                 updateMax={(max) => setColumnMax(index, max)}
                                 moveLeft={() => moveColumnLeft(index)}
                                 moveRight={() => moveColumnRight(index)}
-                                deleteColumn={() => deleteColumn(index)}
+                                deleteColumn={() => openDeleteColumn(index)}
+                                columns={columns}
                             />
                         })}
                     </div>
                 </div>
             </div>}
             <div className={styles.invite_btn_container}>
-                <GButton onClick={addColumn} icon={mdiPlus}>Add Column</GButton>
+                <GButton onClick={openAddColumn} icon={mdiPlus}>Add Column</GButton>
             </div>
+            <GDialog fitContent title="Add Column" openDialog={openDialog} setOpenDialog={setOpenDialog}>
+                <form onSubmit={addColumn}>
+                    <div className={styles.form_section}>
+                        <input className={styles.add_input} type="text" value={newColumn.name} onChange={handleNameChange}/>
+                        {addNameErrorMsg && <div className={styles.error_message}>{addNameErrorMsg}</div>}
+                    </div>
+                    <div className={styles.form_section}>
+                        <input className={styles.add_input} type="text" value={newColumn.max} onChange={handleMaxChange}/>
+                        {addMaxErrorMsg && <div className={styles.error_message}>{addMaxErrorMsg}</div>}
+                    </div>
+                    <div className={styles.button_row}>
+                        <GButton
+                            onClick={() => setOpenDialog(false)}
+                            type="button"
+                            warning
+                            alternate
+                        >
+                            Cancel
+                        </GButton>
+                        <GButton
+                            icon={mdiContentSave}
+                            type="submit"
+                            disabled={addNameErrorMsg || addMaxErrorMsg}
+                        >
+                            Save
+                        </GButton>
+                    </div>
+                </form>
+            </GDialog>
+            <DangerDialog
+                title="Delete Column"
+                openDialog={openDeleteWarning}
+                buttons={[
+                    <GButton
+                        onClick={() => setOpenDeleteWarning(false)}
+                        type="button"
+                    >
+                        Cancel
+                    </GButton>,
+                    <GButton
+                        icon={mdiDelete}
+                        type="button"
+                        onClick={() => deleteColumn(deletingColumn)}
+                        warning
+                    >
+                        Delete
+                    </GButton>
+                ]}
+            >
+                {columns.length > 0 && <span>
+                    Are you sure you want to delete column {columns[deletingColumn].name}?
+                </span>}
+            </DangerDialog>
         </Fragment>
     );
 }

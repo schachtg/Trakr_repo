@@ -34,6 +34,20 @@ app.post("/tickets", authenticateToken, async (req, res) => {
       [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, username]
     );
 
+    // Update column size
+    const columns = await pool.query(
+      `SELECT * FROM cols WHERE project_id = $1`,
+      [project_id]
+    );
+
+    const currCol = columns.rows.find(column => column.name === column_name);
+    if (currCol !== undefined) {
+      await pool.query(
+        `UPDATE cols SET size = $1 WHERE col_id = $2`,
+        [currCol.size + 1, currCol.col_id]
+      );
+    }
+
     res.json(newTicket.rows[0]);
   } catch (err) {
     console.error(err.message);
@@ -78,6 +92,42 @@ app.put("/tickets/:id", authenticateToken, async (req, res) => {
     const username = req.user.email;
     const tableName = "tickets";
     const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
+
+    // Get old ticket
+    const oldTicket = await pool.query(
+      `SELECT * FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`,
+      [id, username]
+    );
+
+    if (oldTicket.rowCount === 0) {
+      res.status(404).json("Ticket not found");
+      return;
+    }
+
+    if (oldTicket.rows[0].column_name !== column_name) {
+      // Update column size
+      const columns = await pool.query(
+        `SELECT * FROM cols WHERE project_id = $1`,
+        [project_id]
+      );
+
+      const oldCol = columns.rows.find(column => column.name === oldTicket.rows[0].column_name);
+      if (oldCol !== undefined) {
+        await pool.query(
+          `UPDATE cols SET size = $1 WHERE col_id = $2`,
+          [oldCol.size - 1, oldCol.col_id]
+        );
+      }
+
+      const newCol = columns.rows.find(column => column.name === column_name);
+      if (newCol !== undefined) {
+        await pool.query(
+          `UPDATE cols SET size = $1 WHERE col_id = $2`,
+          [newCol.size + 1, newCol.col_id]
+        );
+      }
+    }
+
     const updateTicket = await pool.query(
       `UPDATE ${tableName} SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, pull_request = $11, project_id = $12 WHERE (ticket_id = $13 AND username = $14) RETURNING *`,
       [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, id, username]
@@ -95,6 +145,32 @@ app.delete("/tickets/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
     const username = req.user.email;
     const tableName = "tickets";
+
+    // Get old ticket
+    const oldTicket = await pool.query(
+      `SELECT * FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`,
+      [id, username]
+    );
+
+    if (oldTicket.rowCount === 0) {
+      res.status(404).json("Ticket not found");
+      return;
+    }
+
+    // Update column size
+    const columns = await pool.query(
+      `SELECT * FROM cols WHERE project_id = $1`,
+      [oldTicket.rows[0].project_id]
+    );
+
+    const oldCol = columns.rows.find(column => column.name === oldTicket.rows[0].column_name);
+    if (oldCol !== undefined) {
+      await pool.query(
+        `UPDATE cols SET size = $1 WHERE col_id = $2`,
+        [oldCol.size - 1, oldCol.col_id]
+      );
+    }
+
     await pool.query(`DELETE FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`, [
       id, username
     ]);
@@ -386,17 +462,17 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
 app.post("/cols/add_single", authenticateToken, async (req, res) => {
   const { name, max, project_id } = req.body;
   const size = 0;
-  const previous = -1;
+  const next_col = -1;
   const email = req.user.email;
 
   try {
     const firstCol = await pool.query(
-      `SELECT * FROM cols WHERE project_id = $1 AND previous = -1`,
+      `SELECT * FROM cols WHERE project_id = $1 AND next_col = -1`,
       [project_id]
     );
     const newCol = await pool.query(
-      `INSERT INTO cols (name, max, project_id, size, previous) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, max, project_id, size, previous]
+      `INSERT INTO cols (name, max, project_id, size, next_col) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [name, max, project_id, size, next_col]
     );
 
     if(firstCol.rowCount === 0) {
@@ -404,7 +480,7 @@ app.post("/cols/add_single", authenticateToken, async (req, res) => {
       return;
     }
     await pool.query(
-      `UPDATE cols SET previous = $1 WHERE col_id = $2 RETURNING *`,
+      `UPDATE cols SET next_col = $1 WHERE col_id = $2 RETURNING *`,
       [newCol.rows[0].col_id, firstCol.rows[0].col_id]
     );
     
@@ -430,7 +506,7 @@ app.get("/cols/:project_id", authenticateToken, async (req, res) => {
 
 app.put("/cols", authenticateToken, async (req, res) => {
   try {
-    const { column_id, project_id, name, max, size, previous } = req.body;
+    const { column_id, project_id, name, max, size, next_col } = req.body;
     const email = req.user.email;
 
     // Get user's id
@@ -451,9 +527,28 @@ app.put("/cols", authenticateToken, async (req, res) => {
     );
 
     if (user_list.rows[0].user_ids.includes(user_id)) {
+      // Get old column
+      const oldColumn = await pool.query(
+        `SELECT * FROM cols WHERE project_id = $1 AND col_id = $2`,
+        [project_id, column_id]
+      );
+
+      if (oldColumn.rowCount === 0) {
+        res.status(404).json("Column not found");
+        return;
+      }
+
+      if (oldColumn.rows[0].name !== name) {
+        // Update tickets in column
+        await pool.query(
+          `UPDATE tickets SET column_name = $1 WHERE column_name = $2 AND project_id = $3 RETURNING *`,
+          [name, oldColumn.rows[0].name, project_id]
+        );
+      }
+
       const updatedColumn = await pool.query(
-        `UPDATE cols SET name = $1, max = $2, size = $3, previous = $4 WHERE col_id = $5 RETURNING *`,
-        [name, max, size, previous, column_id]
+        `UPDATE cols SET name = $1, max = $2, size = $3, next_col = $4 WHERE col_id = $5 RETURNING *`,
+        [name, max, size, next_col, column_id]
       );
       res.status(200).json(updatedColumn.rows[0]);
     } else {
@@ -470,7 +565,6 @@ app.delete("/cols", authenticateToken, async (req, res) => {
     const { column_id, project_id } = req.body;
     const email = req.user.email;
 
-    console.log("Checking user");
     // Get user's id
     const checkUser = await pool.query(
       `SELECT * FROM user_info WHERE email = $1`,
@@ -487,12 +581,9 @@ app.delete("/cols", authenticateToken, async (req, res) => {
       `SELECT * FROM projects WHERE project_id = $1`,
       [project_id]
     );
-    console.log("Checked user");
-
 
     if (user_list.rows[0].user_ids.includes(user_id)) {
       try {
-        console.log("Getting curr col");
         const currCol = await pool.query(
           `SELECT * FROM cols WHERE project_id = $1 AND col_id = $2`,
           [project_id, column_id]
@@ -502,30 +593,29 @@ app.delete("/cols", authenticateToken, async (req, res) => {
           res.status(404).json("Column not found");
           return;
         }
-        console.log("Got curr col");
 
-        console.log("Getting next col");
-        const nextCol = await pool.query(
-          `SELECT * FROM cols WHERE project_id = $1 AND previous = $2`,
+        // Delete tickets in column
+        await pool.query(
+          `DELETE FROM tickets WHERE column_name = $1 AND project_id = $2`,
+          [currCol.rows[0].name, project_id]
+        );
+
+        const prevCol = await pool.query(
+          `SELECT * FROM cols WHERE project_id = $1 AND next_col = $2`,
           [project_id, column_id]
         );
-        console.log("Got next col");
 
-        console.log("Patching next col");
-        if (nextCol.rowCount > 0) {
+        if (prevCol.rowCount > 0) {
           await pool.query(
-            `UPDATE cols SET previous = $1 WHERE col_id = $2`,
-            [currCol.rows[0].previous, nextCol.rows[0].col_id]
+            `UPDATE cols SET next_col = $1 WHERE col_id = $2`,
+            [currCol.rows[0].next_col, prevCol.rows[0].col_id]
           );
         }
-        console.log("Patched next col");
 
-        console.log("Deleting curr col");
         await pool.query(
           `DELETE FROM cols WHERE col_id = $1`,
           [column_id]
         );
-        console.log("Deleted curr col");
         res.status(200).json("Column was deleted!");
       } catch (err) {
         console.log(err.message);

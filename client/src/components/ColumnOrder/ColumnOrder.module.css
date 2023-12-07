@@ -92,3 +92,24 @@
     height: 2rem;
     cursor: default;
 }
+
+.button_row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 3rem;
+    gap: 2rem;
+}
+
+.add_input {
+    background-color: #555;
+    color: white;
+    border: none;
+    height: 2rem;
+}
+
+.form_section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}

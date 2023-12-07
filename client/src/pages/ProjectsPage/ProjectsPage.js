@@ -26,6 +26,35 @@ export default function ProjectsPage() {
                 body: JSON.stringify(body)
             });
             const response = await data.json();
+
+            // Create default columns
+            const defaultColumns = [
+                {
+                    name: "To Do",
+                    size: 0,
+                    project_id: response.project_id,
+                    max: 0
+                },
+                {
+                    name: "In Progress",
+                    size: 0,
+                    project_id: response.project_id,
+                    max: 0
+                },
+                {
+                    name: "Testing",
+                    size: 0,
+                    project_id: response.project_id,
+                    max: 0
+                },
+                {
+                    name: "Done",
+                    size: 0,
+                    project_id: response.project_id,
+                    max: 0
+                },
+            ];
+
             setProjects([...projects, response]);
         } catch (err) {
             console.error(err.message);
