@@ -11,12 +11,10 @@ function ColumnBox(props) {
     const [topErrorMessage, setTopBottomErrorMessage] = useState("");
     const [bottomErrorMessage, setBottomErrorMessage] = useState("");
     const iconSize = 1.1;
-    const isPermanent = props.permanent || props.name === "To Do" || props.name === "Done";
 
     const handleNameChange = (event) => {
         const value = event.target.value;
         props.updateName(value)
-
         if (value.length >= 15) {
             setTopBottomErrorMessage("Must be less than 15 characters");
         } else if (value.length === 0) {
@@ -45,9 +43,9 @@ function ColumnBox(props) {
                 <div className={styles.input_row}>
                     <span>Name:</span>
                     <input
-                        readOnly={isPermanent}
-                        className={isPermanent ? styles.input_readonly : styles.max_input}
-                        value={props.title}
+                        readOnly={props.permanent}
+                        className={props.permanent ? styles.input_readonly : styles.max_input}
+                        value={props.name}
                         type="text"
                         onChange={handleNameChange}
                     />
@@ -80,7 +78,7 @@ function ColumnBox(props) {
                             transparent
                         />
                     </div>
-                    <GButton disabled={isPermanent} onClick={props.deleteColumn} icon={mdiDelete} iconSize={iconSize} warning transparent />
+                    <GButton disabled={props.permanent} onClick={props.deleteColumn} icon={mdiDelete} iconSize={iconSize} warning transparent />
                 </div>
             </div>
         </Fragment>
@@ -146,7 +144,7 @@ export default function ColumnOrder(project_id) {
         updatedCurrCol.next_col = columns[index - 1].col_id;
         updatedPrevCol.next_col = columns[index].next_col;
 
-        if (index - 1 >= 0) {
+        if (index - 2 >= 0) {
             let updatedPrevPrevCol = {...columns[index - 2]};
             updatedPrevPrevCol.next_col = columns[index].col_id;
             newColumns[index - 2] = updatedPrevPrevCol;
@@ -235,7 +233,14 @@ export default function ColumnOrder(project_id) {
             if (newColumns.length > 0) {
                 newColumns[0].next_col = data.col_id;
             }
-            setColumns([data, ...newColumns]);
+            const completeColumn = {
+                col_id: data.col_id,
+                name: data.name,
+                max: data.max,
+                next_col: -1,
+                size: 0,
+            }
+            setColumns([completeColumn, ...newColumns]);
         } catch (err) {
             console.error(err.message);
         }
@@ -307,8 +312,16 @@ export default function ColumnOrder(project_id) {
 
         // Reverse the array
         newArray = newArray.reverse();
-        
+
         return newArray;
+    }
+
+    const updatePermanentColumns = (peram) => {
+        let newColumns = [...peram];
+        for (let i = 0; i < newColumns.length; i++) {
+            newColumns[i].permanent = newColumns[i].name === "To Do" || newColumns[i].name === "Done";
+        }
+        return newColumns;
     }
 
     const openAddColumn = () => {
@@ -326,7 +339,7 @@ export default function ColumnOrder(project_id) {
     useEffect(() => {
         getColumnsFromDB()
             .then((data) => {
-                setColumns(orderColumnsByLocation(data));
+                setColumns(updatePermanentColumns(orderColumnsByLocation(data)));
             });
     }, []);
 
@@ -339,7 +352,7 @@ export default function ColumnOrder(project_id) {
                             return <ColumnBox
                                 key={index}
                                 position={getPosition(index)}
-                                title={column.name}
+                                name={column.name}
                                 max={column.max}
                                 next_col={column.next_col}
                                 permanent={column.permanent}

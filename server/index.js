@@ -459,6 +459,38 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
   }
 });
 
+app.post("/cols", authenticateToken, async (req, res) => {
+  const { columns } = req.body;
+  const email = req.user.email;
+
+  try {
+    console.log("trying");
+    if (columns.length > 0) {
+      console.log("Columns has size");
+      let oldCol = {rows:[{col_id: -1}]};
+      for (let i = columns.length-1; i >= 0; i--) {
+        console.log("In loop");
+        oldCol = await pool.query(
+          `INSERT INTO cols (name, max, project_id, size, next_col) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+          [columns[i].name, columns[i].max, columns[i].project_id, columns[i].size, oldCol.rows[0].col_id]
+        );
+
+        if(oldCol.rowCount === 0) {
+          res.status(201).json("An error occured");
+          return;
+        }
+      }
+      console.log("Out of loop");
+
+      res.status(201).json("Columns were added");
+    } else {
+      res.status(200).json("No columns were added");
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.post("/cols/add_single", authenticateToken, async (req, res) => {
   const { name, max, project_id } = req.body;
   const size = 0;

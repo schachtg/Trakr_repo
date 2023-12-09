@@ -28,7 +28,7 @@ export default function ProjectsPage() {
             const response = await data.json();
 
             // Create default columns
-            const defaultColumns = [
+            const defaultColumns = { columns: [
                 {
                     name: "To Do",
                     size: 0,
@@ -53,7 +53,15 @@ export default function ProjectsPage() {
                     project_id: response.project_id,
                     max: 0
                 },
-            ];
+            ]};
+            console.log("Creating from ProjectsPage.js")
+            await fetch("http://localhost:5000/cols", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(defaultColumns)
+            });
+            console.log("Created from ProjectsPage.js")
 
             setProjects([...projects, response]);
         } catch (err) {
@@ -113,7 +121,7 @@ export default function ProjectsPage() {
                 credentials: "include",
                 body: JSON.stringify(body)
             });
-            setOpenProject(id);
+            window.location.reload();
         } catch (err) {
             console.error(err.message);
         }
