@@ -127,6 +127,7 @@ export default function ProjectsPage() {
         }
     }
 
+    // Im not working today
     const currentProject = () => {
         return projects.find(project => project.project_id === openProject) || {name: ""};
     }
