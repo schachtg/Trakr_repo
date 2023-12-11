@@ -127,7 +127,12 @@ export default function SprintTable(projectID) {
             <div className={styles.table_margins}>
                 <div className={styles.sprint_row}>
                     {columns.map((column, colIndex) => (
-                        <div key={colIndex} className={column.name === "Impeded" ? styles.sprint_col_impeded : styles.sprint_col}>
+                        <div key={colIndex} className={styles.sprint_col}>
+                            <div className={styles.display_max}>
+                                {column.max > 0 && <div>
+                                    {column.size}/{column.max}
+                                </div>}
+                            </div>
                             <div className={column.max > 0 && column.max <= column.size ? styles.warning_border : styles.empty_border}>
                                 <h1 className={smallScreen ? styles.col_name_sml : styles.col_name}>{column.name}</h1>
                                 {tickets.map((ticket, ticketIndex) => {

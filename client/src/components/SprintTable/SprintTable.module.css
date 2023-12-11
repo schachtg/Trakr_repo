@@ -83,3 +83,13 @@
 .empty_border {
     border: 3px solid transparent;
 }
+
+.display_max {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 3rem;
+    width: 100%;
+    font-size: 30px;
+    color: #777;
+}
