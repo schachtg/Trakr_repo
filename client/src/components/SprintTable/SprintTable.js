@@ -49,7 +49,7 @@ export default function SprintTable(projectID) {
 
     const getTicketsFromDB = async event => {
         try{
-            const response = await fetch("http://localhost:5000/tickets", {
+            const response = await fetch(`http://localhost:5000/tickets/${project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"

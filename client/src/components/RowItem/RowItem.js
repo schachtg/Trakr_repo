@@ -4,7 +4,7 @@ import Icon from '@mdi/react';
 import { mdiChevronDown } from '@mdi/js';
 import { SMALL_WIDTH } from '../../Constants';
 
-export default function RowItem({title, subtitle, prependIcon, appendIcon, iconSize=0.8, childRows=[], onClick, ...props}) {
+export default function RowItem({title, subtitle, prependIcon, appendIcon, iconSize=0.8, childRows=[], onClick, disabled, ...props}) {
     const [openRow, setOpenRow] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < (SMALL_WIDTH);
@@ -30,7 +30,7 @@ export default function RowItem({title, subtitle, prependIcon, appendIcon, iconS
     return (
         <Fragment>
             <div className={styles.row_container}>
-                <div className={styles.row_item} onClick={handleClickRow} path={mdiChevronDown} size={iconSize}>
+                <div className={disabled ? styles.row_item_disabled : styles.row_item} onClick={handleClickRow} path={mdiChevronDown} size={iconSize}>
                     <div className={styles.title_container} style={{gap: smallScreen ? "1rem" : "2rem"}}>
                         {prependIcon && <div className={styles.prepend_container}>
                             <Icon path={prependIcon} size={iconSize}></Icon>
@@ -48,11 +48,13 @@ export default function RowItem({title, subtitle, prependIcon, appendIcon, iconS
                         return (
                             <RowItem
                                 key={index}
+                                onClick={row.onClick}
                                 title={row.title}
                                 subtitle={row.subtitle}
                                 appendIcon={row.appendIcon}
                                 iconSize={row.iconSize}
                                 childRows={row.childRows}
+                                disabled={row.disabled}
                             />
                         );
                     })}

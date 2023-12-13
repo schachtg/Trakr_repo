@@ -11,17 +11,20 @@ import RowItem from '../RowItem/RowItem';
 export default function UserList({project_id}) {
     const [users, setUsers] = useState([]);
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+    const [openRemoveWarning, setOpenRemoveWarning] = useState(false);
+    const [removingUser, setRemovingUser] = useState(0);
     const [inviteEmail, setInviteEmail] = useState("");
 
     const getUsersFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/projects/${project_id}`, {
+            const response = await fetch(`http://localhost:5000/user_info/project/${project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
             });
             const data = await response.json();
-            return data.user_emails;
+
+            return data;
         } catch (err) {
             console.error(err.message);
         }
@@ -49,6 +52,28 @@ export default function UserList({project_id}) {
         }
     }
 
+    const removeUser = async (email) => {
+        try{ 
+            const body = {
+                project_id: project_id,
+                email,
+            };
+            const response = await fetch("http://localhost:5000/remove_user", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
+            if (response.status === 200) {
+                alert("User removed!");
+                return;
+            }
+            alert("An error occurred.");
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
     useEffect(() => {
         getUsersFromDB()
             .then((data) => {
@@ -58,7 +83,29 @@ export default function UserList({project_id}) {
 
     return (
         <Fragment>
-            <GButton icon={mdiPlus} onClick={() => setInviteDialogOpen(true)}>Add User</GButton>
+            <div className={styles.user_list}>
+                {users.map((user, index) => (
+                    <RowItem
+                        key={index}
+                        title={user.name}
+                        subtitle={user.email}
+                        childRows={[
+                            {
+                                title: "Change Role",
+                                disabled: true,
+                            },
+                            {
+                                title: "Remove User",
+                                onClick: () => {
+                                    setOpenRemoveWarning(true);
+                                    setRemovingUser(index);
+                                }
+                            },
+                        ]}
+                    />
+                ))}
+            </div>
+            <GButton icon={mdiPlus} centered onClick={() => setInviteDialogOpen(true)}>Invite User</GButton>
             <GDialog fitContent title="Invite User" openDialog={inviteDialogOpen} setOpenDialog={setInviteDialogOpen}>
                 <div className={styles.dialogContent}>
                     <label htmlFor="email">Email</label>
@@ -66,6 +113,30 @@ export default function UserList({project_id}) {
                     <GButton icon={mdiContentSave} onClick={() => addUser(inviteEmail)}>Invite</GButton>
                 </div>
             </GDialog>
+            <DangerDialog
+                title="Remove User"
+                openDialog={openRemoveWarning}
+                buttons={[
+                    <GButton
+                        onClick={() => setOpenRemoveWarning(false)}
+                        type="button"
+                    >
+                        Cancel
+                    </GButton>,
+                    <GButton
+                        icon={mdiDelete}
+                        type="button"
+                        onClick={() => removeUser(users[removingUser].email)}
+                        warning
+                    >
+                        Remove
+                    </GButton>
+                ]}
+            >
+                {users.length > 0 && <span>
+                    Are you sure you want to remove user {users[removingUser].name}?
+                </span>}
+            </DangerDialog>
         </Fragment>
     );
 }

@@ -158,45 +158,6 @@ export default function ProjectsPage() {
                 <div className={styles.project_row} style={{ "flexDirection": smallScreen ? "column" : "row" }}>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
                         <h1 className={styles.table__title}>Users</h1>
-                        <RowItem
-                            title="Graham Schacht"
-                            subtitle="Admin"
-                            prependIcon={mdiCrown}
-                            childRows={[
-                                {
-                                    title: "Change Role",
-                                },
-                                {
-                                    title: "Remove User",
-                                },
-                            ]}
-                        />
-                        <RowItem
-                            title="Person A"
-                            subtitle="Perm Level 1"
-                            childRows={[
-                                {
-                                    title: "Change Role",
-                                },
-                                {
-                                    title: "Remove User",
-                                },
-                            ]}
-                        />
-                        <RowItem
-                            title="Person 2"
-                            childRows={[
-                                {
-                                    title: "Change Role",
-                                },
-                                {
-                                    title: "Remove User",
-                                },
-                            ]}
-                        />
-                        <div className={styles.invite_btn_container}>
-                            <GButton icon={mdiPlus}>Invite User</GButton>
-                        </div>
                         <UserList project_id={openProject}/>
                     </div>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>

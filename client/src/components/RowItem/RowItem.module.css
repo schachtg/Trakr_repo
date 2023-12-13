@@ -19,6 +19,19 @@
     border: 1px solid rgba(0, 0, 0, 0.6);
 }
 
+.row_item_disabled {
+    display: flex;
+    padding: 0.2rem 1rem;
+    width: 100%;
+    height: 2.5rem;
+    color: black;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #c9c9c9;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    opacity: 0.5;
+}
+
 .row_item:hover {
     background-color: #a9a9a9;
 }

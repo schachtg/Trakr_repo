@@ -55,13 +55,13 @@ app.post("/tickets", authenticateToken, async (req, res) => {
 });
 
 // get all tickets for a user
-app.get("/tickets", authenticateToken, async (req, res) => {
+app.get("/tickets/:project_id", authenticateToken, async (req, res) => {
   try {
-    const username = req.user.email;
+    const { project_id } = req.params;
     const tableName = "tickets";
     const allTickets = await pool.query(
-      `SELECT * FROM ${tableName} WHERE username = $1 ORDER BY epic ASC`,
-      [username]
+      `SELECT * FROM ${tableName} WHERE project_id = $1 ORDER BY epic ASC`,
+      [project_id]
     );
     res.json(allTickets.rows);
   } catch (err) {
@@ -319,6 +319,36 @@ app.get("/user_info", authenticateToken, async (req, res) => {
   res.status(200).json({email: req.user.email, name: userData.rows[0].name, id: userData.rows[0].user_id, open_project: userData.rows[0].open_project});
 });
 
+app.get("/user_info/project/:project_id", authenticateToken, async (req, res) => {
+  try {
+    const { project_id } = req.params;
+    const email = req.user.email;
+
+    // Check if user is in the project
+    const project = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (project.rowCount === 0) {
+      res.status(404).json("Project not found");
+      return;
+    }
+
+    if (project.rows[0].user_emails.includes(email)) {
+      const userList = await pool.query(
+        `SELECT user_id, name, email, open_project FROM user_info WHERE  email = ANY($1)`,
+        [project.rows[0].user_emails]
+      );
+      res.status(200).json(userList.rows);
+    } else {
+      res.status(401).json("User is not in the project");
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 // Create a project
 app.post("/projects", authenticateToken, async (req, res) => {
   try {
@@ -420,6 +450,49 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
       }
 
       res.status(200).json("Project was deleted!");
+    } else {
+      res.status(401).json("User is not in the project");
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
+app.post("/remove_user", authenticateToken, async (req, res) => {
+  try {
+    const { email, project_id } = req.body;
+    const currUser = req.user.email;
+
+    // Check if user is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (user_list.rows[0].user_emails.includes(currUser)) {
+      // Check if user is in the project
+      if (user_list.rows[0].user_emails.includes(email)) {
+        // Remove user from project
+        await pool.query(
+          `UPDATE projects SET user_emails = $1 WHERE project_id = $2`,
+          [user_list.rows[0].user_emails.filter(user => user !== email), project_id]
+        );
+
+        // Remove user's open project if it was the project that was removed
+        const user = await pool.query(
+          `SELECT * FROM user_info WHERE email = $1`,
+          [email]
+        );
+        if (user.rows[0].open_project === project_id) {
+          await pool.query(
+            `UPDATE user_info SET open_project = NULL WHERE email = $1`,
+            [email]
+          );
+        }
+        res.status(200).json("User was removed from the project");
+      } else {
+        res.status(404).json("User is not in the project");
+      }
     } else {
       res.status(401).json("User is not in the project");
     }
@@ -703,7 +776,6 @@ app.get("/join_project/:token", async (req, res) => {
       console.log("Here 4");
 
       res.status(200).json({ message: "User was added to the project" });
-      res.redirect("http://localhost:3000/login");
     });
 
   } catch (e) {
