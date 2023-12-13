@@ -127,7 +127,7 @@ export default function SprintTable(projectID) {
             <div className={styles.table_margins}>
                 <div className={styles.sprint_row}>
                     {columns.map((column, colIndex) => (
-                        <div key={colIndex} className={styles.sprint_col}>
+                        <div key={colIndex} className={colIndex === 0 ? styles.sprint_col_left_edge : styles.sprint_col}>
                             <div className={styles.display_max}>
                                 {column.max > 0 && <div>
                                     {column.size}/{column.max}

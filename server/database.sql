@@ -4,7 +4,7 @@ CREATE TABLE projects(
     project_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     curr_sprint INT,
-    user_ids INT[]
+    user_emails VARCHAR(255)[]
 );
 
 CREATE TABLE tickets(

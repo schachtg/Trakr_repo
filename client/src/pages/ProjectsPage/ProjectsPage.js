@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import styles from './ProjectsPage.module.css';
 import RowItem from '../../components/RowItem/RowItem';
+import UserList from '../../components/UserList/UserList';
 import GButton from '../../components/GButton/GButton';
 import { mdiCrown, mdiPlus } from '@mdi/js';
 import PermissionsTable from '../../components/PermissionsTable/PermissionsTable';
@@ -54,14 +55,12 @@ export default function ProjectsPage() {
                     max: 0
                 },
             ]};
-            console.log("Creating from ProjectsPage.js")
             await fetch("http://localhost:5000/cols", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(defaultColumns)
             });
-            console.log("Created from ProjectsPage.js")
 
             setProjects([...projects, response]);
         } catch (err) {
@@ -198,6 +197,7 @@ export default function ProjectsPage() {
                         <div className={styles.invite_btn_container}>
                             <GButton icon={mdiPlus}>Invite User</GButton>
                         </div>
+                        <UserList project_id={openProject}/>
                     </div>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
                         <h1 className={styles.table__title}>Permissions</h1>

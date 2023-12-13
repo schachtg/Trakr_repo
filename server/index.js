@@ -335,12 +335,11 @@ app.post("/projects", authenticateToken, async (req, res) => {
       res.status(404).json("User not found");
       return;
     }
-    const user_id = checkUser.rows[0].user_id;
 
     // Create a new project (name can be duplicated but will have different id)
     const newProject = await pool.query(
-      `INSERT INTO projects (name, user_ids, curr_sprint) VALUES ($1, $2, $3) RETURNING *`,
-      [name, [user_id], curr_sprint]
+      `INSERT INTO projects (name, user_emails, curr_sprint) VALUES ($1, $2, $3) RETURNING *`,
+      [name, [email], curr_sprint]
     );
     res.status(201).json(newProject.rows[0]);
   } catch (err) {
@@ -354,20 +353,9 @@ app.get("/projects", authenticateToken, async (req, res) => {
   try {
     const email = req.user.email;
 
-    // Get user's id
-    const checkUser = await pool.query(
-      `SELECT * FROM user_info WHERE email = $1`,
-      [email]
-    );
-    if(checkUser.rowCount === 0) {
-      res.status(404).json("User not found");
-      return;
-    }
-    const user_id = checkUser.rows[0].user_id;
-
     const allProjects = await pool.query(
-      `SELECT * FROM projects WHERE user_ids = $1`,
-      [[user_id]]
+      `SELECT * FROM projects WHERE $1 = ANY(user_emails)`,
+      [email]
     );
     res.json(allProjects.rows);
   } catch (err) {
@@ -379,23 +367,10 @@ app.get("/projects/:project_id", authenticateToken, async (req, res) => {
   try {
     const email = req.user.email;
     const { project_id } = req.params;
-
-    // Get user's id
-    const checkUser = await pool.query(
-      `SELECT * FROM user_info WHERE email = $1`,
-      [email]
-    );
-    if(checkUser.rowCount === 0) {
-      res.status(404).json("User not found");
-      return;
-    }
-    const user_id = checkUser.rows[0].user_id;
-
     const project = await pool.query(
-      `SELECT * FROM projects WHERE user_ids = $1 AND project_id = $2`,
-      [[user_id], project_id]
+      `SELECT * FROM projects WHERE $1 = ANY(user_emails) AND project_id = $2`,
+      [email, project_id]
     );
-
     if (project.rowCount === 0) {
       res.status(404).json("Project not found");
       return;
@@ -412,25 +387,19 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
     const { project_id } = req.params;
     const email = req.user.email;
 
-    // Get user's id
-    const checkUser = await pool.query(
-      `SELECT * FROM user_info WHERE email = $1`,
-      [email]
-    );
-    if(checkUser.rowCount === 0) {
-      res.status(404).json("User not found");
-      return;
-    }
-    const user_id = checkUser.rows[0].user_id;
-
     // Check if user is in the project
     const user_list = await pool.query(
       `SELECT * FROM projects WHERE project_id = $1`,
       [project_id]
     );
 
+    await pool.query(
+      `UPDATE user_info SET open_project = NULL WHERE open_project = $1`,
+      [project_id]
+    );
 
-    if (user_list.rows[0].user_ids.includes(user_id)) {
+
+    if (user_list.rows[0].user_emails.includes(email)) {
       // Deletes everything referencing the project
       const client = await pool.connect();
 
@@ -464,12 +433,9 @@ app.post("/cols", authenticateToken, async (req, res) => {
   const email = req.user.email;
 
   try {
-    console.log("trying");
     if (columns.length > 0) {
-      console.log("Columns has size");
       let oldCol = {rows:[{col_id: -1}]};
       for (let i = columns.length-1; i >= 0; i--) {
-        console.log("In loop");
         oldCol = await pool.query(
           `INSERT INTO cols (name, max, project_id, size, next_col) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
           [columns[i].name, columns[i].max, columns[i].project_id, columns[i].size, oldCol.rows[0].col_id]
@@ -480,7 +446,6 @@ app.post("/cols", authenticateToken, async (req, res) => {
           return;
         }
       }
-      console.log("Out of loop");
 
       res.status(201).json("Columns were added");
     } else {
@@ -541,24 +506,13 @@ app.put("/cols", authenticateToken, async (req, res) => {
     const { column_id, project_id, name, max, size, next_col } = req.body;
     const email = req.user.email;
 
-    // Get user's id
-    const checkUser = await pool.query(
-      `SELECT * FROM user_info WHERE email = $1`,
-      [email]
-    );
-    if(checkUser.rowCount === 0) {
-      res.status(404).json("User not found");
-      return;
-    }
-    const user_id = checkUser.rows[0].user_id;
-
     // Check if user is in the project
     const user_list = await pool.query(
       `SELECT * FROM projects WHERE project_id = $1`,
       [project_id]
     );
 
-    if (user_list.rows[0].user_ids.includes(user_id)) {
+    if (user_list.rows[0].user_emails.includes(email)) {
       // Get old column
       const oldColumn = await pool.query(
         `SELECT * FROM cols WHERE project_id = $1 AND col_id = $2`,
@@ -597,24 +551,13 @@ app.delete("/cols", authenticateToken, async (req, res) => {
     const { column_id, project_id } = req.body;
     const email = req.user.email;
 
-    // Get user's id
-    const checkUser = await pool.query(
-      `SELECT * FROM user_info WHERE email = $1`,
-      [email]
-    );
-    if(checkUser.rowCount === 0) {
-      res.status(404).json("User not found");
-      return;
-    }
-    const user_id = checkUser.rows[0].user_id;
-
     // Check if user is in the project
     const user_list = await pool.query(
       `SELECT * FROM projects WHERE project_id = $1`,
       [project_id]
     );
 
-    if (user_list.rows[0].user_ids.includes(user_id)) {
+    if (user_list.rows[0].user_emails.includes(email)) {
       try {
         const currCol = await pool.query(
           `SELECT * FROM cols WHERE project_id = $1 AND col_id = $2`,
@@ -679,6 +622,91 @@ app.post("/forgot_password", async (req, res) => {
     .catch((err) => res.status(500).send(err.message));
   } catch (err) {
     console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+app.post("/invite", authenticateToken, async (req, res) => {
+  try {
+    const { recipient_email, project_id } = req.body;
+    const { email } = req.user;
+
+    // Check if project exists
+    const project = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+    if (project.rowCount === 0) {
+      res.status(404).json({ message: "Project not found" });
+      return;
+    }
+
+    // Check if user is in the project
+    if (!project.rows[0].user_emails.includes(email)) {
+      res.status(401).json({ message: "User is not in the project" });
+      return;
+    }
+
+    // Check if recipient is already in the project
+    if (project.rows[0].user_emails.includes(recipient_email)) {
+      res.status(409).json({ message: "User is already in the project" });
+      return;
+    }
+
+    // Code to send email
+    sendInviteEmail(req.body)
+    .then((response) => res.status(200).json({message: response.message}))
+    .catch((err) => res.status(500).send(err.message));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+app.get("/join_project/:token", async (req, res) => {
+  console.log("Does this even run?")
+  try {
+    const { token } = req.params;
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
+      if (err) {
+        res.status(401).json({ message: "Invalid token" });
+        return;
+      }
+
+      console.log("Here 1");
+      const { project_id, email } = decodedToken;
+      console.log(project_id, email);
+
+      // Check if project exists
+      const project = await pool.query(
+        `SELECT * FROM projects WHERE project_id = $1`,
+        [project_id]
+      );
+      if (project.rowCount === 0) {
+        res.status(404).json({ message: "Project not found" });
+        return;
+      }
+      console.log("Here 2");
+
+      // Check if user is already in the project
+      if (project.rows[0].user_emails.includes(email)) {
+        res.status(409).json({ message: "User is already in the project" });
+        return;
+      }
+      console.log("Here 3");
+
+      // Add user to project
+      await pool.query(
+        `UPDATE projects SET user_emails = $1 WHERE project_id = $2`,
+        [[...project.rows[0].user_emails, email], project_id]
+      );
+      console.log("Here 4");
+
+      res.status(200).json({ message: "User was added to the project" });
+      res.redirect("http://localhost:3000/login");
+    });
+
+  } catch (e) {
     res.status(500).send("Server error");
   }
 });
@@ -748,6 +776,56 @@ function sendRecoveryEmail({ recipient_email, otp }) {
   
 </body>
 </html>`,
+    };
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log(error);
+        return reject({ message: `An error has occured` });
+      }
+      return resolve({ message: "Email sent succesfuly" });
+    });
+  });
+}
+
+function sendInviteEmail({recipient_email, project_id}) {
+  return new Promise(async (resolve, reject) => {
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.MY_EMAIL,
+        pass: process.env.MY_EMAIL_PASSWORD,
+      },
+    });
+
+    // Get project name
+    const project = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (project.rowCount === 0) {
+      return reject({ message: `Project not found` });
+    }
+
+    const projectName = project.rows[0].name;
+
+    const emailToken = jwt.sign(
+      {
+        project_id, email: recipient_email 
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d"
+      }
+    );
+    const url = `http://localhost:5000/join_project/${emailToken}`;
+
+    // Template for email
+    const mail_configs = {
+      from: process.env.MY_EMAIL,
+      to: recipient_email,
+      subject: "Trakr Project Invite",
+      html: `Please click this link to join the project ${projectName}: <a href="${url}">${url}</a>`
     };
     transporter.sendMail(mail_configs, function (error, info) {
       if (error) {
