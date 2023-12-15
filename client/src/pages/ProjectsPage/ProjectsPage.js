@@ -163,9 +163,6 @@ export default function ProjectsPage() {
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
                         <h1 className={styles.table__title}>Permissions</h1>
                         <PermissionsTable />
-                        <div className={styles.invite_btn_container}>
-                            <GButton icon={mdiPlus}>Create Role</GButton>
-                        </div>
                     </div>
                 </div>
                 <div className={styles.delete_proj_btn}>

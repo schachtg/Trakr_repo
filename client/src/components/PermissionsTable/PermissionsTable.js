@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {Fragment, useState} from 'react';
 import styles from './PermissionsTable.module.css';
 import { mdiPlus, mdiPencil, mdiDelete, mdiContentSave } from '@mdi/js';
 import Icon from '@mdi/react';
@@ -14,10 +14,8 @@ let defaultPermissions = [
     "End sprint",
     "Edit columns",
     "Invite users",
-    "Change user roles",
-    "Create roles",
-    "Delete roles",
-    "Edit role permissions",
+    "Remove users",
+    "Edit roles",
     "Delete project",
 ]
 
@@ -110,86 +108,90 @@ export default function PermissionsTable() {
     }
 
     return (
-        <div className={styles.table__container}>
-            <table className={styles.table}>
-            <thead>
-                <tr>
-                    <th className={styles.th}>Roles</th>
-                    {permissions.map((permission, permIndex) => {return(
-                        <th key={permIndex} className={styles.th}>{permission}</th>
-                    );})}
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Owner:</td>
-                    {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
-                        <td key={innerPermIndex}>
-                            <input disabled type="checkbox" value={true} checked={true} onChange={() => {}} />
-                        </td>
-                    );})}
-                </tr>
-                <tr>
-                    <td>Default:</td>
-                    {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
-                        <td key={innerPermIndex}>
-                            <input disabled type="checkbox" value={false} checked={false} onChange={() => {}} />
-                        </td>
-                    );})}
-                </tr>
-                {roles.map((role, roleIndex) => {return(
-                    <tr key={roleIndex}>
-                        <td onClick={() => handleSelectRole(role)} className={styles.selectable_role}><Icon path={mdiPencil} size={0.8}></Icon> {role.name}:</td>
+        <Fragment>
+            <div className={styles.table__container}>
+                <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th className={styles.th}>Roles</th>
+                        {permissions.map((permission, permIndex) => {return(
+                            <th key={permIndex} className={styles.th}>{permission}</th>
+                        );})}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Admin:</td>
                         {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
                             <td key={innerPermIndex}>
-                                <input type="checkbox" value={roles[roleIndex].permissions[innerPermIndex]} checked={roles[roleIndex].permissions[innerPermIndex]} onChange={(event) => handleChangeChecked(event, roleIndex, innerPermIndex)} />
+                                <input disabled type="checkbox" value={true} checked={true} onChange={() => {}} />
                             </td>
                         );})}
                     </tr>
-                );})}
-            </tbody>
-            </table>
-            <GDialog fitContent title="Edit Role" openDialog={openDialog} setOpenDialog={setOpenDialog}>
-                <div className={styles.role_input}>
-                    <input type="text" value={roles[editRoleIndex].name} onChange={handleNameChange}/>
-                </div>
-                <div className={styles.button_row}>
-                    <GButton
-                        icon={mdiContentSave}
-                        type="submit"
-                    >
-                        Save
-                    </GButton>
-                    <GButton
-                        icon={mdiDelete}
-                        onClick={handleDeleteWarning}
-                        type="button"
-                        warning
-                    >
-                        Delete
-                    </GButton>
-                </div>
-            </GDialog>
-            <DangerDialog
-                title="Delete role"
-                openDialog={deleteDialog}
-                buttons={[
-                    <GButton
-                        onClick={() => setDeleteDialog(false)}
-                        type="button"
-                    >
-                        Cancel
-                    </GButton>,
-                    <GButton
-                        onClick={handleDeleteRole}
-                        type="button"
-                        warning
-                    >
-                        Delete
-                    </GButton>
-                ]}
-            >
-            </DangerDialog>
-        </div>
+                    <tr>
+                        <td>Default:</td>
+                        {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
+                            <td key={innerPermIndex}>
+                                <input disabled type="checkbox" value={false} checked={false} onChange={() => {}} />
+                            </td>
+                        );})}
+                    </tr>
+                    {roles.map((role, roleIndex) => {return(
+                        <tr key={roleIndex}>
+                            <td onClick={() => handleSelectRole(role)} className={styles.selectable_role}><Icon path={mdiPencil} size={0.8}></Icon> {role.name}:</td>
+                            {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
+                                <td key={innerPermIndex}>
+                                    <input type="checkbox" value={roles[roleIndex].permissions[innerPermIndex]} checked={roles[roleIndex].permissions[innerPermIndex]} onChange={(event) => handleChangeChecked(event, roleIndex, innerPermIndex)} />
+                                </td>
+                            );})}
+                        </tr>
+                    );})}
+                </tbody>
+                </table>
+                <GDialog fitContent title="Edit Role" openDialog={openDialog} setOpenDialog={setOpenDialog}>
+                    <div className={styles.role_input}>
+                        <input type="text" value={roles[editRoleIndex].name} onChange={handleNameChange}/>
+                    </div>
+                    <div className={styles.button_row}>
+                        <GButton
+                            icon={mdiContentSave}
+                            type="submit"
+                        >
+                            Save
+                        </GButton>
+                        <GButton
+                            icon={mdiDelete}
+                            onClick={handleDeleteWarning}
+                            type="button"
+                            warning
+                        >
+                            Delete
+                        </GButton>
+                    </div>
+                </GDialog>
+                <DangerDialog
+                    title="Delete role"
+                    openDialog={deleteDialog}
+                    buttons={[
+                        <GButton
+                            onClick={() => setDeleteDialog(false)}
+                            type="button"
+                        >
+                            Cancel
+                        </GButton>,
+                        <GButton
+                            onClick={handleDeleteRole}
+                            type="button"
+                            warning
+                        >
+                            Delete
+                        </GButton>
+                    ]}
+                >
+                    Are you sure you want to delete the role {roles[editRoleIndex].name}?
+                </DangerDialog>
+            </div>
+            <GButton centered icon={mdiPlus}>Create Role</GButton>
+        </Fragment>
     );
 }

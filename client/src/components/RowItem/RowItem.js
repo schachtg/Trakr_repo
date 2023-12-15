@@ -9,7 +9,6 @@ export default function RowItem({title, subtitle, prependIcon, appendIcon, iconS
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
-    // Row item update disabled property
     const handleClickRow = () => {
         onClick && onClick();
         childRows.length > 0 && setOpenRow(!openRow);
