@@ -326,8 +326,8 @@ export default function ColumnOrder(project_id) {
 
     const openAddColumn = () => {
         setNewColumn({name: "", max: 0});
-        handleNameChange({target: {value: ""}});
-        handleMaxChange({target: {value: 0}});
+        setAddNameErrorMsg("Must not be empty");
+        setAddMaxErrorMsg("");
         setOpenDialog(true);
     }
 
@@ -373,11 +373,13 @@ export default function ColumnOrder(project_id) {
             <GDialog fitContent title="Add Column" openDialog={openDialog} setOpenDialog={setOpenDialog}>
                 <form onSubmit={addColumn}>
                     <div className={styles.form_section}>
-                        <input className={styles.add_input} type="text" value={newColumn.name} onChange={handleNameChange}/>
+                        <label htmlFor="name">Name:</label>
+                        <input className={styles.add_input} type="text" id="name" name="name" value={newColumn.name} onChange={handleNameChange}/>
                         {addNameErrorMsg && <div className={styles.error_message}>{addNameErrorMsg}</div>}
                     </div>
                     <div className={styles.form_section}>
-                        <input className={styles.add_input} type="text" value={newColumn.max} onChange={handleMaxChange}/>
+                        <label htmlFor="max">Max:</label>
+                        <input className={styles.add_input} type="text" id="max" name="max" value={newColumn.max} onChange={handleMaxChange}/>
                         {addMaxErrorMsg && <div className={styles.error_message}>{addMaxErrorMsg}</div>}
                     </div>
                     <div className={styles.button_row}>

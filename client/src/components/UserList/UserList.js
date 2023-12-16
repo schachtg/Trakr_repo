@@ -1,6 +1,6 @@
 import React, {Fragment, useState, useEffect} from 'react';
 import styles from './UserList.module.css';
-import { mdiDelete, mdiPlus, mdiContentSave } from '@mdi/js';
+import { mdiDelete, mdiPlus, mdiAccountPlus } from '@mdi/js';
 
 // Components
 import GButton from '../GButton/GButton';
@@ -14,6 +14,7 @@ export default function UserList({project_id}) {
     const [openRemoveWarning, setOpenRemoveWarning] = useState(false);
     const [removingUser, setRemovingUser] = useState(0);
     const [inviteEmail, setInviteEmail] = useState("");
+    const [emailErrorMessage, setEmailErrorMessage] = useState("");
 
     const getUsersFromDB = async event => {
         try{
@@ -43,7 +44,7 @@ export default function UserList({project_id}) {
                 body: JSON.stringify(body)
             });
             if (response.status === 200) {
-                alert("User invited!");
+                alert(`${recipient_email} has been invited!`);
                 return;
             }
             alert("An error occurred.");
@@ -71,6 +72,33 @@ export default function UserList({project_id}) {
             alert("An error occurred.");
         } catch (err) {
             console.error(err.message);
+        }
+    }
+
+    const handleOpenInviteDialog = () => {
+        setInviteEmail("");
+        setEmailErrorMessage("Must not be empty");
+        setInviteDialogOpen(true);
+    }
+
+    const handleInviteUser = async (inviteEmail) => {
+        addUser(inviteEmail);
+        setInviteDialogOpen(false);
+    }
+
+    const handleSetInviteEmail = (event) => {
+        const value = event.target.value;
+        setInviteEmail(value);
+        if (value.length >= 200) {
+            setEmailErrorMessage("Must be less than 200 characters");
+        } else if (value.length === 0) {
+            setEmailErrorMessage("Must not be empty");
+        } else if (value.includes("@") === false) {
+            setEmailErrorMessage("Must be a valid email");
+        } else if (users.filter((user) => user.email === value).length >= 1) {
+            setEmailErrorMessage("Must be unique");
+        } else {
+            setEmailErrorMessage("");
         }
     }
 
@@ -105,12 +133,29 @@ export default function UserList({project_id}) {
                     />
                 ))}
             </div>
-            <GButton icon={mdiPlus} centered onClick={() => setInviteDialogOpen(true)}>Invite User</GButton>
+            <GButton icon={mdiPlus} centered onClick={handleOpenInviteDialog}>Invite User</GButton>
             <GDialog fitContent title="Invite User" openDialog={inviteDialogOpen} setOpenDialog={setInviteDialogOpen}>
-                <div className={styles.dialogContent}>
-                    <label htmlFor="email">Email</label>
-                    <input type="text" id="email" name="email" placeholder="Email" onChange={(event) => setInviteEmail(event.target.value)}/>
-                    <GButton icon={mdiContentSave} onClick={() => addUser(inviteEmail)}>Invite</GButton>
+                <label htmlFor="email">Email:</label>
+                <div className={styles.form_section}>
+                    <input className={styles.dark_input} type="text" id="email" name="email" onChange={handleSetInviteEmail}/>
+                    {emailErrorMessage && <div className={styles.error_message}>{emailErrorMessage}</div>}
+                </div>
+                <div className={styles.button_row}>
+                    <GButton
+                        onClick={() => setInviteDialogOpen(false)}
+                        type="button"
+                        warning
+                        alternate
+                    >
+                        Cancel
+                    </GButton>
+                    <GButton
+                        icon={mdiAccountPlus}
+                        onClick={() => handleInviteUser(inviteEmail)}
+                        disabled={emailErrorMessage.length > 0}
+                    >
+                        Invite
+                    </GButton>
                 </div>
             </GDialog>
             <DangerDialog

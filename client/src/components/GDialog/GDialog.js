@@ -34,7 +34,7 @@ export default function GDialog({title, openDialog, setOpenDialog, buttons=[], f
                         <h1 className={styles.long_text}>{title}</h1>
                         <GButton
                             icon={mdiCloseCircle}
-                            transparent={true}
+                            transparent
                             iconSize={1.7}
                             className={styles.close_btn}
                             onClick={onClickClose}

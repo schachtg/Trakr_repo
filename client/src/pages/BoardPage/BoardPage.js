@@ -108,7 +108,7 @@ export default function BoardPage() {
                 </GDialog>
             </div>}
             <DangerDialog
-                title="End sprint"
+                title="End Sprint"
                 openDialog={nextSprintDialog}
                 buttons={[
                     <GButton

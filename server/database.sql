@@ -46,7 +46,8 @@ CREATE TABLE roles(
     role_id SERIAL PRIMARY KEY,
     project_id INT REFERENCES projects(project_id),
     name VARCHAR(255) NOT NULL,
-    permissions BOOLEAN[]
+    permissions BOOLEAN[],
+    user_emails VARCHAR(255)[]
 );
 
 -- Set up public user

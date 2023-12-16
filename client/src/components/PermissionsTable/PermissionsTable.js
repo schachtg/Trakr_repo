@@ -19,74 +19,80 @@ let defaultPermissions = [
     "Delete project",
 ]
 
-let defaultRoles = [
-    {
-        id: 0,
-        name: "Role 1",
-        permissions: [
-            true,
-            true,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-        ],
-    },
-    {
-        id: 1,
-        name: "Role 2",
-        permissions: [
-            true,
-            false,
-            true,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-        ],
-    },
-    {
-        id: 2,
-        name: "Role 3",
-        permissions: [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-        ],
-    },
-]
+// let defaultRoles = [
+//     {
+//         id: 0,
+//         name: "Role 1",
+//         permissions: [
+//             true,
+//             true,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//         ],
+//     },
+//     {
+//         id: 1,
+//         name: "Role 2",
+//         permissions: [
+//             true,
+//             false,
+//             true,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//         ],
+//     },
+//     {
+//         id: 2,
+//         name: "Role 3",
+//         permissions: [
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//             false,
+//         ],
+//     },
+// ]
 
 export default function PermissionsTable() {
-    const [openDialog, setOpenDialog] = useState(false);
+    const [openEditDialog, setOpenEditDialog] = useState(false);
     const [editRoleIndex, setEditRoleIndex] = useState(0);
     const [permissions] = useState(defaultPermissions);
-    const [roles, setRoles] = useState(defaultRoles);
+    const [roles, setRoles] = useState([]);
     const [deleteDialog, setDeleteDialog] = useState(false);
+    const [createRoleDialog, setCreateRoleDialog] = useState(false);
+    const [newRoleName, setNewRoleName] = useState("");
+    const [newRoleErrorMessage, setNewRoleErrorMessage] = useState("");
 
 
     const handleSelectRole = (role) => {
         setEditRoleIndex(roles.indexOf(role));
-        setOpenDialog(true);
+        setNewRoleName(role.name);
+        setNewRoleErrorMessage("");
+        setOpenEditDialog(true);
     }
 
-    const handleNameChange = (event) => {
+    const handleSaveNewName = () => {
         const updatedRoles = [...roles];
-        updatedRoles[editRoleIndex].name = event.target.value;
+        updatedRoles[editRoleIndex].name = newRoleName;
         setRoles(updatedRoles);
+        setOpenEditDialog(false);
     }
 
     const handleChangeChecked = (event, roleIndex, permissionIndex) => {
@@ -102,9 +108,40 @@ export default function PermissionsTable() {
     const handleDeleteRole = () => {
         const updatedRoles = [...roles];
         updatedRoles.splice(editRoleIndex, 1);
+        setEditRoleIndex(0);
         setRoles(updatedRoles);
         setDeleteDialog(false);
-        setOpenDialog(false);
+        setOpenEditDialog(false);
+    }
+
+    const handleOpenCreateRole = async (inviteEmail) => {
+        setNewRoleName("");
+        setNewRoleErrorMessage("Must not be empty");
+        setCreateRoleDialog(true);
+    }
+
+    const handleCreateRole = () => {
+        const updatedRoles = [...roles];
+        updatedRoles.push({
+            name: newRoleName,
+            permissions: [...Array(permissions.length)].map((e) => false),
+        });
+        setRoles(updatedRoles);
+        setCreateRoleDialog(false);
+    }
+
+    const handleSetNewRoleName = (event) => {
+        const value = event.target.value;
+        setNewRoleName(value);
+        if (value.length >= 30) {
+            setNewRoleErrorMessage("Must be less than 30 characters");
+        } else if (value.length === 0) {
+            setNewRoleErrorMessage("Must not be empty");
+        } else if (roles.filter((role) => role.name === value).length >= 1) {
+            setNewRoleErrorMessage("Must be unique");
+        } else {
+            setNewRoleErrorMessage("");
+        }
     }
 
     return (
@@ -128,14 +165,6 @@ export default function PermissionsTable() {
                             </td>
                         );})}
                     </tr>
-                    <tr>
-                        <td>Default:</td>
-                        {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
-                            <td key={innerPermIndex}>
-                                <input disabled type="checkbox" value={false} checked={false} onChange={() => {}} />
-                            </td>
-                        );})}
-                    </tr>
                     {roles.map((role, roleIndex) => {return(
                         <tr key={roleIndex}>
                             <td onClick={() => handleSelectRole(role)} className={styles.selectable_role}><Icon path={mdiPencil} size={0.8}></Icon> {role.name}:</td>
@@ -148,14 +177,18 @@ export default function PermissionsTable() {
                     );})}
                 </tbody>
                 </table>
-                <GDialog fitContent title="Edit Role" openDialog={openDialog} setOpenDialog={setOpenDialog}>
-                    <div className={styles.role_input}>
-                        <input type="text" value={roles[editRoleIndex].name} onChange={handleNameChange}/>
-                    </div>
+                <GDialog fitContent title="Edit Role" openDialog={openEditDialog} setOpenDialog={setOpenEditDialog}>
+                    <label htmlFor="editName">Name:</label>
+                    {roles.length > 0 && <div className={styles.form_section}>
+                        <input className={styles.dark_input} type="text" id="editName" name="editName" value={newRoleName} onChange={handleSetNewRoleName}/>
+                        {newRoleErrorMessage && <div className={styles.error_message}>{newRoleErrorMessage}</div>}
+                    </div>}
                     <div className={styles.button_row}>
                         <GButton
                             icon={mdiContentSave}
                             type="submit"
+                            onClick={handleSaveNewName}
+                            disabled={newRoleErrorMessage.length > 0}
                         >
                             Save
                         </GButton>
@@ -169,7 +202,7 @@ export default function PermissionsTable() {
                         </GButton>
                     </div>
                 </GDialog>
-                <DangerDialog
+                {roles.length > 0 && <DangerDialog
                     title="Delete role"
                     openDialog={deleteDialog}
                     buttons={[
@@ -189,9 +222,33 @@ export default function PermissionsTable() {
                     ]}
                 >
                     Are you sure you want to delete the role {roles[editRoleIndex].name}?
-                </DangerDialog>
+                </DangerDialog>}
             </div>
-            <GButton centered icon={mdiPlus}>Create Role</GButton>
+            <GButton centered icon={mdiPlus} onClick={handleOpenCreateRole}>Create Role</GButton>
+            <GDialog fitContent title="Create Role" openDialog={createRoleDialog} setOpenDialog={setCreateRoleDialog}>
+                <label htmlFor="name">Name:</label>
+                <div className={styles.form_section}>
+                    <input className={styles.dark_input} type="text" id="name" name="name" onChange={handleSetNewRoleName}/>
+                    {newRoleErrorMessage && <div className={styles.error_message}>{newRoleErrorMessage}</div>}
+                </div>
+                <div className={styles.button_row}>
+                    <GButton
+                        onClick={() => setCreateRoleDialog(false)}
+                        type="button"
+                        warning
+                        alternate
+                    >
+                        Cancel
+                    </GButton>
+                    <GButton
+                        icon={mdiContentSave}
+                        onClick={handleCreateRole}
+                        disabled={newRoleErrorMessage.length > 0}
+                    >
+                        Save
+                    </GButton>
+                </div>
+            </GDialog>
         </Fragment>
     );
 }
