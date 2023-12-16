@@ -1,4 +1,4 @@
-import React, {Fragment, useState} from 'react';
+import React, {Fragment, useState, useEffect} from 'react';
 import styles from './PermissionsTable.module.css';
 import { mdiPlus, mdiPencil, mdiDelete, mdiContentSave } from '@mdi/js';
 import Icon from '@mdi/react';
@@ -8,7 +8,7 @@ import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
 import DangerDialog from '../../components/DangerDialog/DangerDialog';
 
-let defaultPermissions = [
+const permissions = [
     "Edit tickets",
     "Edit epics",
     "End sprint",
@@ -19,61 +19,9 @@ let defaultPermissions = [
     "Delete project",
 ]
 
-// let defaultRoles = [
-//     {
-//         id: 0,
-//         name: "Role 1",
-//         permissions: [
-//             true,
-//             true,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//         ],
-//     },
-//     {
-//         id: 1,
-//         name: "Role 2",
-//         permissions: [
-//             true,
-//             false,
-//             true,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//         ],
-//     },
-//     {
-//         id: 2,
-//         name: "Role 3",
-//         permissions: [
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//             false,
-//         ],
-//     },
-// ]
-
-export default function PermissionsTable() {
+export default function PermissionsTable({project_id}) {
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [editRoleIndex, setEditRoleIndex] = useState(0);
-    const [permissions] = useState(defaultPermissions);
     const [roles, setRoles] = useState([]);
     const [deleteDialog, setDeleteDialog] = useState(false);
     const [createRoleDialog, setCreateRoleDialog] = useState(false);
@@ -88,17 +36,41 @@ export default function PermissionsTable() {
         setOpenEditDialog(true);
     }
 
-    const handleSaveNewName = () => {
+    const handleSaveNewName = async () => {
         const updatedRoles = [...roles];
         updatedRoles[editRoleIndex].name = newRoleName;
         setRoles(updatedRoles);
         setOpenEditDialog(false);
+        await fetch("http://localhost:5000/roles", {
+            method : "PUT",
+            headers: {"Content-Type": "application/json"},
+            credentials: "include",
+            body: JSON.stringify({
+                role_id: updatedRoles[editRoleIndex].role_id,
+                project_id: project_id,
+                name: newRoleName,
+                permissions: updatedRoles[editRoleIndex].permissions,
+                user_emails: updatedRoles[editRoleIndex].user_emails
+            })
+        });
     }
 
-    const handleChangeChecked = (event, roleIndex, permissionIndex) => {
+    const handleChangeChecked = async (event, roleIndex, permissionIndex) => {
         const updatedRoles = [...roles];
         updatedRoles[roleIndex].permissions[permissionIndex] = event.target.checked;
         setRoles(updatedRoles);
+        await fetch("http://localhost:5000/roles", {
+            method : "PUT",
+            headers: {"Content-Type": "application/json"},
+            credentials: "include",
+            body: JSON.stringify({
+                role_id: updatedRoles[roleIndex].role_id,
+                project_id: project_id,
+                name: updatedRoles[roleIndex].name,
+                permissions: updatedRoles[roleIndex].permissions,
+                user_emails: updatedRoles[roleIndex].user_emails
+            })
+        });
     }
 
     const handleDeleteWarning = () => {
@@ -112,6 +84,15 @@ export default function PermissionsTable() {
         setRoles(updatedRoles);
         setDeleteDialog(false);
         setOpenEditDialog(false);
+        fetch("http://localhost:5000/roles", {
+            method : "DELETE",
+            headers: {"Content-Type": "application/json"},
+            credentials: "include",
+            body: JSON.stringify({
+                role_id: roles[editRoleIndex].role_id,
+                project_id: project_id,
+            })
+        });
     }
 
     const handleOpenCreateRole = async (inviteEmail) => {
@@ -120,14 +101,22 @@ export default function PermissionsTable() {
         setCreateRoleDialog(true);
     }
 
-    const handleCreateRole = () => {
+    const handleCreateRole = async () => {
         const updatedRoles = [...roles];
-        updatedRoles.push({
+        const newRole = {
             name: newRoleName,
             permissions: [...Array(permissions.length)].map((e) => false),
-        });
+        };
+        updatedRoles.push(newRole);
         setRoles(updatedRoles);
         setCreateRoleDialog(false);
+        await fetch("http://localhost:5000/roles", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            credentials: "include",
+            body: JSON.stringify({roles: [newRole], project_id: project_id })
+        });
+        window.location.reload();
     }
 
     const handleSetNewRoleName = (event) => {
@@ -144,6 +133,27 @@ export default function PermissionsTable() {
         }
     }
 
+    const getRolesFromDB = async () => {
+        try{
+            const response = await fetch(`http://localhost:5000/roles/${project_id}`, {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include"
+            });
+            const data = await response.json();
+            return data;
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    useEffect(() => {
+        getRolesFromDB()
+            .then((data) => {
+                setRoles(data);
+            });
+    }, []);
+
     return (
         <Fragment>
             <div className={styles.table__container}>
@@ -157,20 +167,24 @@ export default function PermissionsTable() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Admin:</td>
-                        {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
-                            <td key={innerPermIndex}>
-                                <input disabled type="checkbox" value={true} checked={true} onChange={() => {}} />
-                            </td>
-                        );})}
-                    </tr>
                     {roles.map((role, roleIndex) => {return(
                         <tr key={roleIndex}>
-                            <td onClick={() => handleSelectRole(role)} className={styles.selectable_role}><Icon path={mdiPencil} size={0.8}></Icon> {role.name}:</td>
-                            {[...Array(permissions.length)].map((e, innerPermIndex) => { return(
-                                <td key={innerPermIndex}>
-                                    <input type="checkbox" value={roles[roleIndex].permissions[innerPermIndex]} checked={roles[roleIndex].permissions[innerPermIndex]} onChange={(event) => handleChangeChecked(event, roleIndex, innerPermIndex)} />
+                            <td
+                                onClick={role.name === "Admin" || role.name === "Default" ? () => {} : () => handleSelectRole(role)}
+                                className={role.name === "Admin" || role.name === "Default" ? styles.unselectable_role : styles.selectable_role}
+                            >
+                                    {(role.name !== "Admin" && role.name !== "Default") && <Icon path={mdiPencil} size={0.8}></Icon>}
+                                    {role.name}:
+                            </td>
+                            {[...Array(permissions.length)].map((e, permIndex) => { return(
+                                <td key={permIndex}>
+                                    <input
+                                        disabled={role.name === "Admin"}
+                                        type="checkbox"
+                                        value={roles[roleIndex].permissions[permIndex]}
+                                        checked={roles[roleIndex].permissions[permIndex]}
+                                        onChange={(event) => handleChangeChecked(event, roleIndex, permIndex)}
+                                    />
                                 </td>
                             );})}
                         </tr>

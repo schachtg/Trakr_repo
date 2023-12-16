@@ -676,6 +676,97 @@ app.delete("/cols", authenticateToken, async (req, res) => {
   }
 });
 
+app.post("/roles", authenticateToken, async (req, res) => {
+  const { roles, project_id } = req.body;
+  const email = req.user.email;
+
+  try {
+    if (roles.length > 0) {
+      for (let i = 0; i < roles.length; i++) {
+        const newRole = await pool.query(
+          `INSERT INTO roles (name, permissions, project_id) VALUES ($1, $2, $3) RETURNING *`,
+          [roles[i].name, roles[i].permissions, project_id]
+        );
+
+        if(newRole.rowCount === 0) {
+          res.status(201).json("An error occured");
+          return;
+        }
+      }
+
+      res.status(201).json("Roles were added");
+    } else {
+      res.status(200).json("No roles were added");
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get("/roles/:project_id", authenticateToken, async (req, res) => {
+  try {
+    const { project_id } = req.params;
+    const roles = await pool.query(
+      `SELECT * FROM roles WHERE project_id = $1 ORDER BY name ASC`,
+      [project_id]
+    );
+    res.json(roles.rows);
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.put("/roles", authenticateToken, async (req, res) => {
+  try {
+    const { role_id, project_id, name, permissions, user_emails } = req.body;
+    const email = req.user.email;
+
+    // Check if user is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (user_list.rows[0].user_emails.includes(email)) {
+      const updatedRole = await pool.query(
+        `UPDATE roles SET name = $1, permissions = $2, user_emails = $3 WHERE role_id = $4 RETURNING *`,
+        [name, permissions, user_emails, role_id]
+      );
+      res.status(200).json(updatedRole.rows[0]);
+    } else {
+      res.status(401).json("User is not in the project");
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+// delete a role
+app.delete("/roles", authenticateToken, async (req, res) => {
+  try {
+    const { role_id, project_id } = req.body;
+    const email = req.user.email;
+
+    // Check if user is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (user_list.rows[0].user_emails.includes(email)) {
+      await pool.query(
+        `DELETE FROM roles WHERE role_id = $1`,
+        [role_id]
+      );
+      res.status(200).json("Role was deleted!");
+    } else {
+      res.status(401).json("User is not in the project");
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 app.post("/forgot_password", async (req, res) => {
   try {
     const tableName = "user_info";

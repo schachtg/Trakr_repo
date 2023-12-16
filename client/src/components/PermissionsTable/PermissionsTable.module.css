@@ -49,6 +49,10 @@
     cursor: pointer;
 }
 
+.unselectable_role:hover {
+    color: white;
+}
+
 .button_row {
     display: flex;
     flex-direction: row;

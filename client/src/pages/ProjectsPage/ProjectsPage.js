@@ -55,11 +55,35 @@ export default function ProjectsPage() {
                     max: 0
                 },
             ]};
+
+            const permissionsLength = 8;
+            const defaultRoles = { roles: [
+                    {
+                        name: "Admin",
+                        permissions: [...Array(permissionsLength)].map((e) => true),
+                        user_emails: []
+                    },
+                    {
+                        name: "Default",
+                        permissions: [...Array(permissionsLength)].map((e) => false),
+                        user_emails: []
+                    },
+                ],
+                project_id: response.project_id
+            };
+
             await fetch("http://localhost:5000/cols", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(defaultColumns)
+            });
+
+            await fetch("http://localhost:5000/roles", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(defaultRoles)
             });
 
             setProjects([...projects, response]);
@@ -162,7 +186,7 @@ export default function ProjectsPage() {
                     </div>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
                         <h1 className={styles.table__title}>Permissions</h1>
-                        <PermissionsTable />
+                        <PermissionsTable project_id={openProject}/>
                     </div>
                 </div>
                 <div className={styles.delete_proj_btn}>
