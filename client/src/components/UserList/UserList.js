@@ -8,7 +8,7 @@ import GDialog from '../GDialog/GDialog';
 import DangerDialog from '../DangerDialog/DangerDialog';
 import RowItem from '../RowItem/RowItem';
 
-export default function UserList({project_id}) {
+export default function UserList({roles=[], setRoles, project_id}) {
     const [users, setUsers] = useState([]);
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
     const [openRemoveWarning, setOpenRemoveWarning] = useState(false);
@@ -96,7 +96,7 @@ export default function UserList({project_id}) {
         } else if (value.includes("@") === false) {
             setEmailErrorMessage("Must be a valid email");
         } else if (users.filter((user) => user.email === value).length >= 1) {
-            setEmailErrorMessage("Must be unique");
+            setEmailErrorMessage("Must be an email not in the project");
         } else {
             setEmailErrorMessage("");
         }
@@ -120,7 +120,12 @@ export default function UserList({project_id}) {
                         childRows={[
                             {
                                 title: "Change Role",
-                                disabled: true,
+                                childRows: roles.map((role, index) => ({
+                                    title: role.name,
+                                    onClick: () => {
+                                        console.log(`Change role to ${role.name}`);
+                                    }
+                                }))
                             },
                             {
                                 title: "Remove User",

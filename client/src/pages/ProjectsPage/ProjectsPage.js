@@ -12,6 +12,7 @@ export default function ProjectsPage() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [projects, setProjects] = useState([]); // [ {project_id: 1, name: "Project 1"}, {project_id: 2, name: "Project 2"}, ...
     const [openProject, setOpenProject] = useState(null);
+    const [roles, setRoles] = useState([]);
     let smallScreen = windowWidth < MEDIUM_WIDTH;
 
     // Create a new project
@@ -182,11 +183,11 @@ export default function ProjectsPage() {
                 <div className={styles.project_row} style={{ "flexDirection": smallScreen ? "column" : "row" }}>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
                         <h1 className={styles.table__title}>Users</h1>
-                        <UserList project_id={openProject}/>
+                        <UserList project_id={openProject} roles={roles} setRoles={setRoles}/>
                     </div>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
                         <h1 className={styles.table__title}>Permissions</h1>
-                        <PermissionsTable project_id={openProject}/>
+                        <PermissionsTable project_id={openProject} roles={roles} setRoles={setRoles}/>
                     </div>
                 </div>
                 <div className={styles.delete_proj_btn}>

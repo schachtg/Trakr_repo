@@ -19,10 +19,9 @@ const permissions = [
     "Delete project",
 ]
 
-export default function PermissionsTable({project_id}) {
+export default function PermissionsTable({roles, setRoles, project_id}) {
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [editRoleIndex, setEditRoleIndex] = useState(0);
-    const [roles, setRoles] = useState([]);
     const [deleteDialog, setDeleteDialog] = useState(false);
     const [createRoleDialog, setCreateRoleDialog] = useState(false);
     const [newRoleName, setNewRoleName] = useState("");
