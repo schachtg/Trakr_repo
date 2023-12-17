@@ -371,6 +371,7 @@ app.post("/projects", authenticateToken, async (req, res) => {
       `INSERT INTO projects (name, user_emails, curr_sprint) VALUES ($1, $2, $3) RETURNING *`,
       [name, [email], curr_sprint]
     );
+
     res.status(201).json(newProject.rows[0]);
   } catch (err) {
     res.status(404).json("An error occured");
@@ -684,8 +685,8 @@ app.post("/roles", authenticateToken, async (req, res) => {
     if (roles.length > 0) {
       for (let i = 0; i < roles.length; i++) {
         const newRole = await pool.query(
-          `INSERT INTO roles (name, permissions, project_id) VALUES ($1, $2, $3) RETURNING *`,
-          [roles[i].name, roles[i].permissions, project_id]
+          `INSERT INTO roles (name, permissions, user_emails, project_id) VALUES ($1, $2, $3, $4) RETURNING *`,
+          [roles[i].name, roles[i].permissions, roles[i].user_emails, project_id]
         );
 
         if(newRole.rowCount === 0) {
@@ -741,6 +742,68 @@ app.put("/roles", authenticateToken, async (req, res) => {
   }
 });
 
+app.post("/change_role", authenticateToken, async (req, res) => {
+  try {
+    const { email, role_name, project_id } = req.body;
+    const currUser = req.user.email;
+
+    // Check if currUser is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (user_list.rows[0].user_emails.includes(currUser)) {
+      // Check if user being updated is in the project
+      if (user_list.rows[0].user_emails.includes(email)) {
+        const oldRole = await pool.query(
+          `SELECT * FROM roles WHERE $1 = ANY(user_emails) AND project_id = $2`,
+          [email, project_id]
+        );
+        if (oldRole.rowCount === 0) {
+          res.status(404).json("Role not found");
+          return;
+        }
+
+        // Removes user from current role
+        await pool.query(
+          `UPDATE roles SET user_emails = $1 WHERE role_id = $2 AND project_id = $3`,
+          [oldRole.rows[0].user_emails.filter((curr) => curr !== email), oldRole.rows[0].role_id, project_id]
+        );
+
+        const newRole = await pool.query(
+          `SELECT * FROM roles WHERE name = $1 AND project_id = $2`,
+          [role_name, project_id]
+        );
+        if (newRole.rowCount === 0) {
+          res.status(404).json("Role not found");
+          return;
+        }
+
+        // Adds user to new role
+        await pool.query(
+          `UPDATE roles SET user_emails = $1 WHERE role_id = $2 AND project_id = $3`,
+          [[...newRole.rows[0].user_emails, email], newRole.rows[0].role_id, project_id]
+        );
+
+        // Get updated roles
+        const roles = await pool.query(
+          `SELECT * FROM roles WHERE project_id = $1 ORDER BY name ASC`,
+          [project_id]
+        );
+
+        res.status(200).json(roles.rows);
+      } else {
+        res.status(404).json("User is not in the project");
+      }
+    } else {
+      res.status(401).json("You are not in the project");
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 // delete a role
 app.delete("/roles", authenticateToken, async (req, res) => {
   try {
@@ -754,6 +817,32 @@ app.delete("/roles", authenticateToken, async (req, res) => {
     );
 
     if (user_list.rows[0].user_emails.includes(email)) {
+      // Move users in deleting role to default role
+      const defaultRole = await pool.query(
+        `SELECT * FROM roles WHERE project_id = $1 AND name = $2`,
+        [project_id, "Default"]
+      );
+
+      if (defaultRole.rowCount === 0) {
+        res.status(404).json("Default role not found");
+        return;
+      }
+
+      const deletingRole = await pool.query(
+        `SELECT * FROM roles WHERE role_id = $1`,
+        [role_id]
+      );
+
+      if (deletingRole.rowCount === 0) {
+        res.status(404).json("Role not found");
+        return;
+      }
+
+      await pool.query(
+        `UPDATE roles SET user_emails = $1 WHERE role_id = $2`,
+        [[...defaultRole.rows[0].user_emails, ...deletingRole.rows[0].user_emails], defaultRole.rows[0].role_id]
+      );
+
       await pool.query(
         `DELETE FROM roles WHERE role_id = $1`,
         [role_id]
@@ -828,7 +917,6 @@ app.post("/invite", authenticateToken, async (req, res) => {
 });
 
 app.get("/join_project/:token", async (req, res) => {
-  console.log("Does this even run?")
   try {
     const { token } = req.params;
     jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
@@ -837,9 +925,7 @@ app.get("/join_project/:token", async (req, res) => {
         return;
       }
 
-      console.log("Here 1");
       const { project_id, email } = decodedToken;
-      console.log(project_id, email);
 
       // Check if project exists
       const project = await pool.query(
@@ -850,21 +936,33 @@ app.get("/join_project/:token", async (req, res) => {
         res.status(404).json({ message: "Project not found" });
         return;
       }
-      console.log("Here 2");
 
       // Check if user is already in the project
       if (project.rows[0].user_emails.includes(email)) {
         res.status(409).json({ message: "User is already in the project" });
         return;
       }
-      console.log("Here 3");
 
       // Add user to project
       await pool.query(
         `UPDATE projects SET user_emails = $1 WHERE project_id = $2`,
         [[...project.rows[0].user_emails, email], project_id]
       );
-      console.log("Here 4");
+
+      // Add email to default role
+      const defaultRole = await pool.query(
+        `SELECT * FROM roles WHERE project_id = $1 AND name = $2`,
+        [project_id, "Default"]
+      );
+      if (defaultRole.rowCount === 0) {
+        res.status(404).json({ message: "Default role not found" });
+        return;
+      }
+
+      await pool.query(
+        `UPDATE roles SET user_emails = $1 WHERE role_id = $2`,
+        [[...defaultRole.rows[0].user_emails, email], defaultRole.rows[0].role_id]
+      );
 
       res.status(200).json({ message: "User was added to the project" });
     });

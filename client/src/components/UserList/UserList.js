@@ -102,6 +102,37 @@ export default function UserList({roles=[], setRoles, project_id}) {
         }
     }
 
+    const handleChangeRole = async (email, role_name) => {
+        try{ 
+            const body = {
+                project_id: project_id,
+                email,
+                role_name,
+            };
+            const response = await fetch("http://localhost:5000/change_role", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+            if (response.status === 200) {
+                setRoles(data);
+                return;
+            }
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const getRole = (email) => {
+        const role = roles.filter((role) => role.user_emails !== null && role.user_emails.includes(email))[0];
+        if (role) {
+            return role.name;
+        }
+        return "";
+    }
+
     useEffect(() => {
         getUsersFromDB()
             .then((data) => {
@@ -116,14 +147,14 @@ export default function UserList({roles=[], setRoles, project_id}) {
                     <RowItem
                         key={index}
                         title={user.name}
-                        subtitle={user.email}
+                        subtitle={getRole(user.email)}
                         childRows={[
                             {
                                 title: "Change Role",
                                 childRows: roles.map((role, index) => ({
                                     title: role.name,
                                     onClick: () => {
-                                        console.log(`Change role to ${role.name}`);
+                                        handleChangeRole(user.email, role.name);
                                     }
                                 }))
                             },

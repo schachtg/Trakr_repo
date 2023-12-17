@@ -78,6 +78,9 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
 
     const handleDeleteRole = () => {
         const updatedRoles = [...roles];
+        const deletingRoleUserList = updatedRoles[editRoleIndex].user_emails;
+        const defaultIndex = updatedRoles.findIndex((role) => role.name === "Default");
+        updatedRoles[defaultIndex].user_emails = [...updatedRoles[defaultIndex].user_emails, ...deletingRoleUserList];
         updatedRoles.splice(editRoleIndex, 1);
         setEditRoleIndex(0);
         setRoles(updatedRoles);
@@ -105,6 +108,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
         const newRole = {
             name: newRoleName,
             permissions: [...Array(permissions.length)].map((e) => false),
+            user_emails: []
         };
         updatedRoles.push(newRole);
         setRoles(updatedRoles);

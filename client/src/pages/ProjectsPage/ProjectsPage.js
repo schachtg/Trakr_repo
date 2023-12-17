@@ -62,7 +62,7 @@ export default function ProjectsPage() {
                     {
                         name: "Admin",
                         permissions: [...Array(permissionsLength)].map((e) => true),
-                        user_emails: []
+                        user_emails: [response.user_emails[0]]
                     },
                     {
                         name: "Default",
