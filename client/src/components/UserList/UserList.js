@@ -45,11 +45,12 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 credentials: "include",
                 body: JSON.stringify(body)
             });
+            const data = await response.json();
             if (response.status === 200) {
                 alert(`${recipient_email} has been invited!`);
                 return;
             }
-            alert("An error occurred.");
+            alert(data.message);
         } catch (err) {
             console.error(err.message);
         }
@@ -68,7 +69,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 body: JSON.stringify(body)
             });
             if (response.status === 200) {
-                alert("User removed!");
+                window.location.reload();
                 return;
             }
             alert("An error occurred.");
@@ -109,8 +110,16 @@ export default function UserList({roles=[], setRoles, project_id}) {
     }
 
     const handleChangeRole = async (email, role_name) => {
+        const adminRole = roles.filter((role) => role.name === "Admin")[0];
         if (!await hasPermission("Edit roles", project_id)) {
             alert("You do not have permission to edit roles");
+            return;
+        }
+        if (role_name !== "Admin"
+            && adminRole.user_emails.includes(email)
+            && adminRole.user_emails.length === 1
+        ) {
+            alert("You cannot remove the last admin");
             return;
         }
         try{ 
@@ -158,6 +167,13 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 alert("You do not have permission to remove other users");
                 return;
             }
+        }
+        const adminRole = roles.filter((role) => role.name === "Admin")[0];
+        if (adminRole.user_emails.includes(email)
+            && adminRole.user_emails.length === 1
+        ) {
+            alert("You cannot remove the last admin");
+            return;
         }
         setOpenRemoveWarning(true);
         setRemovingUser(index);

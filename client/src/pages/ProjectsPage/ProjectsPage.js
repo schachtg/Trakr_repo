@@ -2,17 +2,21 @@ import React, { Fragment, useEffect, useState } from 'react';
 import styles from './ProjectsPage.module.css';
 import UserList from '../../components/UserList/UserList';
 import GButton from '../../components/GButton/GButton';
-import { mdiPlus, mdiDelete } from '@mdi/js';
+import { mdiPlus, mdiDelete, mdiContentSave } from '@mdi/js';
 import PermissionsTable from '../../components/PermissionsTable/PermissionsTable';
 import ColumnOrder from '../../components/ColumnOrder/ColumnOrder';
-import { MEDIUM_WIDTH } from '../../Constants';
+import { MEDIUM_WIDTH, PERMISSION_LIST } from '../../Constants';
 import DangerDialog from '../../components/DangerDialog/DangerDialog';
 import { hasPermission } from '../../HelperFunctions';
+import GDialog from '../../components/GDialog/GDialog';
 
 export default function ProjectsPage() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [projects, setProjects] = useState([]); // [ {project_id: 1, name: "Project 1"}, {project_id: 2, name: "Project 2"}, ...
     const [openProject, setOpenProject] = useState(null);
+    const [createProjectDialog, setCreateProjectDialog] = useState(false);
+    const [newProjectErrorMessage, setNetProjectErrorMessage] = useState("");
+    const [newProjectName, setNewProjectName] = useState("");
     const [roles, setRoles] = useState([]);
     const [openDeleteWarning, setOpenDeleteWarning] = useState(false);
     let smallScreen = windowWidth < MEDIUM_WIDTH;
@@ -21,7 +25,7 @@ export default function ProjectsPage() {
     const createProject = async () => {
         try{ 
             const body = {
-                name: "New Project",
+                name: newProjectName,
             };
             const data = await fetch("http://localhost:5000/projects", {
                 method: "POST",
@@ -59,16 +63,15 @@ export default function ProjectsPage() {
                 },
             ]};
 
-            const permissionsLength = 8;
             const defaultRoles = { roles: [
                     {
                         name: "Admin",
-                        permissions: [...Array(permissionsLength)].map((e) => true),
+                        permissions: [...Array(PERMISSION_LIST.length)].map((e) => true),
                         user_emails: [response.user_emails[0]]
                     },
                     {
                         name: "Default",
-                        permissions: [...Array(permissionsLength)].map((e) => false),
+                        permissions: [...Array(PERMISSION_LIST.length)].map((e) => false),
                         user_emails: []
                     },
                 ],
@@ -90,6 +93,7 @@ export default function ProjectsPage() {
             });
 
             setProjects([...projects, response]);
+            setCreateProjectDialog(false);
         } catch (err) {
             console.error(err.message);
         }
@@ -166,6 +170,24 @@ export default function ProjectsPage() {
         setOpenDeleteWarning(true);
     }
 
+    const handleSetNewProjectName = (event) => {
+        const value = event.target.value;
+        setNewProjectName(value);
+        if (value.length >= 30) {
+            setNetProjectErrorMessage("Must be less than 30 characters");
+        } else if (value.length === 0) {
+            setNetProjectErrorMessage("Must not be empty");
+        } else {
+            setNetProjectErrorMessage("");
+        }
+    }
+
+    const handleOpenCreateProjectDialog = () => {
+        setNewProjectName("");
+        setNetProjectErrorMessage("Must not be empty");
+        setCreateProjectDialog(true);
+    }
+
     useEffect(() => {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
@@ -225,10 +247,33 @@ export default function ProjectsPage() {
                     </div>
                 </div>
             ))}
-
             <div style={{margin: "3rem 0"}}>
-                <GButton centered icon={mdiPlus} onClick={createProject}>Create New Project</GButton>
+                <GButton centered icon={mdiPlus} onClick={handleOpenCreateProjectDialog}>Create New Project</GButton>
             </div>
+            <GDialog fitContent title="Create New Project" openDialog={createProjectDialog} setOpenDialog={setCreateProjectDialog}>
+                <label htmlFor="name">Name:</label>
+                <div className={styles.form_section}>
+                    <input className={styles.dark_input} type="text" id="name" name="name" onChange={handleSetNewProjectName}/>
+                    {newProjectErrorMessage && <div className={styles.error_message}>{newProjectErrorMessage}</div>}
+                </div>
+                <div className={styles.button_row}>
+                    <GButton
+                        onClick={() => setCreateProjectDialog(false)}
+                        type="button"
+                        warning
+                        alternate
+                    >
+                        Cancel
+                    </GButton>
+                    <GButton
+                        icon={mdiContentSave}
+                        onClick={createProject}
+                        disabled={newProjectErrorMessage.length > 0}
+                    >
+                        Save
+                    </GButton>
+                </div>
+            </GDialog>
             {openProject && <DangerDialog
                 title="Delete Project"
                 openDialog={openDeleteWarning}

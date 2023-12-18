@@ -337,7 +337,7 @@ app.get("/user_info/project/:project_id", authenticateToken, async (req, res) =>
 
     if (project.rows[0].user_emails.includes(email)) {
       const userList = await pool.query(
-        `SELECT user_id, name, email, open_project FROM user_info WHERE  email = ANY($1)`,
+        `SELECT user_id, name, email, open_project FROM user_info WHERE  email = ANY($1) ORDER BY name ASC`,
         [project.rows[0].user_emails]
       );
       res.status(200).json(userList.rows);
@@ -477,6 +477,22 @@ app.post("/remove_user", authenticateToken, async (req, res) => {
         await pool.query(
           `UPDATE projects SET user_emails = $1 WHERE project_id = $2`,
           [user_list.rows[0].user_emails.filter(user => user !== email), project_id]
+        );
+
+        // Remove user from roles in the project
+        const roles = await pool.query(
+          `SELECT * FROM roles WHERE $1 = ANY(user_emails) AND project_id = $2`,
+          [email, project_id]
+        );
+
+        if (roles.rowCount === 0) {
+          res.status(404).json("Role not found");
+          return;
+        }
+
+        await pool.query(
+          `UPDATE roles SET user_emails = $1 WHERE role_id = $2`,
+          [roles.rows[0].user_emails.filter(user => user !== email), roles.rows[0].role_id]
         );
 
         // Remove user's open project if it was the project that was removed
@@ -937,10 +953,20 @@ app.post("/invite", authenticateToken, async (req, res) => {
       return;
     }
 
+    // Check if an account exists for recipient
+    const recipient = await pool.query(
+      `SELECT * FROM user_info WHERE email = $1`,
+      [recipient_email]
+    );
+    if (recipient.rowCount === 0) {
+      res.status(404).json({ message: "There is no account matching that email" });
+      return;
+    }
+
     // Code to send email
     sendInviteEmail(req.body)
     .then((response) => res.status(200).json({message: response.message}))
-    .catch((err) => res.status(500).send(err.message));
+    .catch((err) => res.status(500).json({message: err.message}));
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
