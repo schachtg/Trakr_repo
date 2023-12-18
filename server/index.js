@@ -54,8 +54,8 @@ app.post("/tickets", authenticateToken, async (req, res) => {
   }
 });
 
-// get all tickets for a user
-app.get("/tickets/:project_id", authenticateToken, async (req, res) => {
+// get all tickets for a project
+app.get("/tickets/project/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const tableName = "tickets";
@@ -74,14 +74,18 @@ app.get("/tickets/:project_id", authenticateToken, async (req, res) => {
 app.get("/tickets/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const username = req.user.email;
-    const tableName = "tickets";
-    const ticket = await pool.query(`SELECT * FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`, [
-      id, username
-    ]);
-    res.json(ticket.rows[0]);
+    const ticket = await pool.query(
+      `SELECT * FROM tickets WHERE ticket_id = $1`,
+      [id]
+    );
+    if (ticket.rowCount === 0) {
+      res.status(404).json("Ticket not found");
+      return;
+    }
+
+    res.status(200).json(ticket.rows[0]);
   } catch (err) {
-    console.error(err.message);
+    res.status(404).json("Ticket not found");
   }
 });
 
@@ -89,14 +93,12 @@ app.get("/tickets/:id", authenticateToken, async (req, res) => {
 app.put("/tickets/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const username = req.user.email;
-    const tableName = "tickets";
     const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
 
     // Get old ticket
     const oldTicket = await pool.query(
-      `SELECT * FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`,
-      [id, username]
+      `SELECT * FROM tickets WHERE ticket_id = $1`,
+      [id]
     );
 
     if (oldTicket.rowCount === 0) {
@@ -129,8 +131,8 @@ app.put("/tickets/:id", authenticateToken, async (req, res) => {
     }
 
     const updateTicket = await pool.query(
-      `UPDATE ${tableName} SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, pull_request = $11, project_id = $12 WHERE (ticket_id = $13 AND username = $14) RETURNING *`,
-      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, id, username]
+      `UPDATE tickets SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, pull_request = $11, project_id = $12 WHERE ticket_id = $13 RETURNING *`,
+      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, id]
     );
 
     res.json(updateTicket.rows[0]);
@@ -143,13 +145,11 @@ app.put("/tickets/:id", authenticateToken, async (req, res) => {
 app.delete("/tickets/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const username = req.user.email;
-    const tableName = "tickets";
 
     // Get old ticket
     const oldTicket = await pool.query(
-      `SELECT * FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`,
-      [id, username]
+      `SELECT * FROM tickets WHERE ticket_id = $1`,
+      [id]
     );
 
     if (oldTicket.rowCount === 0) {
@@ -171,9 +171,10 @@ app.delete("/tickets/:id", authenticateToken, async (req, res) => {
       );
     }
 
-    await pool.query(`DELETE FROM ${tableName} WHERE (ticket_id = $1 AND username = $2)`, [
-      id, username
-    ]);
+    await pool.query(
+      `DELETE FROM tickets WHERE ticket_id = $1`,
+      [id]
+    );
     res.json("Ticket was deleted!");
   } catch (err) {
     console.log(err.message);
@@ -291,6 +292,22 @@ app.put("/user_info/open_project", authenticateToken, async (req, res) => {
     const { open_project } = req.body;
     const email = req.user.email;
     const tableName = "user_info";
+
+    // Make sure user is in the project
+    const project = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [open_project]
+    );
+
+    if (project.rowCount === 0) {
+      res.status(404).json("Project not found");
+      return;
+    }
+
+    if (!project.rows[0].user_emails.includes(email)) {
+      res.status(401).json("User is not in the project");
+      return;
+    }
 
     // Update user's info
     const updatedUser = await pool.query(

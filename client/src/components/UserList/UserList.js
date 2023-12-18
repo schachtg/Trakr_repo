@@ -122,6 +122,15 @@ export default function UserList({roles=[], setRoles, project_id}) {
             alert("You cannot remove the last admin");
             return;
         }
+
+        // Ensure that the roles have not been changed by another user
+        const dbRoles = await getRolesFromDB();
+        if (JSON.stringify(dbRoles) !== JSON.stringify(roles)) {
+            window.location.reload();
+            alert("An error occurred. Please try again.");
+            return;
+        }
+
         try{ 
             const body = {
                 project_id: project_id,
@@ -139,6 +148,20 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 setRoles(data);
                 return;
             }
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const getRolesFromDB = async () => {
+        try{
+            const response = await fetch(`http://localhost:5000/roles/${project_id}`, {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include"
+            });
+            const data = await response.json();
+            return data;
         } catch (err) {
             console.error(err.message);
         }

@@ -120,89 +120,121 @@ export default function ColumnOrder({project_id}) {
     };
 
     const setColumnName = async (index, name) => {
-        if (!await hasPermission("Edit columns", project_id)) {
-            alert("You do not have permission to edit columns");
-            return;
+        // Ensure that columns are up to date before updating
+        const dbColumns = await getColumnsFromDB();
+        const orderedColumns = updatePermanentColumns(orderColumnsByLocation(dbColumns));
+        if (JSON.stringify(orderedColumns) !== JSON.stringify(columns)) {
+            window.location.reload();
+            alert("An error occurred. Please try again.");
+        } else {
+            if (!await hasPermission("Edit columns", project_id)) {
+                alert("You do not have permission to edit columns");
+                return;
+            }
+            let newColumns = [...columns];
+            newColumns[index].name = name;
+            if (newColumns.filter((column) => column.name === name).length <= 1 && name.length < 15 && name.length > 0) {
+                await updateColumn(index, newColumns[index]);
+            }
+            setColumns(newColumns);
         }
-        let newColumns = [...columns];
-        newColumns[index].name = name;
-        if (newColumns.filter((column) => column.name === name).length <= 1 && name.length < 15 && name.length > 0) {
-            await updateColumn(index, newColumns[index]);
-        }
-        setColumns(newColumns);
     }
 
     const setColumnMax = async (index, max) => {
-        if (!await hasPermission("Edit columns", project_id)) {
-            alert("You do not have permission to edit columns");
-            return;
+        // Ensure that columns are up to date before updating
+        const dbColumns = await getColumnsFromDB();
+        const orderedColumns = updatePermanentColumns(orderColumnsByLocation(dbColumns));
+        if (JSON.stringify(orderedColumns) !== JSON.stringify(columns)) {
+            window.location.reload();
+            alert("An error occurred. Please try again.");
+        } else {
+            if (!await hasPermission("Edit columns", project_id)) {
+                alert("You do not have permission to edit columns");
+                return;
+            }
+            let newColumns = [...columns];
+            newColumns[index].max = max;
+            if (!(!/^\d+$/.test(max) || parseInt(max) < 0 || parseInt(max) > 100)) {
+                await updateColumn(index, newColumns[index]);
+            }
+            setColumns(newColumns);
         }
-        let newColumns = [...columns];
-        newColumns[index].max = max;
-        if (!(!/^\d+$/.test(max) || parseInt(max) < 0 || parseInt(max) > 100)) {
-            await updateColumn(index, newColumns[index]);
-        }
-        setColumns(newColumns);
     }
 
     const moveColumnLeft = async (index) => {
-        if (!await hasPermission("Edit columns", project_id)) {
-            alert("You do not have permission to edit columns");
-            return;
+        // Ensure that columns are up to date before upodating
+        const dbColumns = await getColumnsFromDB();
+        const orderedColumns = updatePermanentColumns(orderColumnsByLocation(dbColumns));
+        if (JSON.stringify(orderedColumns) !== JSON.stringify(columns)) {
+            window.location.reload();
+            alert("An error occurred. Please try again.");
+        } else {
+            if (!await hasPermission("Edit columns", project_id)) {
+                alert("You do not have permission to edit columns");
+                return;
+            }
+            let newColumns = [...columns];
+            let updatedCurrCol = {...columns[index]};
+            let updatedPrevCol = {...columns[index - 1]};
+            updatedCurrCol.next_col = columns[index - 1].col_id;
+            updatedPrevCol.next_col = columns[index].next_col;
+
+            if (index - 2 >= 0) {
+                let updatedPrevPrevCol = {...columns[index - 2]};
+                updatedPrevPrevCol.next_col = columns[index].col_id;
+                newColumns[index - 2] = updatedPrevPrevCol;
+                await updateColumn(index - 2, updatedPrevPrevCol);
+            }
+
+            newColumns[index] = updatedCurrCol;
+            newColumns[index - 1] = updatedPrevCol;
+
+            await updateColumn(index, updatedCurrCol);
+            await updateColumn(index - 1, updatedPrevCol);
+
+            let temp = newColumns[index - 1];
+            newColumns[index - 1] = newColumns[index];
+            newColumns[index] = temp;
+            setColumns(newColumns);
         }
-        let newColumns = [...columns];
-        let updatedCurrCol = {...columns[index]};
-        let updatedPrevCol = {...columns[index - 1]};
-        updatedCurrCol.next_col = columns[index - 1].col_id;
-        updatedPrevCol.next_col = columns[index].next_col;
-
-        if (index - 2 >= 0) {
-            let updatedPrevPrevCol = {...columns[index - 2]};
-            updatedPrevPrevCol.next_col = columns[index].col_id;
-            newColumns[index - 2] = updatedPrevPrevCol;
-            await updateColumn(index - 2, updatedPrevPrevCol);
-        }
-
-        newColumns[index] = updatedCurrCol;
-        newColumns[index - 1] = updatedPrevCol;
-
-        await updateColumn(index, updatedCurrCol);
-        await updateColumn(index - 1, updatedPrevCol);
-
-        let temp = newColumns[index - 1];
-        newColumns[index - 1] = newColumns[index];
-        newColumns[index] = temp;
-        setColumns(newColumns);
     }
 
     const moveColumnRight = async (index) => {
-        if (!await hasPermission("Edit columns", project_id)) {
-            alert("You do not have permission to edit columns");
-            return;
+        // Ensure that columns are up to date before updating
+        const dbColumns = await getColumnsFromDB();
+        const orderedColumns = updatePermanentColumns(orderColumnsByLocation(dbColumns));
+        if (JSON.stringify(orderedColumns) !== JSON.stringify(columns)) {
+            window.location.reload();
+            alert("An error occurred. Please try again.");
+        } else {
+            if (!await hasPermission("Edit columns", project_id)) {
+                alert("You do not have permission to edit columns");
+                return;
+            }
+            let newColumns = [...columns];
+            let updatedCurrCol = {...columns[index]};
+            let updatedNextCol = {...columns[index + 1]};
+            updatedCurrCol.next_col = columns[index + 1].next_col;
+            updatedNextCol.next_col = columns[index].col_id;
+
+            if (index - 1 >= 0) {
+                let updatedPrevCol = {...columns[index - 1]};
+                updatedPrevCol.next_col = columns[index + 1].col_id;
+                newColumns[index - 1] = updatedPrevCol;
+                await updateColumn(index - 1, updatedPrevCol);
+            }
+
+            newColumns[index] = updatedCurrCol;
+            newColumns[index + 1] = updatedNextCol;
+
+            await updateColumn(index, updatedCurrCol);
+            await updateColumn(index + 1, updatedNextCol);
+
+            let temp = newColumns[index + 1];
+            newColumns[index + 1] = newColumns[index];
+            newColumns[index] = temp;
+            setColumns(newColumns);
         }
-        let newColumns = [...columns];
-        let updatedCurrCol = {...columns[index]};
-        let updatedNextCol = {...columns[index + 1]};
-        updatedCurrCol.next_col = columns[index + 1].next_col;
-        updatedNextCol.next_col = columns[index].col_id;
-
-        if (index - 1 >= 0) {
-            let updatedPrevCol = {...columns[index - 1]};
-            updatedPrevCol.next_col = columns[index + 1].col_id;
-            newColumns[index - 1] = updatedPrevCol;
-            await updateColumn(index - 1, updatedPrevCol);
-        }
-
-        newColumns[index] = updatedCurrCol;
-        newColumns[index + 1] = updatedNextCol;
-
-        await updateColumn(index, updatedCurrCol);
-        await updateColumn(index + 1, updatedNextCol);
-
-        let temp = newColumns[index + 1];
-        newColumns[index + 1] = newColumns[index];
-        newColumns[index] = temp;
-        setColumns(newColumns);
     }
 
     function getPosition(index) {
@@ -263,30 +295,37 @@ export default function ColumnOrder({project_id}) {
     }
 
     const deleteColumn = async (index) => {
-        if (!await hasPermission("Edit columns", project_id)) {
-            alert("You do not have permission to edit columns");
-            return;
+        // Ensure that columns are up to date before updating
+        const dbColumns = await getColumnsFromDB();
+        const orderedColumns = updatePermanentColumns(orderColumnsByLocation(dbColumns));
+        if (JSON.stringify(orderedColumns) !== JSON.stringify(columns)) {
+            window.location.reload();
+            alert("An error occurred. Please try again.");
+        } else {
+            if (!await hasPermission("Edit columns", project_id)) {
+                alert("You do not have permission to edit columns");
+                return;
+            }
+            try {
+                setDeletingColumn(0);
+                setOpenDeleteWarning(false);
+                const body = {
+                    project_id: project_id,
+                    column_id: columns[index].col_id
+                };
+                await fetch(`http://localhost:5000/cols`, {
+                    method: "DELETE",
+                    headers: {"Content-Type": "application/json"},
+                    credentials: "include",
+                    body: JSON.stringify(body)
+                });
+                const newColumns = [...columns];
+                const data = newColumns.filter((column) => column.col_id !== columns[index].col_id)
+                setColumns(data);
+            } catch (err) {
+                console.error(err.message);
+            }
         }
-        try {
-            setDeletingColumn(0);
-            setOpenDeleteWarning(false);
-            const body = {
-                project_id: project_id,
-                column_id: columns[index].col_id
-            };
-            await fetch(`http://localhost:5000/cols`, {
-                method: "DELETE",
-                headers: {"Content-Type": "application/json"},
-                credentials: "include",
-                body: JSON.stringify(body)
-            });
-            const newColumns = [...columns];
-            const data = newColumns.filter((column) => column.col_id !== columns[index].col_id)
-            setColumns(data);
-        } catch (err) {
-            console.error(err.message);
-        }
-    
     }
 
     const updateColumn = async (index, updatedCol) => {

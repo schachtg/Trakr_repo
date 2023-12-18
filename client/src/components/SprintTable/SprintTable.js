@@ -38,6 +38,17 @@ export default function SprintTable({projectID}) {
             alert("You do not have permission to edit tickets");
             return;
         }
+        const ticketInDB = await fetch(`http://localhost:5000/tickets/${tickets[draggingTicketIndex].ticket_id}`, {
+            method: "GET",
+            headers: {"Content-Type": "application/json"},
+            credentials: "include"
+        });
+        if (ticketInDB.status !== 200) {
+            alert("Ticket no longer exists");
+            getTicketsFromDB();
+            return;
+        }
+
         if (col_name !== undefined) {
             const cloned = [...tickets];
             cloned[draggingTicketIndex].column_name = col_name;
@@ -47,13 +58,13 @@ export default function SprintTable({projectID}) {
                 credentials: "include",
                 body: JSON.stringify(tickets[draggingTicketIndex])
             });
-            setTicketsWrapper(cloned);
+            getTicketsFromDB();
         }
     }
 
     const getTicketsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/tickets/${projectID}`, {
+            const response = await fetch(`http://localhost:5000/tickets/project/${projectID}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
