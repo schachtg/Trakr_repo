@@ -1,18 +1,20 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import styles from './ProjectsPage.module.css';
-import RowItem from '../../components/RowItem/RowItem';
 import UserList from '../../components/UserList/UserList';
 import GButton from '../../components/GButton/GButton';
-import { mdiCrown, mdiPlus } from '@mdi/js';
+import { mdiPlus, mdiDelete } from '@mdi/js';
 import PermissionsTable from '../../components/PermissionsTable/PermissionsTable';
 import ColumnOrder from '../../components/ColumnOrder/ColumnOrder';
 import { MEDIUM_WIDTH } from '../../Constants';
+import DangerDialog from '../../components/DangerDialog/DangerDialog';
+import { hasPermission } from '../../HelperFunctions';
 
 export default function ProjectsPage() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [projects, setProjects] = useState([]); // [ {project_id: 1, name: "Project 1"}, {project_id: 2, name: "Project 2"}, ...
     const [openProject, setOpenProject] = useState(null);
     const [roles, setRoles] = useState([]);
+    const [openDeleteWarning, setOpenDeleteWarning] = useState(false);
     let smallScreen = windowWidth < MEDIUM_WIDTH;
 
     // Create a new project
@@ -156,6 +158,14 @@ export default function ProjectsPage() {
         return projects.find(project => project.project_id === openProject) || {name: ""};
     }
 
+    const handleOpenDeleteWarning = async () => {
+        if (!await hasPermission("Delete project", openProject)) {
+            alert("You do not have permission to delete the project");
+            return;
+        }
+        setOpenDeleteWarning(true);
+    }
+
     useEffect(() => {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
@@ -194,7 +204,7 @@ export default function ProjectsPage() {
                     <GButton
                         type="button"
                         warning
-                        onClick={() => deleteProject(openProject)}
+                        onClick={handleOpenDeleteWarning}
                     >
                         Delete Project
                     </GButton>
@@ -219,6 +229,30 @@ export default function ProjectsPage() {
             <div style={{margin: "3rem 0"}}>
                 <GButton centered icon={mdiPlus} onClick={createProject}>Create New Project</GButton>
             </div>
+            {openProject && <DangerDialog
+                title="Delete Project"
+                openDialog={openDeleteWarning}
+                buttons={[
+                    <GButton
+                        onClick={() => setOpenDeleteWarning(false)}
+                        type="button"
+                    >
+                        Cancel
+                    </GButton>,
+                    <GButton
+                        icon={mdiDelete}
+                        type="button"
+                        onClick={() => deleteProject(openProject)}
+                        warning
+                    >
+                        Delete
+                    </GButton>
+                ]}
+            >
+                <span>
+                    Are you sure you want to delete the project {currentProject().name}?
+                </span>
+            </DangerDialog>}
         </Fragment>
     );
 }

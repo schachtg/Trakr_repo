@@ -1,6 +1,7 @@
 import React, {Fragment, useState, useEffect} from 'react';
 import styles from './ColumnOrder.module.css';
 import { mdiChevronLeft, mdiChevronRight, mdiDelete, mdiPlus, mdiContentSave } from '@mdi/js';
+import { hasPermission } from '../../HelperFunctions';
 
 // Components
 import GButton from '../GButton/GButton';
@@ -12,7 +13,7 @@ function ColumnBox(props) {
     const [bottomErrorMessage, setBottomErrorMessage] = useState("");
     const iconSize = 1.1;
 
-    const handleNameChange = (event) => {
+    const handleNameChange = async (event) => {
         const value = event.target.value;
         props.updateName(value)
         if (value.length >= 15) {
@@ -26,15 +27,15 @@ function ColumnBox(props) {
         }
     };
 
-    const handleMaxChange = (event) => {
-      const value = event.target.value;
-      props.updateMax(value)
-  
-      if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 100) {
-        setBottomErrorMessage("Must be an integer between 0 and 100");
-      } else {
-        setBottomErrorMessage("");
-      }
+    const handleMaxChange = async (event) => {
+        const value = event.target.value;
+        props.updateMax(value)
+
+        if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 100) {
+            setBottomErrorMessage("Must be an integer between 0 and 100");
+        } else {
+            setBottomErrorMessage("");
+        }
     };
 
     return(
@@ -85,7 +86,7 @@ function ColumnBox(props) {
     );
 }
 
-export default function ColumnOrder(project_id) {
+export default function ColumnOrder({project_id}) {
     const [columns, setColumns] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [openDeleteWarning, setOpenDeleteWarning] = useState(false);
@@ -93,9 +94,8 @@ export default function ColumnOrder(project_id) {
     const [addNameErrorMsg, setAddNameErrorMsg] = useState("");
     const [addMaxErrorMsg, setAddMaxErrorMsg] = useState("");
     const [newColumn, setNewColumn] = useState({name: "", max: 0});
-    const projectID = project_id.project_id;
 
-    const handleNameChange = (event) => {
+    const handleNameChange = async (event) => {
         const value = event.target.value;
         setNewColumn({name: value, max: newColumn.max})
         if (value.length >= 15) {
@@ -109,7 +109,7 @@ export default function ColumnOrder(project_id) {
         }
     };
 
-    const handleMaxChange = (event) => {
+    const handleMaxChange = async (event) => {
         const value = event.target.value;
         setNewColumn({name: newColumn.name, max: value})
         if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 100) {
@@ -120,6 +120,10 @@ export default function ColumnOrder(project_id) {
     };
 
     const setColumnName = async (index, name) => {
+        if (!await hasPermission("Edit columns", project_id)) {
+            alert("You do not have permission to edit columns");
+            return;
+        }
         let newColumns = [...columns];
         newColumns[index].name = name;
         if (newColumns.filter((column) => column.name === name).length <= 1 && name.length < 15 && name.length > 0) {
@@ -129,6 +133,10 @@ export default function ColumnOrder(project_id) {
     }
 
     const setColumnMax = async (index, max) => {
+        if (!await hasPermission("Edit columns", project_id)) {
+            alert("You do not have permission to edit columns");
+            return;
+        }
         let newColumns = [...columns];
         newColumns[index].max = max;
         if (!(!/^\d+$/.test(max) || parseInt(max) < 0 || parseInt(max) > 100)) {
@@ -138,6 +146,10 @@ export default function ColumnOrder(project_id) {
     }
 
     const moveColumnLeft = async (index) => {
+        if (!await hasPermission("Edit columns", project_id)) {
+            alert("You do not have permission to edit columns");
+            return;
+        }
         let newColumns = [...columns];
         let updatedCurrCol = {...columns[index]};
         let updatedPrevCol = {...columns[index - 1]};
@@ -164,6 +176,10 @@ export default function ColumnOrder(project_id) {
     }
 
     const moveColumnRight = async (index) => {
+        if (!await hasPermission("Edit columns", project_id)) {
+            alert("You do not have permission to edit columns");
+            return;
+        }
         let newColumns = [...columns];
         let updatedCurrCol = {...columns[index]};
         let updatedNextCol = {...columns[index + 1]};
@@ -203,7 +219,7 @@ export default function ColumnOrder(project_id) {
 
     const getColumnsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/cols/${projectID}`, {
+            const response = await fetch(`http://localhost:5000/cols/${project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -218,7 +234,7 @@ export default function ColumnOrder(project_id) {
     const addColumn = async () => {
         try{ 
             const body = {
-                project_id: projectID,
+                project_id: project_id,
                 name: newColumn.name,
                 max: newColumn.max,
             };
@@ -247,11 +263,15 @@ export default function ColumnOrder(project_id) {
     }
 
     const deleteColumn = async (index) => {
+        if (!await hasPermission("Edit columns", project_id)) {
+            alert("You do not have permission to edit columns");
+            return;
+        }
         try {
             setDeletingColumn(0);
             setOpenDeleteWarning(false);
             const body = {
-                project_id: projectID,
+                project_id: project_id,
                 column_id: columns[index].col_id
             };
             await fetch(`http://localhost:5000/cols`, {
@@ -270,6 +290,10 @@ export default function ColumnOrder(project_id) {
     }
 
     const updateColumn = async (index, updatedCol) => {
+        if (!await hasPermission("Edit columns", project_id)) {
+            alert("You do not have permission to edit columns");
+            return;
+        }
         try {
             const body = {
                 name: updatedCol.name,
@@ -277,7 +301,7 @@ export default function ColumnOrder(project_id) {
                 next_col: updatedCol.next_col,
                 size: updatedCol.size,
                 column_id: columns[index].col_id,
-                project_id: projectID,
+                project_id: project_id,
             };
             await fetch(`http://localhost:5000/cols`, {
                 method: "PUT",
@@ -324,14 +348,22 @@ export default function ColumnOrder(project_id) {
         return newColumns;
     }
 
-    const openAddColumn = () => {
+    const openAddColumn = async () => {
+        if (!await hasPermission("Edit columns", project_id)) {
+            alert("You do not have permission to edit columns");
+            return;
+        }
         setNewColumn({name: "", max: 0});
         setAddNameErrorMsg("Must not be empty");
         setAddMaxErrorMsg("");
         setOpenDialog(true);
     }
 
-    const openDeleteColumn = (index) => {
+    const openDeleteColumn = async (index) => {
+        if (!await hasPermission("Edit columns", project_id)) {
+            alert("You do not have permission to edit columns");
+            return;
+        }
         setDeletingColumn(index);
         setOpenDeleteWarning(true);
     }
@@ -422,7 +454,7 @@ export default function ColumnOrder(project_id) {
                 ]}
             >
                 {columns.length > 0 && <span>
-                    Are you sure you want to delete column {columns[deletingColumn].name}?
+                    Are you sure you want to delete the column {columns[deletingColumn].name}?
                 </span>}
             </DangerDialog>
         </Fragment>

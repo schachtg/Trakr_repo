@@ -1,6 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import styles from './SprintTable.module.css';
 import { SMALL_WIDTH } from '../../Constants';
+import { hasPermission } from '../../HelperFunctions';
 
 // Components
 import TicketBox from '../TicketBox/TicketBox';
@@ -8,13 +9,12 @@ import NoTicketsAvailable from '../NoTicketsAvailable/NoTicketsAvailable';
 
 let initialized = false;
 
-export default function SprintTable(projectID) {
+export default function SprintTable({projectID}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [draggingTicketIndex, setDraggingTicketIndex] = useState(-1);
     const [tickets, setTickets] = useState([]);
     const [columns, setColumns] = useState([]);
     const [largestCol, setLargestCol] = useState(0);
-    const project_id = projectID.projectID;
     let smallScreen = windowWidth < SMALL_WIDTH;
 
     const getLargestCol = (newColumns) => {
@@ -29,11 +29,15 @@ export default function SprintTable(projectID) {
         setTickets(newTickets);
     }
 
-    const handleOnDrag = (e, ticket) => {
+    const handleOnDrag = async (e, ticket) => {
         setDraggingTicketIndex(tickets.indexOf(ticket));
     }
 
     const handleOnDrop = async (e, col_name) => {
+        if (!await hasPermission("Edit tickets", projectID)) {
+            alert("You do not have permission to edit tickets");
+            return;
+        }
         if (col_name !== undefined) {
             const cloned = [...tickets];
             cloned[draggingTicketIndex].column_name = col_name;
@@ -49,7 +53,7 @@ export default function SprintTable(projectID) {
 
     const getTicketsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/tickets/${project_id}`, {
+            const response = await fetch(`http://localhost:5000/tickets/${projectID}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -63,7 +67,7 @@ export default function SprintTable(projectID) {
 
     const getColumnsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/cols/${project_id}`, {
+            const response = await fetch(`http://localhost:5000/cols/${projectID}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

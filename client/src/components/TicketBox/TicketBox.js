@@ -3,13 +3,18 @@ import styles from './TicketBox.module.css';
 import GDialog from '../../components/GDialog/GDialog';
 import TicketForm from '../TicketForm/TicketForm';
 import { SMALL_WIDTH } from '../../Constants';
+import { hasPermission } from '../../HelperFunctions';
 
 export default function TicketBox({ticket, handleDragStart}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [openDialog, setOpenDialog] = useState(false);
     let smallScreen = windowWidth < SMALL_WIDTH;
 
-    const openCreateTicket = () => {
+    const openCreateTicket = async () => {
+        if (!await hasPermission("Edit tickets", ticket.project_id)) {
+            alert("You do not have permission to edit tickets");
+            return;
+        }
         setOpenDialog(true);
     }
 

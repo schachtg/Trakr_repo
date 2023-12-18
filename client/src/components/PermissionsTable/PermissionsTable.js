@@ -2,33 +2,29 @@ import React, {Fragment, useState, useEffect} from 'react';
 import styles from './PermissionsTable.module.css';
 import { mdiPlus, mdiPencil, mdiDelete, mdiContentSave } from '@mdi/js';
 import Icon from '@mdi/react';
+import { PERMISSION_LIST } from '../../Constants';
+import { hasPermission } from '../../HelperFunctions';
 
 // COMPONENTS
 import GButton from '../../components/GButton/GButton';
 import GDialog from '../../components/GDialog/GDialog';
 import DangerDialog from '../../components/DangerDialog/DangerDialog';
 
-const permissions = [
-    "Edit tickets",
-    "Edit epics",
-    "End sprint",
-    "Edit columns",
-    "Invite users",
-    "Remove users",
-    "Edit roles",
-    "Delete project",
-]
-
 export default function PermissionsTable({roles, setRoles, project_id}) {
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [editRoleIndex, setEditRoleIndex] = useState(0);
+    const [disablePermissionInputs, setDisablePermissionInputs] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState(false);
     const [createRoleDialog, setCreateRoleDialog] = useState(false);
     const [newRoleName, setNewRoleName] = useState("");
     const [newRoleErrorMessage, setNewRoleErrorMessage] = useState("");
 
 
-    const handleSelectRole = (role) => {
+    const handleSelectRole = async (role) => {
+        if (!await hasPermission("Edit roles", project_id)) {
+            alert("You do not have permission to edit roles");
+            return;
+        }
         setEditRoleIndex(roles.indexOf(role));
         setNewRoleName(role.name);
         setNewRoleErrorMessage("");
@@ -97,7 +93,11 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
         });
     }
 
-    const handleOpenCreateRole = async (inviteEmail) => {
+    const handleOpenCreateRole = async () => {
+        if (!await hasPermission("Edit roles", project_id)) {
+            alert("You do not have permission to edit roles");
+            return;
+        }
         setNewRoleName("");
         setNewRoleErrorMessage("Must not be empty");
         setCreateRoleDialog(true);
@@ -107,7 +107,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
         const updatedRoles = [...roles];
         const newRole = {
             name: newRoleName,
-            permissions: [...Array(permissions.length)].map((e) => false),
+            permissions: [...Array(PERMISSION_LIST.length)].map((e) => false),
             user_emails: []
         };
         updatedRoles.push(newRole);
@@ -150,10 +150,19 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
         }
     }
 
+    const checkPermissionInputs = async () => {
+        const hasEditRoles = await hasPermission("Edit roles", project_id);
+        return hasEditRoles;
+    }
+
     useEffect(() => {
         getRolesFromDB()
             .then((data) => {
                 setRoles(data);
+            });
+        checkPermissionInputs()
+            .then((result) => {
+                setDisablePermissionInputs(!result);
             });
     }, []);
 
@@ -164,7 +173,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
                 <thead>
                     <tr>
                         <th className={styles.th}>Roles</th>
-                        {permissions.map((permission, permIndex) => {return(
+                        {PERMISSION_LIST.map((permission, permIndex) => {return(
                             <th key={permIndex} className={styles.th}>{permission}</th>
                         );})}
                     </tr>
@@ -179,14 +188,14 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
                                     {(role.name !== "Admin" && role.name !== "Default") && <Icon path={mdiPencil} size={0.8}></Icon>}
                                     {role.name}:
                             </td>
-                            {[...Array(permissions.length)].map((e, permIndex) => { return(
+                            {[...Array(PERMISSION_LIST.length)].map((e, permIndex) => { return(
                                 <td key={permIndex}>
                                     <input
-                                        disabled={role.name === "Admin"}
+                                        disabled={role.name === "Admin" || disablePermissionInputs}
                                         type="checkbox"
                                         value={roles[roleIndex].permissions[permIndex]}
                                         checked={roles[roleIndex].permissions[permIndex]}
-                                        onChange={(event) => handleChangeChecked(event, roleIndex, permIndex)}
+                                        onChange={async (event) => handleChangeChecked(event, roleIndex, permIndex)}
                                     />
                                 </td>
                             );})}

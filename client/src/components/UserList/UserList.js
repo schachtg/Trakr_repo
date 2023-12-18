@@ -1,6 +1,7 @@
 import React, {Fragment, useState, useEffect} from 'react';
 import styles from './UserList.module.css';
 import { mdiDelete, mdiPlus, mdiAccountPlus } from '@mdi/js';
+import { hasPermission } from '../../HelperFunctions';
 
 // Components
 import GButton from '../GButton/GButton';
@@ -10,6 +11,7 @@ import RowItem from '../RowItem/RowItem';
 
 export default function UserList({roles=[], setRoles, project_id}) {
     const [users, setUsers] = useState([]);
+    const [currUser, setCurrUser] = useState({});
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
     const [openRemoveWarning, setOpenRemoveWarning] = useState(false);
     const [removingUser, setRemovingUser] = useState(0);
@@ -75,7 +77,11 @@ export default function UserList({roles=[], setRoles, project_id}) {
         }
     }
 
-    const handleOpenInviteDialog = () => {
+    const handleOpenInviteDialog = async () => {
+        if (!await hasPermission("Invite users", project_id)) {
+            alert("You do not have permission to invite users");
+            return;
+        }
         setInviteEmail("");
         setEmailErrorMessage("Must not be empty");
         setInviteDialogOpen(true);
@@ -103,6 +109,10 @@ export default function UserList({roles=[], setRoles, project_id}) {
     }
 
     const handleChangeRole = async (email, role_name) => {
+        if (!await hasPermission("Edit roles", project_id)) {
+            alert("You do not have permission to edit roles");
+            return;
+        }
         try{ 
             const body = {
                 project_id: project_id,
@@ -133,10 +143,34 @@ export default function UserList({roles=[], setRoles, project_id}) {
         return "";
     }
 
+    const getCurrUserData = async () => {
+        const response = await fetch("http://localhost:5000/user_info", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
+        });
+        return await response.json();
+    }
+
+    const handleOpenRemoveWarning = async (email, index) => {
+        if (email !== currUser.email) {
+            if (!await hasPermission("Remove other users", project_id)) {
+                alert("You do not have permission to remove other users");
+                return;
+            }
+        }
+        setOpenRemoveWarning(true);
+        setRemovingUser(index);
+    }
+
     useEffect(() => {
         getUsersFromDB()
             .then((data) => {
                 setUsers(data);
+            });
+        getCurrUserData()
+            .then((data) => {
+                setCurrUser(data);
             });
     }, []);
 
@@ -161,8 +195,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                             {
                                 title: "Remove User",
                                 onClick: () => {
-                                    setOpenRemoveWarning(true);
-                                    setRemovingUser(index);
+                                    handleOpenRemoveWarning(user.email, index)
                                 }
                             },
                         ]}

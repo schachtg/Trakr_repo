@@ -3,6 +3,7 @@ import styles from './BoardPage.module.css';
 import { useState, useEffect } from 'react';
 import { mdiPlus, mdiChevronRight } from '@mdi/js';
 import { SMALL_WIDTH } from '../../Constants';
+import { hasPermission } from '../../HelperFunctions';
 
 // components
 import GButton from '../../components/GButton/GButton';
@@ -49,7 +50,11 @@ export default function BoardPage() {
         }
     }
 
-    const openCreateTicket = () => {
+    const openCreateTicket = async () => {
+        if (!await hasPermission("Edit tickets", openProject.project_id)) {
+            alert("You do not have permission to edit tickets");
+            return;
+        }
         setOpenDialog(true);
     }
 
@@ -57,7 +62,11 @@ export default function BoardPage() {
         setOpenDialog(false);
     }
 
-    const handleNextSprintWarning = () => {
+    const handleNextSprintWarning = async () => {
+        if (!await hasPermission("End sprint", openProject.project_id)) {
+            alert("You do not have permission to end the sprint");
+            return;
+        }
         setNextSprintDialog(true);
     }
 

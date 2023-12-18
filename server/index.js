@@ -717,6 +717,37 @@ app.get("/roles/:project_id", authenticateToken, async (req, res) => {
   }
 });
 
+app.get("/roles/users_permissions/:project_id", authenticateToken, async (req, res) => {
+  try {
+    const { project_id } = req.params;
+    const email = req.user.email;
+
+    // Check if user is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (user_list.rows[0].user_emails.includes(email)) {
+      const roles = await pool.query(
+        `SELECT * FROM roles WHERE $1 = ANY(user_emails) AND project_id = $2`,
+        [email, project_id]
+      );
+
+      if (roles.rowCount === 0) {
+        res.status(404).json("Role not found");
+        return;
+      }
+
+      res.status(200).json(roles.rows[0].permissions);
+    } else {
+      res.status(401).json("User is not in the project");
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.put("/roles", authenticateToken, async (req, res) => {
   try {
     const { role_id, project_id, name, permissions, user_emails } = req.body;
