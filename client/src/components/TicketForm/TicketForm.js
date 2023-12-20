@@ -54,7 +54,7 @@ const columnOptions = [
 ];
 
 export default function TicketForm({closeForm, ticket, projectInfo}) {
-    const [formData, setFormData] = useState(ticket || {
+    const [formData, setFormData] = useState({
         name: "",
         type: "Task",
         epic: "No epic",
@@ -189,7 +189,9 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         body: JSON.stringify(body)
                     });
                 }
-                closeForm();
+                if(closeForm) {
+                    closeForm();
+                }
                 window.location.reload();
             } catch (err) {
                 console.error(err.message);
@@ -209,12 +211,33 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                 method: "DELETE",
                 credentials: "include"
             });
-            closeForm();
+            if(closeForm) {
+                closeForm();
+            }
             window.location.reload();
         } catch (err) {
             console.error(err.message);
         }
     };
+
+    useEffect(() => {
+        if (ticket) {
+            setFormData({
+                name: ticket.name,
+                type: ticket.type,
+                epic: ticket.epic,
+                description: ticket.description,
+                blocks: ticket.blocks,
+                blocked_by: ticket.blocked,
+                points: ticket.points,
+                assignee: ticket.assignee,
+                sprint: ticket.sprint,
+                column_name: ticket.column_name,
+                pull_request: ticket.pull_request,
+                project_id: projectInfo.project_id
+            });
+        }
+    }, [ticket]);
 
     return (
         <Fragment>
@@ -232,10 +255,10 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         optionFilterProp="children"
                         name="type"
                         id="type"
-                        defaultValue={formData.type}
+                        value={formData.type}
                         onChange={handleChangeType}
                         filterOption={(input, option) =>
-                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     >
                         {typeOptions.map((type, index) => <Option key={index} value={type}>{type}</Option>)}
@@ -250,7 +273,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         optionFilterProp="children"
                         name="epic"
                         id="epic"
-                        defaultValue={formData.epic}
+                        value={formData.epic}
                         onChange={handleChangeEpic}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -274,7 +297,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         name="blocks"
                         id="blocks"
                         mode="multiple"
-                        defaultValue={formData.blocks}
+                        value={formData.blocks}
                         onChange={handleChangeBlocks}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -293,7 +316,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         name="blocked_by"
                         id="blocked_by"
                         mode="multiple"
-                        defaultValue={formData.blocked_by}
+                        value={formData.blocked_by}
                         onChange={handleChangeBlockedBy}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -317,7 +340,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         optionFilterProp="children"
                         name="assignee"
                         id="assignee"
-                        defaultValue={formData.assignee}
+                        value={formData.assignee}
                         onChange={handleChangeAssignee}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -335,7 +358,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         optionFilterProp="children"
                         name="sprint"
                         id="sprint"
-                        defaultValue={formData.sprint}
+                        value={formData.sprint}
                         onChange={handleChangeSprint}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -353,7 +376,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         optionFilterProp="children"
                         name="column_name"
                         id="column_name"
-                        defaultValue={formData.column_name}
+                        value={formData.column_name}
                         onChange={handleChangeColumn}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

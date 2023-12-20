@@ -1,10 +1,13 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import styles from './TicketsPage.module.css';
-import { SMALL_WIDTH } from '../../Constants';
-import TicketForm from '../../components/TicketForm/TicketForm';
+import { SMALL_WIDTH, LARGE_WIDTH } from '../../Constants';
+import { mdiCloseCircle } from '@mdi/js';
 
 // Components
 import RowItem from '../../components/RowItem/RowItem';
+import GButton from '../../components/GButton/GButton';
+import TicketForm from '../../components/TicketForm/TicketForm';
+import GDialog from '../../components/GDialog/GDialog';
 
 export default function TicketsPage() {
     const [tickets, setTickets] = useState([]);
@@ -14,6 +17,7 @@ export default function TicketsPage() {
     const [openTicket, setOpenTicket] = useState(null); // [ticket_id, ticket_name
     const numSprintsDisplayed = 4;
     let smallScreen = windowWidth < SMALL_WIDTH;
+    let mediumScreen = windowWidth < LARGE_WIDTH;
 
     const getOpenProjectID = async () => {
         try {
@@ -107,15 +111,21 @@ export default function TicketsPage() {
         setOpenTicket(ticket);
     }
 
+    const handleCloseDialog = (value) => {
+        if (!value) {
+            setOpenTicket(null);
+        }
+    }
+
     useEffect(() => {
         initializeProject();
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
         };
 
-        window.addEventListener('resize', handleWindowResize);
-
         smallScreen = windowWidth < SMALL_WIDTH;
+        mediumScreen = windowWidth < LARGE_WIDTH;
+        window.addEventListener('resize', handleWindowResize);
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
@@ -134,6 +144,8 @@ export default function TicketsPage() {
                                         <RowItem
                                             key={ticket.ticket_id}
                                             title={ticket.name}
+                                            subtitle={ticket.epic === "No epic" ? "" : ticket.epic}
+                                            strikethrough={ticket.column_name === "Done"}
                                             onClick={() => handleOpenTicket(ticket)}
                                         />
                                     ))}
@@ -141,10 +153,23 @@ export default function TicketsPage() {
                             </div>
                         ))}
                     </div>
-                    <div className={styles.ticket_details}>
-                        <h1>Details</h1>
-                        <TicketForm projectInfo={openProject} ticket={openTicket} closeForm={() => setOpenTicket(false)}/>
-                    </div>
+                    {(!mediumScreen && openTicket) && <div className={styles.ticket_details}>
+                        <div className={styles.header_row}>
+                            <h1 className={styles.long_text}>{openTicket.name}</h1>
+                            <GButton
+                                icon={mdiCloseCircle}
+                                transparent
+                                iconSize={1.7}
+                                className={styles.close_btn}
+                                onClick={() => setOpenTicket(null)}
+                                type="button"
+                            />
+                        </div>
+                        <TicketForm projectInfo={openProject} ticket={openTicket}/>
+                    </div>}
+                    {(mediumScreen && openTicket) && <GDialog title={openTicket.name} openDialog={openTicket} setOpenDialog={handleCloseDialog}>
+                        <TicketForm projectInfo={openProject} />
+                    </GDialog>}
                 </div>
             </div>}
         </Fragment>

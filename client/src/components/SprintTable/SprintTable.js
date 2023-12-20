@@ -9,7 +9,7 @@ import NoTicketsAvailable from '../NoTicketsAvailable/NoTicketsAvailable';
 
 let initialized = false;
 
-export default function SprintTable({projectID}) {
+export default function SprintTable({projectInfo}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [draggingTicketIndex, setDraggingTicketIndex] = useState(-1);
     const [tickets, setTickets] = useState([]);
@@ -34,7 +34,7 @@ export default function SprintTable({projectID}) {
     }
 
     const handleOnDrop = async (e, col_name) => {
-        if (!await hasPermission("Edit tickets", projectID)) {
+        if (!await hasPermission("Edit tickets", projectInfo.project_id)) {
             alert("You do not have permission to edit tickets");
             return;
         }
@@ -64,7 +64,7 @@ export default function SprintTable({projectID}) {
 
     const getTicketsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/tickets/project/${projectID}`, {
+            const response = await fetch(`http://localhost:5000/tickets/project/${projectInfo.project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -78,7 +78,7 @@ export default function SprintTable({projectID}) {
 
     const getColumnsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/cols/${projectID}`, {
+            const response = await fetch(`http://localhost:5000/cols/${projectInfo.project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -161,6 +161,7 @@ export default function SprintTable({projectID}) {
                                             <TicketBox
                                                 handleDragStart={(e) => handleOnDrag(e, ticket)}
                                                 ticket={ticket}
+                                                projectInfo={projectInfo}
                                             />
                                         </div>
                                     } else {

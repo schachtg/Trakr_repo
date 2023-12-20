@@ -91,7 +91,7 @@ export default function BoardPage() {
                     {!smallScreen && <h1 className={styles.long_text}>Sprint {openProject.curr_sprint}</h1>}
                     <h1 className={styles.long_text}>{openProject.name}</h1>
                 </div>
-                <SprintTable projectID={openProject.project_id}/>
+                <SprintTable projectInfo={openProject}/>
                 <div className={styles.create_ticket_row}>
                     <GButton
                         onClick={openCreateTicket}

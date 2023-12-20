@@ -38,11 +38,28 @@
 }
 
 .ticket_list {
-    width: 70%;
+    width: 100%;
+    min-width: 0;
 }
 
 .ticket_details {
-    width: 60rem;
+    width: 60%;
+    min-width: 30rem;
     padding: 2rem;
     border: 1px solid #e0e0e0;
+}
+
+.header_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3rem;
+}
+
+.long_text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 35px;
+    line-height: 47px;
 }

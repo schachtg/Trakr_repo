@@ -5,6 +5,7 @@
     padding: 0;
     margin: 0;
     width: 100%;
+    min-width: 0;
 }
 
 .row_item {
@@ -51,6 +52,17 @@
     width: fit-content;
     padding: 0;
     margin: 0;
+}
+
+.row_item_title_crossed {
+    font-size: 1.3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: fit-content;
+    padding: 0;
+    margin: 0;
+    text-decoration: line-through;
 }
 
 .row_item_subtitle {

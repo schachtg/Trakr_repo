@@ -5,7 +5,7 @@ import TicketForm from '../TicketForm/TicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 import { hasPermission } from '../../HelperFunctions';
 
-export default function TicketBox({ticket, handleDragStart}) {
+export default function TicketBox({ticket, handleDragStart, projectInfo}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [openDialog, setOpenDialog] = useState(false);
     let smallScreen = windowWidth < SMALL_WIDTH;
@@ -82,7 +82,7 @@ export default function TicketBox({ticket, handleDragStart}) {
                 </div>
             </div>
             <GDialog title={ticket.name} openDialog={openDialog} setOpenDialog={setOpenDialog}>
-                <TicketForm ticket={ticket} closeForm={closeCreateTicket}/>
+                <TicketForm projectInfo={projectInfo} ticket={ticket} closeForm={closeCreateTicket}/>
             </GDialog>
         </Fragment>
     );
