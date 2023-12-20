@@ -30,10 +30,10 @@
     width: 100%;
 }
 
-.table__title {
+.table_title {
     font-size: 2rem;
     margin-bottom: 1rem;
-  }
+}
 
 .project_header {
     width: 100%;

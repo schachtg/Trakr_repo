@@ -1,4 +1,4 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, useEffect} from 'react';
 import styles from './TicketForm.module.css';
 import { useState } from 'react';
 import { mdiContentSave, mdiDelete } from '@mdi/js';
@@ -38,10 +38,11 @@ const assigneeOptions = [
 ];
 
 const sprintOptions = [
-    "Current sprint",
-    "Sprint 2",
-    "Sprint 3",
-    "Sprint 4",
+    "1",
+    "2",
+    "3",
+    "4",
+    "0",
 ];
 
 const columnOptions = [

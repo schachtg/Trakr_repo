@@ -209,16 +209,16 @@ export default function ProjectsPage() {
             {openProject && <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
                 <h1 className={styles.project_header}>{currentProject().name}</h1>
                 <div className={styles.section_container} style={{ "width": "100%" }}>
-                    <h1 className={styles.table__title}>Columns</h1>
+                    <h1 className={styles.table_title}>Columns</h1>
                     <ColumnOrder project_id={openProject}/>
                 </div>
                 <div className={styles.project_row} style={{ "flexDirection": smallScreen ? "column" : "row" }}>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
-                        <h1 className={styles.table__title}>Users</h1>
+                        <h1 className={styles.table_title}>Users</h1>
                         <UserList project_id={openProject} roles={roles} setRoles={setRoles}/>
                     </div>
                     <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
-                        <h1 className={styles.table__title}>Permissions</h1>
+                        <h1 className={styles.table_title}>Permissions</h1>
                         <PermissionsTable project_id={openProject} roles={roles} setRoles={setRoles}/>
                     </div>
                 </div>
