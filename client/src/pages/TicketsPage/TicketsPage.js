@@ -19,6 +19,7 @@ export default function TicketsPage() {
     let smallScreen = windowWidth < SMALL_WIDTH;
     let mediumScreen = windowWidth < LARGE_WIDTH;
 
+    // Need epics filter and creation
     const getOpenProjectID = async () => {
         try {
             const response = await fetch(`http://localhost:5000/user_info`, {
@@ -100,14 +101,12 @@ export default function TicketsPage() {
                 return;
             }
             const sprintIndex = ticket.sprint == 0 ? 4 : (ticket.sprint - currSprint);
-            console.log(ticket.sprint);
             sprintTickets[sprintIndex].push(ticket);
         });
         setSprintTickets(sprintTickets);
     }
 
     const handleOpenTicket = (ticket) => {
-        console.log(ticket);
         setOpenTicket(ticket);
     }
 
