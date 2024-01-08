@@ -24,6 +24,13 @@ CREATE TABLE tickets(
     username VARCHAR(255)
 );
 
+CREATE TABLE epics(
+    epic_id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    project_id INT REFERENCES projects(project_id),
+    color VARCHAR(255)
+);
+
 CREATE TABLE user_info(
     user_id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -56,6 +63,7 @@ INSERT INTO user_info (email, name, password) VALUES ('PublicDemo', 'Public User
 -- Clear tables from db
 DROP TABLE IF EXISTS projects CASCADE;
 DROP TABLE IF EXISTS tickets CASCADE;
+DROP TABLE IF EXISTS epics CASCADE;
 DROP TABLE IF EXISTS user_info CASCADE;
 DROP TABLE IF EXISTS cols CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
