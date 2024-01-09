@@ -514,7 +514,7 @@ app.post("/epics", authenticateToken, async (req, res) => {
         return;
       }
 
-      res.status(201).json("Epics were added");
+      res.status(201).json(newEpic.rows[0]);
   } catch (err) {
     console.error(err.message);
   }

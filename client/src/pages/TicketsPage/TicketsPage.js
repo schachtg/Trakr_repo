@@ -98,7 +98,7 @@ export default function TicketsPage() {
             setOpenProject(project);
             setTickets(tickets);
             setEpicList(epics);
-            getTicketsForSprints(tickets, project.curr_sprint);
+            getTicketsForSprints(tickets, project.curr_sprint, []);
         } catch (err) {
             console.error(err.message);
         }
@@ -111,10 +111,16 @@ export default function TicketsPage() {
         return `Sprint ${index + openProject.curr_sprint}`;
     }
 
-    const getTicketsForSprints = (newTickets, currSprint) => {
+    const getTicketsForSprints = (newTickets, currSprint, newFilteredEpics) => {
         const sprintTickets = [[], [], [], [], []];
         newTickets.forEach((ticket) => {
-            if (ticket.sprint > currSprint + numSprintsDisplayed) {
+            if (
+                ticket.sprint > currSprint + numSprintsDisplayed
+                || ticket.sprint < currSprint - 1
+            ) {
+                return;
+            }
+            if (newFilteredEpics.length > 0 && !newFilteredEpics.includes(ticket.epic)) {
                 return;
             }
             const sprintIndex = ticket.sprint == 0 ? 4 : (ticket.sprint - currSprint);
@@ -148,6 +154,10 @@ export default function TicketsPage() {
         setNewEpicName(e.target.value);
         if (e.target.value.length === 0) {
             setNewEpicErrorMessage("Name cannot be empty");
+        } else if(epicList.some((epic) => epic.name === e.target.value)) {
+            setNewEpicErrorMessage("Name already exists");
+        } else if(e.target.value.length > 20) {
+            setNewEpicErrorMessage("Name cannot be longer than 20 characters");
         } else {
             setNewEpicErrorMessage("");
         }
@@ -165,10 +175,17 @@ export default function TicketsPage() {
 
     const handleChangeFilteredEpics = (value) => {
         setFilteredEpics(value);
+        getTicketsForSprints(tickets, openProject.curr_sprint, value);
+    }
+
+    const handleOpenCreateEpicDialog = () => {
+        setNewEpicErrorMessage("Name cannot be empty");
+        setNewEpicName("");
+        setCreateEpicDialog(true);
     }
 
     const handleCreateEpic = async () => {
-        const body = { project_id: openProject.project_id, name: "New Epic", color: "#000000" };
+        const body = { project_id: openProject.project_id, name: newEpicName, color: "#000000" };
         try{
             const response = await fetch(`http://localhost:5000/epics`, {
                 method: "POST",
@@ -177,6 +194,8 @@ export default function TicketsPage() {
                 body: JSON.stringify(body)
             });
             const data = await response.json();
+            setEpicList([...epicList, data]);
+            setCreateEpicDialog(false);
             return data;
         } catch (err) {
             console.error(err.message);
@@ -197,6 +216,15 @@ export default function TicketsPage() {
                 credentials: "include",
                 body: JSON.stringify(body)
             });
+            const newEpicList = epicList.map((epic) => {
+                if (epic.epic_id === editEpic.epic_id) {
+                    epic.name = newEpicName;
+                }
+                return epic;
+            }
+            );
+            setEpicList(newEpicList);
+            setOpenEditEpicDialog(false);
         } catch (err) {
             console.error(err.message);
         }
@@ -218,6 +246,10 @@ export default function TicketsPage() {
                 credentials: "include",
                 body: JSON.stringify(body)
             });
+            const newEpicList = epicList.filter((epic) => epic.epic_id !== editEpic.epic_id);
+            setEpicList(newEpicList);
+            setOpenDeleteEpicDialog(false);
+            setOpenEditEpicDialog(false);
         } catch (err) {
             console.error(err.message);
         }
@@ -271,7 +303,7 @@ export default function TicketsPage() {
                                     {epicList.map((epic, index) => <Option key={index} value={epic.name}>{epic.name}</Option>)}
                                 </Select>
                             </div>
-                            <GButton icon={mdiPlus} onClick={handleCreateEpic}>Create Epic</GButton>
+                            <GButton centered icon={mdiPlus} onClick={handleOpenCreateEpicDialog}>Create Epic</GButton>
                         </div>
                         {[...Array(numSprintsDisplayed + 1)].map((e, i) => (
                             <div key={i} className={styles.section_container}>
