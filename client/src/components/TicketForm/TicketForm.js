@@ -11,52 +11,33 @@ import DangerDialog from '../DangerDialog/DangerDialog';
 const { Option } = Select;
 
 // Temp options
-const epicOptions = [
-    "No epic",
-    "Epic 1",
-    "Epic 2",
-    "Epic 3",
-];
 
-const typeOptions = [
-    "Task",
-    "Bug",
-    "Spike",
-];
-
-const ticketList = [
-    "Ticket 1",
-    "Ticket 2",
-    "Ticket 3",
-];
-
-const assigneeOptions = [
-    "No asignee",
-    "Person 1",
-    "Person 2",
-    "Person 3",
-];
-
-const sprintOptions = [
-    "1",
-    "2",
-    "3",
-    "4",
-    "0",
-];
-
-const columnOptions = [
-    "To Do",
-    "In Progress",
-    "Testing",
-    "Done",
-    "Impeded",
+const priorityOptions = [
+    "Very high",
+    "High",
+    "Medium",
+    "Low",
+    "Very low",
 ];
 
 export default function TicketForm({closeForm, ticket, projectInfo}) {
     const [formData, setFormData] = useState({
         name: "",
-        type: "Task",
+        priority: "Medium",
+        epic: -1,
+        description: "",
+        blocks: [],
+        blocked_by: [],
+        points: 0,
+        assignee: "No assignee",
+        sprint: projectInfo.curr_sprint,
+        column_name: "To Do",
+        pull_request: "",
+        project_id: projectInfo.project_id
+    });
+    const [displayedFormData, setDisplayedFormData] = useState({
+        name: "",
+        priority: "Medium",
         epic: "No epic",
         description: "",
         blocks: [],
@@ -70,6 +51,11 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
     });
     const [errorMessage, setErrorMessage] = useState('');
     const [deleteDialog, setDeleteDialog] = useState(false);
+    const [epicOptions, setEpicOptions] = useState([]);
+    const [ticketOptions, setTicketOptions] = useState([]);
+    const [sprintOptions, setSprintOptions] = useState([0]);
+    const [assigneeOptions, setAssigneeOptions] = useState([]);
+    const [columnOptions, setColumnOptions] = useState([]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -79,10 +65,18 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
     const handleChangeEpic = (value) => {
         let name = "epic"
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+
+        // Get the name of the epic with epic_id equal to value
+        let epic = epicOptions.find(epic => epic.epic_id === value);
+        if (epic) {
+            setDisplayedFormData((prevFormData) => ({ ...prevFormData, [name]: epic.name }));
+        } else {
+            setDisplayedFormData((prevFormData) => ({ ...prevFormData, [name]: "No epic" }));
+        }
     };
 
-    const handleChangeType = (value) => {
-        let name = "type"
+    const handleChangePriority = (value) => {
+        let name = "priority"
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
     };
 
@@ -94,16 +88,39 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
     const handleChangeBlocks = (value) => {
         let name = "blocks"
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+
+        // Get the name of the ticket with ticket_id equal to value
+        let blocks = [];
+        value.forEach(ticket_id => {
+            const ticket = ticketOptions.find(ticket => ticket.ticket_id === ticket_id);
+            if (ticket) {
+                blocks.push(ticket.name);
+            }
+        });
+
+        setDisplayedFormData((prevFormData) => ({ ...prevFormData, [name]: blocks }));
     };
 
     const handleChangeBlockedBy = (value) => {
         let name = "blocked_by"
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+
+        let blocked = [];
+        value.forEach(ticket_id => {
+            const ticket = ticketOptions.find(ticket => ticket.ticket_id === ticket_id);
+            if (ticket) {
+                blocked.push(ticket.name);
+            }
+        });
+
+        setDisplayedFormData((prevFormData) => ({ ...prevFormData, [name]: blocked }));
     };
 
     const handleChangeSprint = (value) => {
         let name = "sprint"
+        const displayedSprint = value !== 0 ? value : "Backlog";
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+        setDisplayedFormData((prevFormData) => ({ ...prevFormData, [name]: displayedSprint }));
     };
 
     const handleChangeColumn = (value) => {
@@ -161,7 +178,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
             try{ 
                 const body = {
                     name: formData.name,
-                    type: formData.type,
+                    priority: formData.priority,
                     epic: formData.epic,
                     description: formData.description,
                     blocks: formData.blocks,
@@ -220,23 +237,124 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
         }
     };
 
-    useEffect(() => {
-        if (ticket) {
-            setFormData({
-                name: ticket.name,
-                type: ticket.type,
-                epic: ticket.epic,
-                description: ticket.description,
-                blocks: ticket.blocks,
-                blocked_by: ticket.blocked,
-                points: ticket.points,
-                assignee: ticket.assignee,
-                sprint: ticket.sprint,
-                column_name: ticket.column_name,
-                pull_request: ticket.pull_request,
-                project_id: projectInfo.project_id
+    const handleUpdateEpicOptions = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/epics/${projectInfo.project_id}`, {
+                method: "GET",
+                credentials: "include"
             });
+            const jsonData = await response.json();
+            setEpicOptions([{name: "No epic", epic_id: -1}]);
+            jsonData.forEach(epic => {
+                setEpicOptions(prevEpicOptions => [...prevEpicOptions, epic]);
+            });
+            return jsonData;
+        } catch (err) {
+            console.error(err.message);
         }
+    };
+
+    const handleUpdateTicketOptions = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/tickets/project/${projectInfo.project_id}`, {
+                method: "GET",
+                credentials: "include"
+            });
+            const jsonData = await response.json();
+            setTicketOptions(jsonData);
+            return jsonData;
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const handleUpdateSprintOptions = () => {
+        try {
+            let tempSprintOptions = [0];
+            for (let i = 0; i < 4; i++) {
+                tempSprintOptions.push(projectInfo.curr_sprint + i);
+            }
+            setSprintOptions(tempSprintOptions);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const handleUpdateAssigneeOptions = async () => {
+        let tempAssigneeOptions = ["No assignee"];
+        try {
+            const response = await fetch(`http://localhost:5000/user_info/project/${projectInfo.project_id}`, {
+                method: "GET",
+                credentials: "include"
+            });
+            const jsonData = await response.json();
+            jsonData.forEach(user => {
+                tempAssigneeOptions.push(user.name);
+            });
+            setAssigneeOptions(tempAssigneeOptions);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    const handleUpdateColumnOptions = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/cols/${projectInfo.project_id}`, {
+                method: "GET",
+                credentials: "include"
+            });
+            const jsonData = await response.json();
+            setColumnOptions(jsonData.map(col => col.name));
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
+    useEffect(() => {
+        handleUpdateTicketOptions().then((tickets) => {
+            handleUpdateEpicOptions().then((epics) => {
+                if (ticket) {
+                    const displayedBlocks = ticket.blocks.length > 0 ? tickets.filter(t => ticket.blocks.includes(t.ticket_id)).map(t => t.name) : [];
+                    const displayedBlocked = ticket.blocked_by.length > 0 ? tickets.filter(t => ticket.blocked_by.includes(t.ticket_id)).map(t => t.name) : [];
+                    let tempEpic = epics.find(epic => epic.epic_id === ticket.epic);
+                    const displayedEpic = tempEpic !== undefined ? tempEpic.name : "No epic";
+                    const displayedSprint = ticket.sprint !== 0 ? ticket.sprint : "Backlog";
+                    const blocks = ticket.blocks.length > 0 ? ticket.blocks.filter(t => tickets.filter(innerTicket => innerTicket.ticket_id === t).length > 0) : [];
+                    const blocked = ticket.blocked_by.length > 0 ? ticket.blocked_by.filter(t => tickets.filter(innerTicket => innerTicket.ticket_id === t).length > 0) : [];
+                    setFormData({
+                        name: ticket.name,
+                        priority: ticket.priority,
+                        epic: ticket.epic,
+                        description: ticket.description,
+                        blocks: blocks,
+                        blocked_by: blocked,
+                        points: ticket.points,
+                        assignee: ticket.assignee,
+                        sprint: ticket.sprint,
+                        column_name: ticket.column_name,
+                        pull_request: ticket.pull_request,
+                        project_id: projectInfo.project_id
+                    });
+                    setDisplayedFormData({
+                        name: ticket.name,
+                        priority: ticket.priority,
+                        epic: displayedEpic,
+                        description: ticket.description,
+                        blocks: displayedBlocks,
+                        blocked_by: displayedBlocked,
+                        points: ticket.points,
+                        assignee: ticket.assignee,
+                        sprint: displayedSprint,
+                        column_name: ticket.column_name,
+                        pull_request: ticket.pull_request,
+                        project_id: projectInfo.project_id
+                    });
+                }
+            });
+        });
+        handleUpdateSprintOptions();
+        handleUpdateAssigneeOptions();
+        handleUpdateColumnOptions();
     }, [ticket]);
 
     return (
@@ -248,20 +366,20 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                 </div>
            
                 <div className={styles.form_section}>
-                    <label htmlFor="type">Type:</label>
+                    <label htmlFor="type">Priority:</label>
                     <Select
                         dropdownStyle={{ backgroundColor: '#555' }}
                         showSearch
                         optionFilterProp="children"
-                        name="type"
-                        id="type"
-                        value={formData.type}
-                        onChange={handleChangeType}
+                        name="priority"
+                        id="priority"
+                        value={formData.priority}
+                        onChange={handleChangePriority}
                         filterOption={(input, option) =>
                             option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     >
-                        {typeOptions.map((type, index) => <Option key={index} value={type}>{type}</Option>)}
+                        {priorityOptions.map((priority, index) => <Option key={index} value={priority}>{priority}</Option>)}
                     </Select>
                 </div>
 
@@ -273,13 +391,14 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         optionFilterProp="children"
                         name="epic"
                         id="epic"
-                        value={formData.epic}
+                        value={displayedFormData.epic}
                         onChange={handleChangeEpic}
+                        onFocus={handleUpdateEpicOptions}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     >
-                        {epicOptions.map((epic, index) => <Option key={index} value={epic}>{epic}</Option>)}
+                        {epicOptions.map((epic, index) => <Option key={index} value={epic.epic_id}>{epic.name}</Option>)}
                     </Select>
                 </div>
 
@@ -298,12 +417,14 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         id="blocks"
                         mode="multiple"
                         value={formData.blocks}
+                        defaultValue={displayedFormData.blocks}
                         onChange={handleChangeBlocks}
+                        onFocus={handleUpdateTicketOptions}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     >
-                        {ticketList.map((blocks, index) => <Option key={index} value={blocks}>{blocks}</Option>)}
+                        {ticketOptions.map((blocks, index) => <Option key={index} value={blocks.ticket_id}>{blocks.name}</Option>)}
                     </Select>
                 </div>
 
@@ -317,12 +438,14 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         id="blocked_by"
                         mode="multiple"
                         value={formData.blocked_by}
+                        defaultValue={displayedFormData.blocked_by}
                         onChange={handleChangeBlockedBy}
+                        onFocus={handleUpdateTicketOptions}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     >
-                        {ticketList.map((blocked, index) => <Option key={index} value={blocked}>{blocked}</Option>)}
+                        {ticketOptions.map((blocked, index) => <Option key={index} value={blocked.ticket_id}>{blocked.name}</Option>)}
                     </Select>
                 </div>
 
@@ -358,13 +481,13 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                         optionFilterProp="children"
                         name="sprint"
                         id="sprint"
-                        value={formData.sprint}
+                        value={displayedFormData.sprint}
                         onChange={handleChangeSprint}
                         filterOption={(input, option) =>
                         option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     >
-                        {sprintOptions.map((sprint, index) => <Option key={index} value={sprint}>{sprint}</Option>)}
+                        {sprintOptions.map((sprint, index) => <Option key={index} value={sprint}>{sprint !== 0 ? sprint : "Backlog"}</Option>)}
                     </Select>
                 </div>
 

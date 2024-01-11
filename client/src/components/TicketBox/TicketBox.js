@@ -8,6 +8,7 @@ import { hasPermission } from '../../HelperFunctions';
 export default function TicketBox({ticket, handleDragStart, projectInfo}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [openDialog, setOpenDialog] = useState(false);
+    const [epicList, setEpicList] = useState([]);
     let smallScreen = windowWidth < SMALL_WIDTH;
 
     const openCreateTicket = async () => {
@@ -18,11 +19,29 @@ export default function TicketBox({ticket, handleDragStart, projectInfo}) {
         setOpenDialog(true);
     }
 
+    
+    const getEpicList = async (projectId) => {
+        try{
+            const response = await fetch(`http://localhost:5000/epics/${projectId}`, {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include"
+            });
+            const data = await response.json();
+            return data;
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
+
     const closeCreateTicket = () => {
         setOpenDialog(false);
     }
 
     useEffect(() => {
+        getEpicList(projectInfo.project_id).then((data) => {
+            setEpicList(data);
+        });
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
         };
@@ -58,6 +77,14 @@ export default function TicketBox({ticket, handleDragStart, projectInfo}) {
         }
     }
 
+    const getEpicName = (epicId) => {
+        const epic = epicList.find((epic) => epic.epic_id === epicId);
+        if (!epic) {
+            return "";
+        }
+        return epic.name;
+    }
+
     return (
         <Fragment>
             <div className={styles.outer_container}>
@@ -69,7 +96,7 @@ export default function TicketBox({ticket, handleDragStart, projectInfo}) {
                 >
                     <h1 className={styles.ticket_title}>{ticket.name}</h1>
                     <div className={styles.ticket_body}>
-                        {(ticket.epic !== "No epic" && ticket.epic !== "") && <h1 className={styles.ticket_epic}>{ticket.epic}</h1>}
+                        {(getEpicName(ticket.epic) !== "") && <h1 className={styles.ticket_epic}>{getEpicName(ticket.epic)}</h1>}
                         <div className={styles.ticket_footer}>
                             <h1 className={styles.ticket_asignee}>{ticket.assignee !== "No assignee" && ticket.assignee}</h1>
                             <div className={styles.points_container}>

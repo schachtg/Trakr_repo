@@ -26,12 +26,12 @@ app.use(cookieParser());
 app.post("/tickets", authenticateToken, async (req, res) => {
   try {
     const tableName = "tickets";
-    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
+    const { name, priority, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
     const username = req.user.email;
 
     const newTicket = await pool.query(
-      `INSERT INTO ${tableName} (name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
-      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, username]
+      `INSERT INTO ${tableName} (name, priority, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+      [name, priority, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, username]
     );
 
     // Update column size
@@ -93,7 +93,7 @@ app.get("/tickets/:id", authenticateToken, async (req, res) => {
 app.put("/tickets/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
+    const { name, priority, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
 
     // Get old ticket
     const oldTicket = await pool.query(
@@ -131,8 +131,8 @@ app.put("/tickets/:id", authenticateToken, async (req, res) => {
     }
 
     const updateTicket = await pool.query(
-      `UPDATE tickets SET name = $1, type = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, pull_request = $11, project_id = $12 WHERE ticket_id = $13 RETURNING *`,
-      [name, type, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, id]
+      `UPDATE tickets SET name = $1, priority = $2, epic = $3, description = $4, blocks = $5, blocked_by = $6, points = $7, assignee = $8, sprint = $9, column_name = $10, pull_request = $11, project_id = $12 WHERE ticket_id = $13 RETURNING *`,
+      [name, priority, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id, id]
     );
 
     res.json(updateTicket.rows[0]);

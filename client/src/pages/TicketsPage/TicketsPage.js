@@ -10,6 +10,7 @@ import GButton from '../../components/GButton/GButton';
 import TicketForm from '../../components/TicketForm/TicketForm';
 import GDialog from '../../components/GDialog/GDialog';
 import DangerDialog from '../../components/DangerDialog/DangerDialog';
+import CreateTicketForm from '../../components/TicketForm/TicketForm';
 
 const { Option } = Select;
 
@@ -27,6 +28,7 @@ export default function TicketsPage() {
     const [openProject, setOpenProject] = useState(null);
     const [sprintTickets, setSprintTickets] = useState([[], [], [], [], []]);// 4 sprints + backlog
     const [openTicket, setOpenTicket] = useState(null); // [ticket_id, ticket_name
+    const [openNewTicketDialog, setOpenNewTicketDialog] = useState(false);
     const numSprintsDisplayed = 4;
     let smallScreen = windowWidth < SMALL_WIDTH;
     let mediumScreen = windowWidth < LARGE_WIDTH;
@@ -255,6 +257,14 @@ export default function TicketsPage() {
         }
     }
 
+    const getEpicName = (epicId) => {
+        const epic = epicList.find((epic) => epic.epic_id === epicId);
+        if (!epic) {
+            return "";
+        }
+        return epic.name;
+    }
+
     useEffect(() => {
         initializeProject();
         const handleWindowResize = () => {
@@ -305,6 +315,18 @@ export default function TicketsPage() {
                             </div>
                             <GButton centered icon={mdiPlus} onClick={handleOpenCreateEpicDialog}>Create Epic</GButton>
                         </div>
+                        <div className={styles.isolated_buttom}>
+                            <GButton
+                                onClick={() => setOpenNewTicketDialog(true)}
+                                icon={mdiPlus}
+                                type="button"
+                            >
+                                Create Ticket
+                            </GButton>
+                        </div>
+                        <GDialog title="Create new ticket" openDialog={openNewTicketDialog} setOpenDialog={setOpenNewTicketDialog}>
+                            <CreateTicketForm projectInfo={openProject} closeForm={() => setOpenNewTicketDialog(false)}/>
+                        </GDialog>
                         {[...Array(numSprintsDisplayed + 1)].map((e, i) => (
                             <div key={i} className={styles.section_container}>
                                 <h1 className={styles.sprint_title}>{getSprintName(i)}</h1>
@@ -313,7 +335,7 @@ export default function TicketsPage() {
                                         <RowItem
                                             key={ticket.ticket_id}
                                             title={ticket.name}
-                                            subtitle={ticket.epic === "No epic" ? "" : ticket.epic}
+                                            subtitle={getEpicName(ticket.epic)}
                                             strikethrough={ticket.column_name === "Done"}
                                             onClick={() => handleOpenTicket(ticket)}
                                         />
@@ -337,7 +359,7 @@ export default function TicketsPage() {
                         <TicketForm projectInfo={openProject} ticket={openTicket}/>
                     </div>}
                     {(mediumScreen && openTicket) && <GDialog title={openTicket.name} openDialog={openTicket} setOpenDialog={handleCloseDialog}>
-                        <TicketForm projectInfo={openProject} />
+                        <TicketForm projectInfo={openProject} ticket={openTicket} />
                     </GDialog>}
                     <GDialog fitContent title="Create Epic" openDialog={createEpicDialog} setOpenDialog={setCreateEpicDialog}>
                         <label htmlFor="name">Name:</label>

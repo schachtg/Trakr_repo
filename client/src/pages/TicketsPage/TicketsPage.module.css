@@ -100,3 +100,7 @@
 .error_message {
     color: #ff1f5f;
 }
+
+.isolated_buttom {
+    margin: 1rem 0;
+}
