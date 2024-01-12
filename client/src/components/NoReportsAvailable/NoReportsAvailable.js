@@ -1,8 +1,8 @@
 import React, {Fragment, useState, useEffect} from 'react';
-import styles from './NoTicketsAvailable.module.css';
-import ImageNoTickets from '../../assets/NoTicketsAvailable.svg';
+import styles from './NoReportsAvailable.module.css';
+import Image from '../../assets/NoReportsAvailable.svg';
 
-export default function NoTicketsAvailable() {
+export default function NoReportsAvailable() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const SMALL_WIDTH = 700;
     let smallScreen = windowWidth < SMALL_WIDTH;
@@ -21,9 +21,9 @@ export default function NoTicketsAvailable() {
     }, []);
     return (
         <Fragment>
-            <div className={styles.no_tickets_container}>
-                <img src={ImageNoTickets} className={smallScreen ? styles.img_sml : styles.img_lrg} alt="No tickets available"/>
-                <h1 className={smallScreen ? styles.no_tickets_text_sml : styles.no_tickets_text_lrg}>No tickets made yet</h1>
+            <div className={styles.icon_container}>
+                <img src={Image} className={smallScreen ? styles.img_sml : styles.img_lrg} alt="No reports available"/>
+                <h1 className={smallScreen ? styles.text_sml : styles.text_lrg}>Reports are still in development</h1>
             </div>
         </Fragment>
     );

@@ -511,7 +511,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
 
                 <div className={styles.form_section}>
                     <label htmlFor="pull_request">Link to pull request:</label>
-                    <input className={styles.dark_input} type="text" id="pull_request" name="pull_request" value={formData.pull_request} onChange={handleChange}/>
+                    <input maxLength="200" className={styles.dark_input} type="text" id="pull_request" name="pull_request" value={formData.pull_request} onChange={handleChange}/>
                 </div>
 
                 <div className={styles.form_section}>

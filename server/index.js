@@ -477,6 +477,60 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
   }
 });
 
+app.post("/projects/next_sprint/:project_id", authenticateToken, async (req, res) => {
+  try {
+    const { project_id } = req.params;
+    const email = req.user.email;
+
+    // Check if user is in the project
+    const user_list = await pool.query(
+      `SELECT * FROM projects WHERE project_id = $1`,
+      [project_id]
+    );
+
+    if (user_list.rows[0].user_emails.includes(email)) {
+      const currSprint = user_list.rows[0].curr_sprint;
+      await pool.query(
+        `UPDATE projects SET curr_sprint = $1 WHERE project_id = $2`,
+        [currSprint + 1, project_id]
+      );
+
+      // Delete tickets in done column
+      await pool.query(
+        `DELETE FROM tickets WHERE project_id = $1 AND sprint = $2 AND column_name = 'Done'`,
+        [project_id, currSprint]
+      );
+
+      // Update any tickets that are in the current sprint
+      await pool.query(
+        `UPDATE tickets SET sprint = $1 WHERE project_id = $2 AND sprint = $3`,
+        [currSprint + 1, project_id, currSprint]
+      );
+
+      // Reset the size of the done column
+      const columns = await pool.query(
+        `SELECT * FROM cols WHERE project_id = $1`,
+        [project_id]
+      );
+
+      const doneCol = columns.rows.find(column => column.name === "Done");
+      if (doneCol !== undefined) {
+        await pool.query(
+          `UPDATE cols SET size = 0 WHERE col_id = $1`,
+          [doneCol.col_id]
+        );
+      }
+      
+
+      res.status(200).json("Next sprint was set!");
+    } else {
+      res.status(401).json("User is not in the project");
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 app.post("/epics", authenticateToken, async (req, res) => {
   const { name, color, project_id } = req.body;
   const email = req.user.email;
@@ -559,6 +613,17 @@ app.put("/epics", authenticateToken, async (req, res) => {
 
     if (!user_list.rows[0].user_emails.includes(email)) {
       res.status(401).json("User is not in the project");
+      return;
+    }
+
+    // Check if an epic with the same name exists
+    const checkEpic = await pool.query(
+      `SELECT * FROM epics WHERE name = $1 AND project_id = $2`,
+      [name, project_id]
+    );
+
+    if (checkEpic.rowCount > 0) {
+      res.status(409).json("Epic already exists");
       return;
     }
 
@@ -693,6 +758,17 @@ app.post("/cols/add_single", authenticateToken, async (req, res) => {
   const email = req.user.email;
 
   try {
+    // Check if column with the same name exists
+    const checkCol = await pool.query(
+      `SELECT * FROM cols WHERE name = $1 AND project_id = $2`,
+      [name, project_id]
+    );
+
+    if (checkCol.rowCount > 0) {
+      res.status(409).json("Column already exists");
+      return;
+    }
+
     const firstCol = await pool.query(
       `SELECT * FROM cols WHERE project_id = $1 AND next_col = -1`,
       [project_id]
@@ -799,9 +875,9 @@ app.delete("/cols", authenticateToken, async (req, res) => {
           return;
         }
 
-        // Delete tickets in column
+        // Move tickets in column to To Do column
         await pool.query(
-          `DELETE FROM tickets WHERE column_name = $1 AND project_id = $2`,
+          `UPDATE tickets SET column_name = 'To Do' WHERE column_name = $1 AND project_id = $2`,
           [currCol.rows[0].name, project_id]
         );
 
@@ -840,6 +916,17 @@ app.post("/roles", authenticateToken, async (req, res) => {
   try {
     if (roles.length > 0) {
       for (let i = 0; i < roles.length; i++) {
+        // Check if role with the same name exists
+        const checkRole = await pool.query(
+          `SELECT * FROM roles WHERE name = $1 AND project_id = $2`,
+          [roles[i].name, project_id]
+        );
+
+        if (checkRole.rowCount > 0) {
+          res.status(409).json("Role already exists");
+          return;
+        }
+
         const newRole = await pool.query(
           `INSERT INTO roles (name, permissions, user_emails, project_id) VALUES ($1, $2, $3, $4) RETURNING *`,
           [roles[i].name, roles[i].permissions, roles[i].user_emails, project_id]
@@ -916,6 +1003,17 @@ app.put("/roles", authenticateToken, async (req, res) => {
     );
 
     if (user_list.rows[0].user_emails.includes(email)) {
+      // Check if role with the same name exists
+      const checkRole = await pool.query(
+        `SELECT * FROM roles WHERE name = $1 AND project_id = $2`,
+        [name, project_id]
+      );
+
+      if (checkRole.rowCount > 0) {
+        res.status(409).json("Role already exists");
+        return;
+      }
+
       const updatedRole = await pool.query(
         `UPDATE roles SET name = $1, permissions = $2, user_emails = $3 WHERE role_id = $4 RETURNING *`,
         [name, permissions, user_emails, role_id]

@@ -13,7 +13,7 @@ import LoginRedirect from './pages/LoginRedirect/LoginRedirect';
 import LoginPageWrapper from './pages/LoginPageWrapper/LoginPageWrapper';
 import BoardPage from './pages/BoardPage/BoardPage';
 import TicketsPage from './pages/TicketsPage/TicketsPage';
-import HistoryPage from './pages/HistoryPage/HistoryPage';
+import ReportsPage from './pages/ReportsPage/ReportsPage';
 import ProjectsPage from './pages/ProjectsPage/ProjectsPage';
 
 export default function App() {
@@ -30,7 +30,7 @@ export default function App() {
           <Route path="/login" element={<LoginPageWrapper />} />
           <Route path="/board" element={<BoardPage />} />
           <Route path="/tickets" element={<TicketsPage />} />
-          <Route path="/history" element={<HistoryPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
         </Routes>
         <Underglow />

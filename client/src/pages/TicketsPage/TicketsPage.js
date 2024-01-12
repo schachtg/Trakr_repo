@@ -3,6 +3,7 @@ import styles from './TicketsPage.module.css';
 import { SMALL_WIDTH, LARGE_WIDTH } from '../../Constants';
 import { mdiCloseCircle, mdiPlus, mdiContentSave, mdiDelete } from '@mdi/js';
 import { Select } from 'antd';
+import { hasPermission } from '../../HelperFunctions';
 
 // Components
 import RowItem from '../../components/RowItem/RowItem';
@@ -11,6 +12,7 @@ import TicketForm from '../../components/TicketForm/TicketForm';
 import GDialog from '../../components/GDialog/GDialog';
 import DangerDialog from '../../components/DangerDialog/DangerDialog';
 import CreateTicketForm from '../../components/TicketForm/TicketForm';
+import NoProjectAvailable from '../../components/NoProjectAvailable/NoProjectAvailable';
 
 const { Option } = Select;
 
@@ -117,8 +119,9 @@ export default function TicketsPage() {
         const sprintTickets = [[], [], [], [], []];
         newTickets.forEach((ticket) => {
             if (
-                ticket.sprint > currSprint + numSprintsDisplayed
-                || ticket.sprint < currSprint - 1
+                (ticket.sprint > currSprint + numSprintsDisplayed
+                || ticket.sprint < currSprint - 1)
+                && ticket.sprint !== 0
             ) {
                 return;
             }
@@ -131,7 +134,11 @@ export default function TicketsPage() {
         setSprintTickets(sprintTickets);
     }
 
-    const handleStartEditEpic = (epic) => {
+    const handleStartEditEpic = async (epic) => {
+        if (!await hasPermission("Edit tickets", openProject.project_id)) {
+            alert("You do not have permission to edit tickets");
+            return;
+        }
         setEditEpic(epic);
         setNewEpicName(epic.name);
         setNewEpicErrorMessage("");
@@ -165,7 +172,11 @@ export default function TicketsPage() {
         }
     }
 
-    const handleOpenTicket = (ticket) => {
+    const handleOpenTicket = async (ticket) => {
+        if (!await hasPermission("Edit tickets", openProject.project_id)) {
+            alert("You do not have permission to edit tickets");
+            return;
+        }
         setOpenTicket(ticket);
     }
 
@@ -180,10 +191,22 @@ export default function TicketsPage() {
         getTicketsForSprints(tickets, openProject.curr_sprint, value);
     }
 
-    const handleOpenCreateEpicDialog = () => {
+    const handleOpenCreateEpicDialog = async () => {
+        if (!await hasPermission("Edit epics", openProject.project_id)) {
+            alert("You do not have permission to edit epics");
+            return;
+        }
         setNewEpicErrorMessage("Name cannot be empty");
         setNewEpicName("");
         setCreateEpicDialog(true);
+    }
+
+    const handleOpenCreateTicketDialog = async () => {
+        if (!await hasPermission("Edit tickets", openProject.project_id)) {
+            alert("You do not have permission to edit tickets");
+            return;
+        }
+        setOpenNewTicketDialog(true);
     }
 
     const handleCreateEpic = async () => {
@@ -195,6 +218,11 @@ export default function TicketsPage() {
                 credentials: "include",
                 body: JSON.stringify(body)
             });
+            if (!response.ok) {
+                const message = await response.text();
+                alert(message);
+            }
+
             const data = await response.json();
             setEpicList([...epicList, data]);
             setCreateEpicDialog(false);
@@ -212,12 +240,19 @@ export default function TicketsPage() {
             color: editEpic.color
         };
         try{
-            await fetch(`http://localhost:5000/epics`, {
+            const response = await fetch(`http://localhost:5000/epics`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(body)
             });
+
+            if (!response.ok) {
+                const message = await response.text();
+                alert(message);
+                window.location.reload();
+            }
+
             const newEpicList = epicList.map((epic) => {
                 if (epic.epic_id === editEpic.epic_id) {
                     epic.name = newEpicName;
@@ -310,14 +345,14 @@ export default function TicketsPage() {
                                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                     }
                                 >
-                                    {epicList.map((epic, index) => <Option key={index} value={epic.name}>{epic.name}</Option>)}
+                                    {epicList.map((epic, index) => <Option key={index} value={epic.epic_id}>{epic.name}</Option>)}
                                 </Select>
                             </div>
                             <GButton centered icon={mdiPlus} onClick={handleOpenCreateEpicDialog}>Create Epic</GButton>
                         </div>
                         <div className={styles.isolated_buttom}>
                             <GButton
-                                onClick={() => setOpenNewTicketDialog(true)}
+                                onClick={handleOpenCreateTicketDialog}
                                 icon={mdiPlus}
                                 type="button"
                             >
@@ -433,6 +468,7 @@ export default function TicketsPage() {
                     </DangerDialog>}
                 </div>
             </div>}
+            {!openProject && <NoProjectAvailable/>}
         </Fragment>
     );
 }

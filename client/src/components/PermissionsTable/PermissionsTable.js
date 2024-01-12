@@ -34,9 +34,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
     const handleSaveNewName = async () => {
         const updatedRoles = [...roles];
         updatedRoles[editRoleIndex].name = newRoleName;
-        setRoles(updatedRoles);
-        setOpenEditDialog(false);
-        await fetch("http://localhost:5000/roles", {
+        const response = await fetch("http://localhost:5000/roles", {
             method : "PUT",
             headers: {"Content-Type": "application/json"},
             credentials: "include",
@@ -48,6 +46,14 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
                 user_emails: updatedRoles[editRoleIndex].user_emails
             })
         });
+        if (!response.ok) {
+            alert("Error updating role name");
+            window.location.reload();
+            return;
+        }
+        setRoles(updatedRoles);
+        setOpenEditDialog(false);
+        return;
     }
 
     const handleChangeChecked = async (event, roleIndex, permissionIndex) => {
@@ -72,17 +78,13 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
         setDeleteDialog(true);
     }
 
-    const handleDeleteRole = () => {
+    const handleDeleteRole = async () => {
         const updatedRoles = [...roles];
         const deletingRoleUserList = updatedRoles[editRoleIndex].user_emails;
         const defaultIndex = updatedRoles.findIndex((role) => role.name === "Default");
         updatedRoles[defaultIndex].user_emails = [...updatedRoles[defaultIndex].user_emails, ...deletingRoleUserList];
         updatedRoles.splice(editRoleIndex, 1);
-        setEditRoleIndex(0);
-        setRoles(updatedRoles);
-        setDeleteDialog(false);
-        setOpenEditDialog(false);
-        fetch("http://localhost:5000/roles", {
+        const response = await fetch("http://localhost:5000/roles", {
             method : "DELETE",
             headers: {"Content-Type": "application/json"},
             credentials: "include",
@@ -91,6 +93,16 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
                 project_id: project_id,
             })
         });
+        if (!response.ok) {
+            alert("Error deleting role");
+            window.location.reload();
+            return;
+        }
+        setEditRoleIndex(0);
+        setRoles(updatedRoles);
+        setDeleteDialog(false);
+        setOpenEditDialog(false);
+        return;
     }
 
     const handleOpenCreateRole = async () => {
@@ -111,15 +123,21 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
             user_emails: []
         };
         updatedRoles.push(newRole);
-        setRoles(updatedRoles);
-        setCreateRoleDialog(false);
-        await fetch("http://localhost:5000/roles", {
+        const response = await fetch("http://localhost:5000/roles", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             credentials: "include",
             body: JSON.stringify({roles: [newRole], project_id: project_id })
         });
+        if (!response.ok) {
+            alert("Error creating role");
+            window.location.reload();
+            return;
+        }
+        setRoles(updatedRoles);
+        setCreateRoleDialog(false);
         window.location.reload();
+        return;
     }
 
     const handleSetNewRoleName = (event) => {

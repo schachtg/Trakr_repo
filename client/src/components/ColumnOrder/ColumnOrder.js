@@ -276,6 +276,12 @@ export default function ColumnOrder({project_id}) {
                 credentials: "include",
                 body: JSON.stringify(body)
             });
+
+            if (!response.ok) {
+                alert("An error occurred. Please try again.");
+                window.location.reload();
+                return;
+            }
             const data = await response.json();
             const newColumns = [...columns];
             if (newColumns.length > 0) {

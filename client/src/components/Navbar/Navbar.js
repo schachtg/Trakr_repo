@@ -103,7 +103,7 @@ export default function NavBar() {
                     <ul className={smallScreen ? styles.ul_sml : styles.ul_lrg}>
                         <CustomLink to="/board">Board</CustomLink>
                         <CustomLink to="/tickets">Tickets</CustomLink>
-                        <CustomLink to="/history">History</CustomLink>
+                        <CustomLink to="/reports">Reports</CustomLink>
                         <CustomLink to="/projects">Projects</CustomLink>
                     </ul>
                     <ul className={`${smallScreen ? styles.ul_sml : styles.ul_lrg} ${styles.button_group}`}>

@@ -11,6 +11,7 @@ import GDialog from '../../components/GDialog/GDialog';
 import SprintTable from '../../components/SprintTable/SprintTable';
 import CreateTicketForm from '../../components/TicketForm/TicketForm';
 import DangerDialog from '../../components/DangerDialog/DangerDialog';
+import NoProjectAvailable from '../../components/NoProjectAvailable/NoProjectAvailable';
 
 export default function BoardPage() {
     const [openDialog, setOpenDialog] = useState(false);
@@ -68,6 +69,19 @@ export default function BoardPage() {
             return;
         }
         setNextSprintDialog(true);
+    }
+
+    const handleChangeSprint = async () => {
+        try{
+            await fetch(`http://localhost:5000/projects/next_sprint/${openProject.project_id}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include"
+            });
+            window.location.reload();
+        } catch (err) {
+            console.error(err.message);
+        }
     }
 
     useEffect(() => {
@@ -129,6 +143,7 @@ export default function BoardPage() {
                     <GButton
                         type="button"
                         warning
+                        onClick={handleChangeSprint}
                     >
                         Next Sprint
                     </GButton>
@@ -140,6 +155,7 @@ export default function BoardPage() {
                     while the finished tickets are deleted.
                 </span>
             </DangerDialog>
+            {!openProject && <NoProjectAvailable/>}
         </Fragment>
     );
 }

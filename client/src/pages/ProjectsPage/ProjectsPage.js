@@ -9,6 +9,7 @@ import { MEDIUM_WIDTH, PERMISSION_LIST } from '../../Constants';
 import DangerDialog from '../../components/DangerDialog/DangerDialog';
 import { hasPermission } from '../../HelperFunctions';
 import GDialog from '../../components/GDialog/GDialog';
+import CreateProjectPicture from '../../components/CreateProjectPicture/CreateProjectPicture';
 
 export default function ProjectsPage() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -224,6 +225,7 @@ export default function ProjectsPage() {
                 </div>
                 <div className={styles.delete_proj_btn}>
                     <GButton
+                        icon={mdiDelete}
                         type="button"
                         warning
                         onClick={handleOpenDeleteWarning}
@@ -247,7 +249,10 @@ export default function ProjectsPage() {
                     </div>
                 </div>
             ))}
-            <div style={{margin: "3rem 0"}}>
+            {projects.length == 0 && <div className={styles.img_container}>
+                <CreateProjectPicture />
+            </div>}
+            <div style={{margin: "2rem 0"}}>
                 <GButton centered icon={mdiPlus} onClick={handleOpenCreateProjectDialog}>Create New Project</GButton>
             </div>
             <GDialog fitContent title="Create New Project" openDialog={createProjectDialog} setOpenDialog={setCreateProjectDialog}>

@@ -17,14 +17,26 @@ export default function SprintTable({projectInfo}) {
     const [largestCol, setLargestCol] = useState(0);
     let smallScreen = windowWidth < SMALL_WIDTH;
 
-    const getLargestCol = (newColumns) => {
-        setLargestCol(newColumns.reduce((max, column) => column.size > max ? column.size : max, 0));
+    const getLargestCol = (newTickets, newColumns) => {
+        // Look through each ticket in the current sprint for the project and find the largest column
+        let largest = 0;
+        for (let i = 0; i < newColumns.length; i++) {
+            let size = newTickets.filter((ticket) => 
+                ticket.column_name === newColumns[i].name
+                && ticket.project_id === projectInfo.project_id
+                && ticket.sprint === projectInfo.curr_sprint).length;
+            if (size > largest) {
+                largest = size;
+            }
+        }
+
+        setLargestCol(largest);
     }
 
     const setTicketsWrapper = async (newTickets) => {
         await getColumnsFromDB().then((data) => {
             setColumns(orderColumnsByLocation(data));
-            getLargestCol(data);
+            getLargestCol(newTickets, data);
         });
         setTickets(newTickets);
     }
@@ -120,6 +132,18 @@ export default function SprintTable({projectInfo}) {
         e.preventDefault();
     }
 
+    const getColumnSize = (col_id) => {
+        let col = columns.find((col) => col.col_id === col_id);
+        if (col === undefined) {
+            return 0;
+        } else {
+            return tickets.filter((ticket) => 
+                ticket.column_name === col.name
+                && ticket.project_id === projectInfo.project_id
+                && ticket.sprint === projectInfo.curr_sprint).length;
+        }
+    }
+
     useEffect(() => {
         if (!initialized) {
             getTicketsFromDB();
@@ -145,12 +169,12 @@ export default function SprintTable({projectInfo}) {
                         <div key={colIndex} className={colIndex === 0 ? styles.sprint_col_left_edge : styles.sprint_col}>
                             <div className={styles.display_max}>
                                 {column.max > 0 && <div>
-                                    {column.size}/{column.max}
+                                    {getColumnSize(column.col_id)}/{column.max}
                                 </div>}
                             </div>
-                            <div className={column.max > 0 && column.max <= column.size ? styles.warning_border : styles.empty_border}>
+                            <div className={column.max > 0 && column.max <= getColumnSize(column.col_id) ? styles.warning_border : styles.empty_border}>
                                 <h1 className={smallScreen ? styles.col_name_sml : styles.col_name}>{column.name}</h1>
-                                {tickets.map((ticket, ticketIndex) => {
+                                {tickets.filter((t) => t.sprint === projectInfo.curr_sprint).map((ticket, ticketIndex) => {
                                     if (ticket.column_name === column.name) {
                                         return <div
                                             key={ticketIndex}
@@ -168,7 +192,7 @@ export default function SprintTable({projectInfo}) {
                                         return null;
                                     }
                                 })}
-                                {Array.from({ length: largestCol - column.size}, (item, boxIndex) => (
+                                {Array.from({ length: largestCol - getColumnSize(column.col_id)}, (item, boxIndex) => (
                                     <div
                                         key={boxIndex}
                                         className={styles.sprint_box}
@@ -180,7 +204,7 @@ export default function SprintTable({projectInfo}) {
                         </div>
                     ))}
                 </div>
-                {tickets.length === 0 && <NoTicketsAvailable /> }
+                {largestCol <= 0 && <NoTicketsAvailable /> }
             </div>
         </Fragment>
     );
