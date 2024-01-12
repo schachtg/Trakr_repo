@@ -59,8 +59,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
     const handleChangeChecked = async (event, roleIndex, permissionIndex) => {
         const updatedRoles = [...roles];
         updatedRoles[roleIndex].permissions[permissionIndex] = event.target.checked;
-        setRoles(updatedRoles);
-        await fetch("http://localhost:5000/roles", {
+        const response = await fetch("http://localhost:5000/roles", {
             method : "PUT",
             headers: {"Content-Type": "application/json"},
             credentials: "include",
@@ -72,6 +71,13 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
                 user_emails: updatedRoles[roleIndex].user_emails
             })
         });
+        if (!response.ok) {
+            alert("Error updating role permissions");
+            window.location.reload();
+            return;
+        }
+
+        setRoles(updatedRoles);
     }
 
     const handleDeleteWarning = () => {

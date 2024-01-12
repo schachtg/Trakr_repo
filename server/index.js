@@ -1009,7 +1009,7 @@ app.put("/roles", authenticateToken, async (req, res) => {
         [name, project_id]
       );
 
-      if (checkRole.rowCount > 0) {
+      if (checkRole.rowCount > 0 && checkRole.rows[0].role_id !== role_id) {
         res.status(409).json("Role already exists");
         return;
       }

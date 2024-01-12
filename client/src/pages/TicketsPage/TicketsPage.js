@@ -128,7 +128,7 @@ export default function TicketsPage() {
             if (newFilteredEpics.length > 0 && !newFilteredEpics.includes(ticket.epic)) {
                 return;
             }
-            const sprintIndex = ticket.sprint == 0 ? 4 : (ticket.sprint - currSprint);
+            const sprintIndex = ticket.sprint === 0 ? 4 : (ticket.sprint - currSprint);
             sprintTickets[sprintIndex].push(ticket);
         });
         setSprintTickets(sprintTickets);

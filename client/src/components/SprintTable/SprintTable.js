@@ -111,10 +111,14 @@ export default function SprintTable({projectInfo}) {
         if (firstElementIndex !== -1) {
             newArray.push(oldArray.splice(firstElementIndex, 1)[0]);
         }
-        
+
+        const getNextElementIndex = (col_id) => {
+            return oldArray.findIndex((item) => item.next_col === col_id);
+        }
+
         while (oldArray.length > 0) {
             // Find and remove the next element where next_col is the last element's col_id
-            let nextElementIndex = oldArray.findIndex((item) => item.next_col === newArray[newArray.length - 1].col_id);
+            let nextElementIndex = getNextElementIndex(newArray[newArray.length - 1].col_id);
             if (nextElementIndex !== -1) {
             newArray.push(oldArray.splice(nextElementIndex, 1)[0]);
             } else {

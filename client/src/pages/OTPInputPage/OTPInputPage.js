@@ -82,10 +82,10 @@ export default function OTPInputPage() {
                                 <label htmlFor="enterOTP">Verification code:</label>
                                 <input className={styles.input_line} type="text" id="enterOTP" name="enterOTP" value={code} onChange={handleOnChange}/>
                             </div>
-                            <GButton type="submit">Verify Account</GButton>
+                            <GButton centered type="submit">Verify Account</GButton>
                         </div>
                     </form>
-                    <div className="flex-row">
+                    <div className="flex-row text-center">
                         <span>Didn't recieve a code? </span>
                         <span
                             onClick={resendCode}

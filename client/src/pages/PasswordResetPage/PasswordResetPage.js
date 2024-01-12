@@ -86,7 +86,7 @@ export default function PasswordResetPage() {
                                 <label htmlFor="confirmNewPassword">Confirm new password:</label>
                                 <input className={styles.input_line} type="password" id="confirmNewPassword" name="confirmNewPassword" value={resetFormData.confirmNewPassword} onChange={handleOnChange}/>
                             </div>
-                            <GButton type="submit" disabled={disabled}>Change Password</GButton>
+                            <GButton centered type="submit" disabled={disabled}>Change Password</GButton>
                         </div>
                     </form>
                 </div>

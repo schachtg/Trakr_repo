@@ -249,7 +249,7 @@ export default function ProjectsPage() {
                     </div>
                 </div>
             ))}
-            {projects.length == 0 && <div className={styles.img_container}>
+            {projects.length === 0 && <div className={styles.img_container}>
                 <CreateProjectPicture />
             </div>}
             <div style={{margin: "2rem 0"}}>
