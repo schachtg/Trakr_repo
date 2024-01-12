@@ -4,6 +4,7 @@ import GDialog from '../../components/GDialog/GDialog';
 import TicketForm from '../TicketForm/TicketForm';
 import { SMALL_WIDTH } from '../../Constants';
 import { hasPermission } from '../../HelperFunctions';
+import { baseURL } from '../../apis/TicketManager';
 
 export default function TicketBox({ticket, handleDragStart, projectInfo}) {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -22,7 +23,7 @@ export default function TicketBox({ticket, handleDragStart, projectInfo}) {
     
     const getEpicList = async (projectId) => {
         try{
-            const response = await fetch(`http://localhost:5000/epics/${projectId}`, {
+            const response = await fetch(`${baseURL}/epics/${projectId}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -52,7 +53,7 @@ export default function TicketBox({ticket, handleDragStart, projectInfo}) {
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    });
+    }, []);
 
     const getFormattedPoints = (points) => {
         if(points === "0.0") {

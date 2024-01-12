@@ -25,7 +25,7 @@ export default function RowItem({title, subtitle, prependIcon, appendIcon, iconS
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    });
+    }, []);
 
     return (
         <Fragment>

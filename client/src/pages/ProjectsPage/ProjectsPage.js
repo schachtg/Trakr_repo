@@ -10,6 +10,7 @@ import DangerDialog from '../../components/DangerDialog/DangerDialog';
 import { hasPermission } from '../../HelperFunctions';
 import GDialog from '../../components/GDialog/GDialog';
 import CreateProjectPicture from '../../components/CreateProjectPicture/CreateProjectPicture';
+import { baseURL } from '../../apis/TicketManager';
 
 export default function ProjectsPage() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -28,7 +29,7 @@ export default function ProjectsPage() {
             const body = {
                 name: newProjectName,
             };
-            const data = await fetch("http://localhost:5000/projects", {
+            const data = await fetch(`${baseURL}/projects`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -79,14 +80,14 @@ export default function ProjectsPage() {
                 project_id: response.project_id
             };
 
-            await fetch("http://localhost:5000/cols", {
+            await fetch(`${baseURL}/cols`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(defaultColumns)
             });
 
-            await fetch("http://localhost:5000/roles", {
+            await fetch(`${baseURL}/roles`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -103,7 +104,7 @@ export default function ProjectsPage() {
     const deleteProject = async (id) => {
         try {
             setOpenProjectDB(null);
-            await fetch(`http://localhost:5000/projects/${id}`, {
+            await fetch(`${baseURL}/projects/${id}`, {
                 method: "DELETE",
                 credentials: "include",
             });
@@ -115,7 +116,7 @@ export default function ProjectsPage() {
 
     const getProjectsFromDB = async event => {
         try{
-            const response = await fetch("http://localhost:5000/projects", {
+            const response = await fetch(`${baseURL}/projects`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -129,7 +130,7 @@ export default function ProjectsPage() {
 
     const initializeOpenProject = async () => {
         try{
-            const response = await fetch(`http://localhost:5000/user_info`, {
+            const response = await fetch(`${baseURL}/user_info`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -146,7 +147,7 @@ export default function ProjectsPage() {
             const body = {
                 open_project: id,
             };
-            await fetch("http://localhost:5000/user_info/open_project", {
+            await fetch(`${baseURL}/user_info/open_project`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

@@ -1,6 +1,7 @@
 import React, { Fragment, useState, useEffect, useContext } from 'react';
 import styles from './OTPInputPage.module.css';
 import { RecoveryContext } from '../LoginPageWrapper/LoginPageWrapper';
+import { baseURL } from '../../apis/TicketManager';
 
 // Components
 import GButton from '../../components/GButton/GButton';
@@ -35,7 +36,7 @@ export default function OTPInputPage() {
         }
 
         try {
-            const data = await fetch(`http://localhost:5000/forgot_password`, {
+            const data = await fetch(`${baseURL}/forgot_password`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body)

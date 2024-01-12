@@ -2,6 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react';
 import styles from './SprintTable.module.css';
 import { SMALL_WIDTH } from '../../Constants';
 import { hasPermission } from '../../HelperFunctions';
+import { baseURL } from '../../apis/TicketManager';
 
 // Components
 import TicketBox from '../TicketBox/TicketBox';
@@ -50,7 +51,7 @@ export default function SprintTable({projectInfo}) {
             alert("You do not have permission to edit tickets");
             return;
         }
-        const ticketInDB = await fetch(`http://localhost:5000/tickets/${tickets[draggingTicketIndex].ticket_id}`, {
+        const ticketInDB = await fetch(`${baseURL}/tickets/${tickets[draggingTicketIndex].ticket_id}`, {
             method: "GET",
             headers: {"Content-Type": "application/json"},
             credentials: "include"
@@ -64,7 +65,7 @@ export default function SprintTable({projectInfo}) {
         if (col_name !== undefined) {
             const cloned = [...tickets];
             cloned[draggingTicketIndex].column_name = col_name;
-            await fetch(`http://localhost:5000/tickets/${cloned[draggingTicketIndex].ticket_id}`, {
+            await fetch(`${baseURL}/tickets/${cloned[draggingTicketIndex].ticket_id}`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -76,7 +77,7 @@ export default function SprintTable({projectInfo}) {
 
     const getTicketsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/tickets/project/${projectInfo.project_id}`, {
+            const response = await fetch(`${baseURL}/tickets/project/${projectInfo.project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -90,7 +91,7 @@ export default function SprintTable({projectInfo}) {
 
     const getColumnsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/cols/${projectInfo.project_id}`, {
+            const response = await fetch(`${baseURL}/cols/${projectInfo.project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

@@ -2,6 +2,7 @@ import React, { Fragment, useState, useEffect, useContext } from 'react';
 import styles from './PasswordResetPage.module.css';
 import { SMALL_WIDTH } from '../../Constants';
 import { RecoveryContext } from '../LoginPageWrapper/LoginPageWrapper';
+import { baseURL } from '../../apis/TicketManager';
 
 // Components
 import GButton from '../../components/GButton/GButton';
@@ -30,7 +31,7 @@ export default function PasswordResetPage() {
             }
     
             try {
-                const data = await fetch("http://localhost:5000/reset_password", {
+                const data = await fetch(`${baseURL}/reset_password`, {
                     method: "PATCH",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(body)

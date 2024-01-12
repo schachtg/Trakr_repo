@@ -2,6 +2,7 @@ import React, {Fragment, useState, useEffect} from 'react';
 import styles from './ColumnOrder.module.css';
 import { mdiChevronLeft, mdiChevronRight, mdiDelete, mdiPlus, mdiContentSave } from '@mdi/js';
 import { hasPermission } from '../../HelperFunctions';
+import { baseURL } from '../../apis/TicketManager';
 
 // Components
 import GButton from '../GButton/GButton';
@@ -251,7 +252,7 @@ export default function ColumnOrder({project_id}) {
 
     const getColumnsFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/cols/${project_id}`, {
+            const response = await fetch(`${baseURL}/cols/${project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -270,7 +271,7 @@ export default function ColumnOrder({project_id}) {
                 name: newColumn.name,
                 max: newColumn.max,
             };
-            const response = await fetch("http://localhost:5000/cols/add_single", {
+            const response = await fetch(`${baseURL}/cols/add_single`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -319,7 +320,7 @@ export default function ColumnOrder({project_id}) {
                     project_id: project_id,
                     column_id: columns[index].col_id
                 };
-                await fetch(`http://localhost:5000/cols`, {
+                await fetch(`${baseURL}/cols`, {
                     method: "DELETE",
                     headers: {"Content-Type": "application/json"},
                     credentials: "include",
@@ -348,7 +349,7 @@ export default function ColumnOrder({project_id}) {
                 column_id: columns[index].col_id,
                 project_id: project_id,
             };
-            await fetch(`http://localhost:5000/cols`, {
+            await fetch(`${baseURL}/cols`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

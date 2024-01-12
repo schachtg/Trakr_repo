@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 require('dotenv');
 
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000', '/api/v1/'];
 const corsOptions = {
   origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -23,7 +23,7 @@ app.use(cookieParser());
 //ROUTES//
 
 // create a ticket
-app.post("/tickets", authenticateToken, async (req, res) => {
+app.post("/api/v1/tickets", authenticateToken, async (req, res) => {
   try {
     const tableName = "tickets";
     const { name, priority, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
@@ -55,7 +55,7 @@ app.post("/tickets", authenticateToken, async (req, res) => {
 });
 
 // get all tickets for a project
-app.get("/tickets/project/:project_id", authenticateToken, async (req, res) => {
+app.get("/api/v1/tickets/project/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const tableName = "tickets";
@@ -71,7 +71,7 @@ app.get("/tickets/project/:project_id", authenticateToken, async (req, res) => {
 
 
 // get a ticket
-app.get("/tickets/:id", authenticateToken, async (req, res) => {
+app.get("/api/v1/tickets/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const ticket = await pool.query(
@@ -90,7 +90,7 @@ app.get("/tickets/:id", authenticateToken, async (req, res) => {
 });
 
 // update a ticket
-app.put("/tickets/:id", authenticateToken, async (req, res) => {
+app.put("/api/v1/tickets/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, priority, epic, description, blocks, blocked_by, points, assignee, sprint, column_name, pull_request, project_id } = req.body;
@@ -142,7 +142,7 @@ app.put("/tickets/:id", authenticateToken, async (req, res) => {
 });
 
 // delete a ticket
-app.delete("/tickets/:id", authenticateToken, async (req, res) => {
+app.delete("/api/v1/tickets/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -182,7 +182,7 @@ app.delete("/tickets/:id", authenticateToken, async (req, res) => {
 });
 
 // create a user
-app.post("/user_info/create", async (req, res) => {
+app.post("/api/v1/user_info/create", async (req, res) => {
   try {
     const tableName = "user_info";
     const { email, name, password } = req.body;
@@ -210,7 +210,7 @@ app.post("/user_info/create", async (req, res) => {
   }
 });
 
-app.patch("/reset_password", async (req, res) => {
+app.patch("/api/v1/reset_password", async (req, res) => {
   try {
     const tableName = "user_info";
     const { recipient_email, password, token } = req.body;
@@ -250,7 +250,7 @@ app.patch("/reset_password", async (req, res) => {
 });
 
 // Check if username password is in the db
-app.post("/user_info/login", async (req, res) => {
+app.post("/api/v1/user_info/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const checkUser = await pool.query(
@@ -278,16 +278,16 @@ app.post("/user_info/login", async (req, res) => {
   return;
 });
 
-app.get("/user_info/logout", (req, res) => {
+app.get("/api/v1/user_info/logout", (req, res) => {
   res.clearCookie('token');
   res.status(200).json("Logged out");
 });
 
-app.get("/user_info/verify", authenticateToken, (req, res) => {
+app.get("/api/v1/user_info/verify", authenticateToken, (req, res) => {
   res.status(200).json("Valid token");
 });
 
-app.put("/user_info/open_project", authenticateToken, async (req, res) => {
+app.put("/api/v1/user_info/open_project", authenticateToken, async (req, res) => {
   try {
     const { open_project } = req.body;
     const email = req.user.email;
@@ -322,7 +322,7 @@ app.put("/user_info/open_project", authenticateToken, async (req, res) => {
   return;
 });
 
-app.get("/user_info", authenticateToken, async (req, res) => {
+app.get("/api/v1/user_info", authenticateToken, async (req, res) => {
   
   const { email } = req.user;
   const tableName = "user_info";
@@ -336,7 +336,7 @@ app.get("/user_info", authenticateToken, async (req, res) => {
   res.status(200).json({email: req.user.email, name: userData.rows[0].name, id: userData.rows[0].user_id, open_project: userData.rows[0].open_project});
 });
 
-app.get("/user_info/project/:project_id", authenticateToken, async (req, res) => {
+app.get("/api/v1/user_info/project/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const email = req.user.email;
@@ -367,7 +367,7 @@ app.get("/user_info/project/:project_id", authenticateToken, async (req, res) =>
 });
 
 // Create a project
-app.post("/projects", authenticateToken, async (req, res) => {
+app.post("/api/v1/projects", authenticateToken, async (req, res) => {
   try {
     const { name } = req.body;
     const email = req.user.email;
@@ -397,7 +397,7 @@ app.post("/projects", authenticateToken, async (req, res) => {
   return;
 });
 
-app.get("/projects", authenticateToken, async (req, res) => {
+app.get("/api/v1/projects", authenticateToken, async (req, res) => {
   try {
     const email = req.user.email;
 
@@ -411,7 +411,7 @@ app.get("/projects", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/projects/:project_id", authenticateToken, async (req, res) => {
+app.get("/api/v1/projects/:project_id", authenticateToken, async (req, res) => {
   try {
     const email = req.user.email;
     const { project_id } = req.params;
@@ -430,7 +430,7 @@ app.get("/projects/:project_id", authenticateToken, async (req, res) => {
 });
 
 // delete a project
-app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
+app.delete("/api/v1/projects/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const email = req.user.email;
@@ -477,7 +477,7 @@ app.delete("/projects/:project_id", authenticateToken, async (req, res) => {
   }
 });
 
-app.post("/projects/next_sprint/:project_id", authenticateToken, async (req, res) => {
+app.post("/api/v1/projects/next_sprint/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const email = req.user.email;
@@ -531,7 +531,7 @@ app.post("/projects/next_sprint/:project_id", authenticateToken, async (req, res
   }
 });
 
-app.post("/epics", authenticateToken, async (req, res) => {
+app.post("/api/v1/epics", authenticateToken, async (req, res) => {
   const { name, color, project_id } = req.body;
   const email = req.user.email;
 
@@ -574,7 +574,7 @@ app.post("/epics", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/epics/:project_id", authenticateToken, async (req, res) => {
+app.get("/api/v1/epics/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const email = req.user.email;
@@ -600,7 +600,7 @@ app.get("/epics/:project_id", authenticateToken, async (req, res) => {
   }
 });
 
-app.put("/epics", authenticateToken, async (req, res) => {
+app.put("/api/v1/epics", authenticateToken, async (req, res) => {
   try {
     const { epic_id, project_id, name, color } = req.body;
     const email = req.user.email;
@@ -638,7 +638,7 @@ app.put("/epics", authenticateToken, async (req, res) => {
 });
 
 // delete an epic
-app.delete("/epics", authenticateToken, async (req, res) => {
+app.delete("/api/v1/epics", authenticateToken, async (req, res) => {
   try {
     const { epic_id, project_id } = req.body;
     const email = req.user.email;
@@ -664,7 +664,7 @@ app.delete("/epics", authenticateToken, async (req, res) => {
   }
 });
 
-app.post("/remove_user", authenticateToken, async (req, res) => {
+app.post("/api/v1/remove_user", authenticateToken, async (req, res) => {
   try {
     const { email, project_id } = req.body;
     const currUser = req.user.email;
@@ -723,7 +723,7 @@ app.post("/remove_user", authenticateToken, async (req, res) => {
   }
 });
 
-app.post("/cols", authenticateToken, async (req, res) => {
+app.post("/api/v1/cols", authenticateToken, async (req, res) => {
   const { columns } = req.body;
   const email = req.user.email;
 
@@ -751,7 +751,7 @@ app.post("/cols", authenticateToken, async (req, res) => {
   }
 });
 
-app.post("/cols/add_single", authenticateToken, async (req, res) => {
+app.post("/api/v1/cols/add_single", authenticateToken, async (req, res) => {
   const { name, max, project_id } = req.body;
   const size = 0;
   const next_col = -1;
@@ -793,7 +793,7 @@ app.post("/cols/add_single", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/cols/:project_id", authenticateToken, async (req, res) => {
+app.get("/api/v1/cols/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
 
@@ -807,7 +807,7 @@ app.get("/cols/:project_id", authenticateToken, async (req, res) => {
   }
 });
 
-app.put("/cols", authenticateToken, async (req, res) => {
+app.put("/api/v1/cols", authenticateToken, async (req, res) => {
   try {
     const { column_id, project_id, name, max, size, next_col } = req.body;
     const email = req.user.email;
@@ -852,7 +852,7 @@ app.put("/cols", authenticateToken, async (req, res) => {
 });
 
 // delete a column
-app.delete("/cols", authenticateToken, async (req, res) => {
+app.delete("/api/v1/cols", authenticateToken, async (req, res) => {
   try {
     const { column_id, project_id } = req.body;
     const email = req.user.email;
@@ -909,7 +909,7 @@ app.delete("/cols", authenticateToken, async (req, res) => {
   }
 });
 
-app.post("/roles", authenticateToken, async (req, res) => {
+app.post("/api/v1/roles", authenticateToken, async (req, res) => {
   const { roles, project_id } = req.body;
   const email = req.user.email;
 
@@ -947,7 +947,7 @@ app.post("/roles", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/roles/:project_id", authenticateToken, async (req, res) => {
+app.get("/api/v1/roles/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const roles = await pool.query(
@@ -960,7 +960,7 @@ app.get("/roles/:project_id", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/roles/users_permissions/:project_id", authenticateToken, async (req, res) => {
+app.get("/api/v1/roles/users_permissions/:project_id", authenticateToken, async (req, res) => {
   try {
     const { project_id } = req.params;
     const email = req.user.email;
@@ -991,7 +991,7 @@ app.get("/roles/users_permissions/:project_id", authenticateToken, async (req, r
   }
 });
 
-app.put("/roles", authenticateToken, async (req, res) => {
+app.put("/api/v1/roles", authenticateToken, async (req, res) => {
   try {
     const { role_id, project_id, name, permissions, user_emails } = req.body;
     const email = req.user.email;
@@ -1027,7 +1027,7 @@ app.put("/roles", authenticateToken, async (req, res) => {
   }
 });
 
-app.post("/change_role", authenticateToken, async (req, res) => {
+app.post("/api/v1/change_role", authenticateToken, async (req, res) => {
   try {
     const { email, role_name, project_id } = req.body;
     const currUser = req.user.email;
@@ -1090,7 +1090,7 @@ app.post("/change_role", authenticateToken, async (req, res) => {
 });
 
 // delete a role
-app.delete("/roles", authenticateToken, async (req, res) => {
+app.delete("/api/v1/roles", authenticateToken, async (req, res) => {
   try {
     const { role_id, project_id } = req.body;
     const email = req.user.email;
@@ -1141,7 +1141,7 @@ app.delete("/roles", authenticateToken, async (req, res) => {
   }
 });
 
-app.post("/forgot_password", async (req, res) => {
+app.post("/api/v1/forgot_password", async (req, res) => {
   try {
     const tableName = "user_info";
     const { recipient_email } = req.body;
@@ -1164,7 +1164,7 @@ app.post("/forgot_password", async (req, res) => {
   }
 });
 
-app.post("/invite", authenticateToken, async (req, res) => {
+app.post("/api/v1/invite", authenticateToken, async (req, res) => {
   try {
     const { recipient_email, project_id } = req.body;
     const { email } = req.user;
@@ -1211,7 +1211,7 @@ app.post("/invite", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/join_project/:token", async (req, res) => {
+app.get("/api/v1/join_project/:token", async (req, res) => {
   try {
     const { token } = req.params;
     jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
@@ -1374,7 +1374,10 @@ function sendInviteEmail({recipient_email, project_id}) {
         expiresIn: "1d"
       }
     );
-    const url = `http://localhost:5000/join_project/${emailToken}`;
+
+    const url = process.env.NODE_ENV === 'production'
+      ? `/api/v1/join_project/${emailToken}`
+      : `http://localhost:5000/api/v1/join_project/${emailToken}`;
 
     // Template for email
     const mail_configs = {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { mdiPlus, mdiChevronRight } from '@mdi/js';
 import { SMALL_WIDTH } from '../../Constants';
 import { hasPermission } from '../../HelperFunctions';
+import { baseURL } from '../../apis/TicketManager';
 
 // components
 import GButton from '../../components/GButton/GButton';
@@ -22,7 +23,7 @@ export default function BoardPage() {
 
     const getProjectFromDB = async (id) => {
         try{
-            const response = await fetch(`http://localhost:5000/projects/${id}`, {
+            const response = await fetch(`${baseURL}/projects/${id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -36,7 +37,7 @@ export default function BoardPage() {
 
     const initializeOpenProject = async () => {
         try{
-            const response = await fetch(`http://localhost:5000/user_info`, {
+            const response = await fetch(`${baseURL}/user_info`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -73,7 +74,7 @@ export default function BoardPage() {
 
     const handleChangeSprint = async () => {
         try{
-            await fetch(`http://localhost:5000/projects/next_sprint/${openProject.project_id}`, {
+            await fetch(`${baseURL}/projects/next_sprint/${openProject.project_id}`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"

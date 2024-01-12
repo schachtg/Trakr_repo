@@ -4,6 +4,7 @@ import { mdiPlus, mdiPencil, mdiDelete, mdiContentSave } from '@mdi/js';
 import Icon from '@mdi/react';
 import { PERMISSION_LIST } from '../../Constants';
 import { hasPermission } from '../../HelperFunctions';
+import { baseURL } from '../../apis/TicketManager';
 
 // COMPONENTS
 import GButton from '../../components/GButton/GButton';
@@ -34,7 +35,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
     const handleSaveNewName = async () => {
         const updatedRoles = [...roles];
         updatedRoles[editRoleIndex].name = newRoleName;
-        const response = await fetch("http://localhost:5000/roles", {
+        const response = await fetch(`${baseURL}/roles`, {
             method : "PUT",
             headers: {"Content-Type": "application/json"},
             credentials: "include",
@@ -59,7 +60,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
     const handleChangeChecked = async (event, roleIndex, permissionIndex) => {
         const updatedRoles = [...roles];
         updatedRoles[roleIndex].permissions[permissionIndex] = event.target.checked;
-        const response = await fetch("http://localhost:5000/roles", {
+        const response = await fetch(`${baseURL}/roles`, {
             method : "PUT",
             headers: {"Content-Type": "application/json"},
             credentials: "include",
@@ -90,7 +91,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
         const defaultIndex = updatedRoles.findIndex((role) => role.name === "Default");
         updatedRoles[defaultIndex].user_emails = [...updatedRoles[defaultIndex].user_emails, ...deletingRoleUserList];
         updatedRoles.splice(editRoleIndex, 1);
-        const response = await fetch("http://localhost:5000/roles", {
+        const response = await fetch(`${baseURL}/roles`, {
             method : "DELETE",
             headers: {"Content-Type": "application/json"},
             credentials: "include",
@@ -129,7 +130,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
             user_emails: []
         };
         updatedRoles.push(newRole);
-        const response = await fetch("http://localhost:5000/roles", {
+        const response = await fetch(`${baseURL}/roles`, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             credentials: "include",
@@ -162,7 +163,7 @@ export default function PermissionsTable({roles, setRoles, project_id}) {
 
     const getRolesFromDB = async () => {
         try{
-            const response = await fetch(`http://localhost:5000/roles/${project_id}`, {
+            const response = await fetch(`${baseURL}/roles/${project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"

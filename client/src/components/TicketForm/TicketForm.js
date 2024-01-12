@@ -3,6 +3,7 @@ import styles from './TicketForm.module.css';
 import { useState } from 'react';
 import { mdiContentSave, mdiDelete } from '@mdi/js';
 import { Select } from 'antd';
+import { baseURL } from '../../apis/TicketManager';
 
 // components
 import GButton from '../GButton/GButton';
@@ -192,14 +193,14 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
                 };
                 
                 if (ticket) {
-                    await fetch(`http://localhost:5000/tickets/${ticket.ticket_id}`, {
+                    await fetch(`${baseURL}/tickets/${ticket.ticket_id}`, {
                         method: "PUT",
                         headers: {"Content-Type": "application/json"},
                         credentials: "include",
                         body: JSON.stringify(body)
                     });
                 } else {
-                    await fetch("http://localhost:5000/tickets", {
+                    await fetch(`${baseURL}/tickets`, {
                         method: "POST",
                         headers: {"Content-Type": "application/json"},
                         credentials: "include",
@@ -224,7 +225,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
         event.preventDefault();
         setDeleteDialog(false)
         try{
-            await fetch(`http://localhost:5000/tickets/${ticket.ticket_id}`, {
+            await fetch(`${baseURL}/tickets/${ticket.ticket_id}`, {
                 method: "DELETE",
                 credentials: "include"
             });
@@ -239,7 +240,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
 
     const handleUpdateEpicOptions = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/epics/${projectInfo.project_id}`, {
+            const response = await fetch(`${baseURL}/epics/${projectInfo.project_id}`, {
                 method: "GET",
                 credentials: "include"
             });
@@ -256,7 +257,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
 
     const handleUpdateTicketOptions = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/tickets/project/${projectInfo.project_id}`, {
+            const response = await fetch(`${baseURL}/tickets/project/${projectInfo.project_id}`, {
                 method: "GET",
                 credentials: "include"
             });
@@ -283,7 +284,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
     const handleUpdateAssigneeOptions = async () => {
         let tempAssigneeOptions = ["No assignee"];
         try {
-            const response = await fetch(`http://localhost:5000/user_info/project/${projectInfo.project_id}`, {
+            const response = await fetch(`${baseURL}/user_info/project/${projectInfo.project_id}`, {
                 method: "GET",
                 credentials: "include"
             });
@@ -299,7 +300,7 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
 
     const handleUpdateColumnOptions = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/cols/${projectInfo.project_id}`, {
+            const response = await fetch(`${baseURL}/cols/${projectInfo.project_id}`, {
                 method: "GET",
                 credentials: "include"
             });

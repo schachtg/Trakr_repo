@@ -3,6 +3,7 @@ import { Link, useMatch, useResolvedPath } from 'react-router-dom';
 import styles from './Navbar.module.css';
 import { SMALL_WIDTH } from '../../Constants';
 import { mdiAccount, mdiBell, mdiLogout } from '@mdi/js';
+import { baseURL } from '../../apis/TicketManager';
 
 // Components
 import GButton from '../GButton/GButton';
@@ -18,7 +19,7 @@ export default function NavBar() {
     let smallScreen = windowWidth < (SMALL_WIDTH + screenSlack);
 
     const handleLogout = async () => {
-        await fetch("http://localhost:5000/user_info/logout", {
+        await fetch(`${baseURL}/user_info/logout`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include"
@@ -37,7 +38,7 @@ export default function NavBar() {
     }
 
     const getUserData = async () => {
-        const response = await fetch("http://localhost:5000/user_info", {
+        const response = await fetch(`${baseURL}/user_info`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include"

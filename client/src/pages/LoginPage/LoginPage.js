@@ -3,6 +3,7 @@ import DividerWithText from '../../components/DividerWithText/DividerWithText';
 import styles from './LoginPage.module.css';
 import { SMALL_WIDTH } from '../../Constants';
 import { RecoveryContext } from '../LoginPageWrapper/LoginPageWrapper';
+import { baseURL } from '../../apis/TicketManager';
 
 // Components
 import GButton from '../../components/GButton/GButton';
@@ -42,7 +43,7 @@ export default function LoginPage() {
                 otp: newOTP
             };
             try {
-            const data = await fetch("http://localhost:5000/forgot_password", {
+            const data = await fetch(`${baseURL}/forgot_password`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body)
@@ -138,7 +139,7 @@ export default function LoginPage() {
                 email: loginFormData.email,
                 password: loginFormData.password
             };
-            const response = await fetch("http://localhost:5000/user_info/login", {
+            const response = await fetch(`${baseURL}/user_info/login`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -175,7 +176,7 @@ export default function LoginPage() {
                 return;
             }
 
-            const response = await fetch("http://localhost:5000/user_info/create", {
+            const response = await fetch(`${baseURL}/user_info/create`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body)
@@ -199,7 +200,7 @@ export default function LoginPage() {
                 email: "PublicDemo",
                 password: "123456"
             };
-            const response = await fetch("http://localhost:5000/user_info/login", {
+            const response = await fetch(`${baseURL}/user_info/login`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -258,7 +259,7 @@ export default function LoginPage() {
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    });
+    }, []);
 
     return (
         <Fragment>

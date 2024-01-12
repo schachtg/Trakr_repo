@@ -1,4 +1,5 @@
 import React, { Fragment, useState } from 'react';
+import { baseURL } from '../../apis/TicketManager';
 
 export default function InputTicket () {
 
@@ -8,7 +9,7 @@ export default function InputTicket () {
         event.preventDefault();
         try{ 
             const body = { description};
-            const response = await fetch("http://localhost:5000/tickets", {
+            const response = await fetch(`${baseURL}/tickets`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body)

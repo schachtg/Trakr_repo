@@ -2,6 +2,7 @@ import React, {Fragment, useState, useEffect} from 'react';
 import styles from './UserList.module.css';
 import { mdiDelete, mdiPlus, mdiAccountPlus } from '@mdi/js';
 import { hasPermission } from '../../HelperFunctions';
+import { baseURL } from '../../apis/TicketManager';
 
 // Components
 import GButton from '../GButton/GButton';
@@ -20,7 +21,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
 
     const getUsersFromDB = async event => {
         try{
-            const response = await fetch(`http://localhost:5000/user_info/project/${project_id}`, {
+            const response = await fetch(`${baseURL}/user_info/project/${project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -39,7 +40,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 project_id: project_id,
                 recipient_email,
             };
-            const response = await fetch("http://localhost:5000/invite", {
+            const response = await fetch(`${baseURL}/invite`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -62,7 +63,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 project_id: project_id,
                 email,
             };
-            const response = await fetch("http://localhost:5000/remove_user", {
+            const response = await fetch(`${baseURL}/remove_user`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -137,7 +138,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 email,
                 role_name,
             };
-            const response = await fetch("http://localhost:5000/change_role", {
+            const response = await fetch(`${baseURL}/change_role`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -155,7 +156,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
 
     const getRolesFromDB = async () => {
         try{
-            const response = await fetch(`http://localhost:5000/roles/${project_id}`, {
+            const response = await fetch(`${baseURL}/roles/${project_id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -176,7 +177,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
     }
 
     const getCurrUserData = async () => {
-        const response = await fetch("http://localhost:5000/user_info", {
+        const response = await fetch(`${baseURL}/user_info`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include"

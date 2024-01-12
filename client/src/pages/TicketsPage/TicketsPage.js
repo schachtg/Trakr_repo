@@ -4,6 +4,7 @@ import { SMALL_WIDTH, LARGE_WIDTH } from '../../Constants';
 import { mdiCloseCircle, mdiPlus, mdiContentSave, mdiDelete } from '@mdi/js';
 import { Select } from 'antd';
 import { hasPermission } from '../../HelperFunctions';
+import { baseURL } from '../../apis/TicketManager';
 
 // Components
 import RowItem from '../../components/RowItem/RowItem';
@@ -37,7 +38,7 @@ export default function TicketsPage() {
 
     const getOpenProjectID = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/user_info`, {
+            const response = await fetch(`${baseURL}/user_info`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -54,7 +55,7 @@ export default function TicketsPage() {
 
     const getProjectFromDB = async (id) => {
         try{
-            const response = await fetch(`http://localhost:5000/projects/${id}`, {
+            const response = await fetch(`${baseURL}/projects/${id}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -68,7 +69,7 @@ export default function TicketsPage() {
 
     const getTicketsFromDB = async (project) => {
         try{
-            const response = await fetch(`http://localhost:5000/tickets/project/${project}`, {
+            const response = await fetch(`${baseURL}/tickets/project/${project}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -147,7 +148,7 @@ export default function TicketsPage() {
 
     const getEpicList = async (projectId) => {
         try{
-            const response = await fetch(`http://localhost:5000/epics/${projectId}`, {
+            const response = await fetch(`${baseURL}/epics/${projectId}`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include"
@@ -212,7 +213,7 @@ export default function TicketsPage() {
     const handleCreateEpic = async () => {
         const body = { project_id: openProject.project_id, name: newEpicName, color: "#000000" };
         try{
-            const response = await fetch(`http://localhost:5000/epics`, {
+            const response = await fetch(`${baseURL}/epics`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -240,7 +241,7 @@ export default function TicketsPage() {
             color: editEpic.color
         };
         try{
-            const response = await fetch(`http://localhost:5000/epics`, {
+            const response = await fetch(`${baseURL}/epics`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -277,7 +278,7 @@ export default function TicketsPage() {
             project_id: editEpic.project_id,
         };
         try{
-            await fetch(`http://localhost:5000/epics`, {
+            await fetch(`${baseURL}/epics`, {
                 method: "DELETE",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

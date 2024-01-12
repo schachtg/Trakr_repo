@@ -24,7 +24,7 @@ export default function GDialog({title, openDialog, setOpenDialog, buttons=[], f
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    });
+    }, []);
 
     return (openDialog) ? (
         <Fragment>

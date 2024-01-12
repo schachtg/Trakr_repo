@@ -17,7 +17,7 @@ export default function DangerDialog({title, openDialog, buttons=[], children}) 
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    });
+    }, []);
 
     return (openDialog) ? (
         <Fragment>
