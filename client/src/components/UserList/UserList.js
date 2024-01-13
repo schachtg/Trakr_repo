@@ -222,6 +222,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                         key={index}
                         title={user.name}
                         subtitle={getRole(user.email)}
+                        disabled={user.email === "PublicDemo"}
                         childRows={[
                             {
                                 title: "Change Role",

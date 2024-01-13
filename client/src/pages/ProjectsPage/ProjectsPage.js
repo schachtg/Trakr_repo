@@ -21,6 +21,7 @@ export default function ProjectsPage() {
     const [newProjectName, setNewProjectName] = useState("");
     const [roles, setRoles] = useState([]);
     const [openDeleteWarning, setOpenDeleteWarning] = useState(false);
+    const [canCreateProjects, setCanCreateProjects] = useState(false);
     let smallScreen = windowWidth < MEDIUM_WIDTH;
 
     // Create a new project
@@ -190,11 +191,23 @@ export default function ProjectsPage() {
         setCreateProjectDialog(true);
     }
 
+    const getUserData = async () => {
+        const response = await fetch(`${baseURL}/user_info`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
+        });
+
+        return await response.json();
+    }
+
     useEffect(() => {
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
         };
-
+        getUserData().then(data => {
+            setCanCreateProjects(data.email !== "PublicDemo");
+        });
         getProjectsFromDB();
         initializeOpenProject();
 
@@ -254,7 +267,7 @@ export default function ProjectsPage() {
                 <CreateProjectPicture />
             </div>}
             <div style={{margin: "2rem 0"}}>
-                <GButton centered icon={mdiPlus} onClick={handleOpenCreateProjectDialog}>Create New Project</GButton>
+                <GButton centered disabled={!canCreateProjects} icon={mdiPlus} onClick={handleOpenCreateProjectDialog}>Create New Project</GButton>
             </div>
             <GDialog fitContent title="Create New Project" openDialog={createProjectDialog} setOpenDialog={setCreateProjectDialog}>
                 <label htmlFor="name">Name:</label>

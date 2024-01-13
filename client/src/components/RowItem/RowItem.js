@@ -4,14 +4,16 @@ import Icon from '@mdi/react';
 import { mdiChevronDown } from '@mdi/js';
 import { SMALL_WIDTH } from '../../Constants';
 
-export default function RowItem({title, subtitle, prependIcon, appendIcon, iconSize=0.8, childRows=[], onClick, disabled, strikethrough=false, ...props}) {
+export default function RowItem({title, subtitle, prependIcon, appendIcon, iconSize=0.8, childRows=[], onClick, disabled=false, strikethrough=false, ...props}) {
     const [openRow, setOpenRow] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     let smallScreen = windowWidth < (SMALL_WIDTH);
 
     const handleClickRow = () => {
-        onClick && onClick();
-        childRows.length > 0 && setOpenRow(!openRow);
+        if (!disabled) {
+            onClick && onClick();
+            childRows.length > 0 && setOpenRow(!openRow);
+        }
     }
 
     useEffect(() => {
