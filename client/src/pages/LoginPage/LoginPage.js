@@ -259,7 +259,7 @@ export default function LoginPage() {
         return () => {
             window.removeEventListener('resize', handleWindowResize);
         };
-    }, []);
+    }, [createFormData]);
 
     return (
         <Fragment>
