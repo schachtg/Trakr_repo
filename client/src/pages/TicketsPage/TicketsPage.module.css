@@ -101,6 +101,14 @@
     color: #ff1f5f;
 }
 
-.isolated_buttom {
+.isolated_button {
     margin: 1rem 0;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10rem;
+    padding: 0;
 }

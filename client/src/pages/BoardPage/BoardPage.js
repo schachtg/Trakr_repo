@@ -5,6 +5,7 @@ import { mdiPlus, mdiChevronRight } from '@mdi/js';
 import { SMALL_WIDTH } from '../../Constants';
 import { hasPermission } from '../../HelperFunctions';
 import { baseURL } from '../../apis/TicketManager';
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 // components
 import GButton from '../../components/GButton/GButton';
@@ -15,6 +16,7 @@ import DangerDialog from '../../components/DangerDialog/DangerDialog';
 import NoProjectAvailable from '../../components/NoProjectAvailable/NoProjectAvailable';
 
 export default function BoardPage() {
+    const [loadingPage, setLoadingPage] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [nextSprintDialog, setNextSprintDialog] = useState(false);
@@ -36,6 +38,7 @@ export default function BoardPage() {
     }
 
     const initializeOpenProject = async () => {
+        setLoadingPage(true);
         try{
             const response = await fetch(`${baseURL}/user_info`, {
                 method: "GET",
@@ -47,8 +50,10 @@ export default function BoardPage() {
                 return;
             }
             await getProjectFromDB(data.open_project);
+            setLoadingPage(false);
         } catch (err) {
             console.error(err.message);
+            setLoadingPage(false);
         }
     }
 
@@ -101,7 +106,19 @@ export default function BoardPage() {
 
     return (
         <Fragment>
-            {openProject && <div className={smallScreen ? styles.page_content_sml : styles.page_content}>
+            {loadingPage ?
+                <div className={styles.loading}>
+                    <ScaleLoader
+                        height={70}
+                        width={12}
+                        radius={3}
+                        color={"#34EBBA"}
+                        loading={loadingPage}
+                    />
+                </div>
+            :
+            <div>
+                {openProject && <div className={smallScreen ? styles.page_content_sml : styles.page_content}>
                 <div className={styles.title_row}>
                     {!smallScreen && <h1 className={styles.long_text}>Sprint {openProject.curr_sprint}</h1>}
                     <h1 className={styles.long_text}>{openProject.name}</h1>
@@ -130,33 +147,35 @@ export default function BoardPage() {
                 <GDialog title="Create new ticket" openDialog={openDialog} setOpenDialog={setOpenDialog}>
                     <CreateTicketForm projectInfo={openProject} closeForm={closeCreateTicket}/>
                 </GDialog>
-            </div>}
-            <DangerDialog
-                title="End Sprint"
-                openDialog={nextSprintDialog}
-                buttons={[
-                    <GButton
-                        onClick={() => setNextSprintDialog(false)}
-                        type="button"
-                    >
-                        Cancel
-                    </GButton>,
-                    <GButton
-                        type="button"
-                        warning
-                        onClick={handleChangeSprint}
-                    >
-                        Next Sprint
-                    </GButton>
-                ]}
-            >
-                <span>
-                    Are you sure you want to end the current sprint?
-                    All unfinished tickets will be moved to the next sprint
-                    while the finished tickets are deleted.
-                </span>
-            </DangerDialog>
-            {!openProject && <NoProjectAvailable/>}
+                </div>}
+                <DangerDialog
+                    title="End Sprint"
+                    openDialog={nextSprintDialog}
+                    buttons={[
+                        <GButton
+                            onClick={() => setNextSprintDialog(false)}
+                            type="button"
+                        >
+                            Cancel
+                        </GButton>,
+                        <GButton
+                            type="button"
+                            warning
+                            onClick={handleChangeSprint}
+                        >
+                            Next Sprint
+                        </GButton>
+                    ]}
+                >
+                    <span>
+                        Are you sure you want to end the current sprint?
+                        All unfinished tickets will be moved to the next sprint
+                        while the finished tickets are deleted.
+                    </span>
+                </DangerDialog>
+                {!openProject && <NoProjectAvailable/>}
+            </div>
+            }
         </Fragment>
     );
 }

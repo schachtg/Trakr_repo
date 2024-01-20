@@ -11,8 +11,10 @@ import { hasPermission } from '../../HelperFunctions';
 import GDialog from '../../components/GDialog/GDialog';
 import CreateProjectPicture from '../../components/CreateProjectPicture/CreateProjectPicture';
 import { baseURL } from '../../apis/TicketManager';
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 export default function ProjectsPage() {
+    const [loadingPage, setLoadingPage] = useState(true);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [projects, setProjects] = useState([]); // [ {project_id: 1, name: "Project 1"}, {project_id: 2, name: "Project 2"}, ...
     const [openProject, setOpenProject] = useState(null);
@@ -202,14 +204,18 @@ export default function ProjectsPage() {
     }
 
     useEffect(() => {
+        setLoadingPage(true);
         const handleWindowResize = () => {
             setWindowWidth(window.innerWidth);
         };
         getUserData().then(data => {
             setCanCreateProjects(data.email !== "PublicDemo");
+            getProjectsFromDB().then(() => {
+                initializeOpenProject().then(() => {
+                    setLoadingPage(false);
+                });
+            });
         });
-        getProjectsFromDB();
-        initializeOpenProject();
 
         window.addEventListener('resize', handleWindowResize);
 
@@ -221,102 +227,115 @@ export default function ProjectsPage() {
 
     return (
         <Fragment>
-            {openProject && <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
-                <h1 className={styles.project_header}>{currentProject().name}</h1>
-                <div className={styles.section_container} style={{ "width": "100%" }}>
-                    <h1 className={styles.table_title}>Columns</h1>
-                    <ColumnOrder project_id={openProject}/>
+            {loadingPage ?
+                <div className={styles.loading}>
+                    <ScaleLoader
+                        height={70}
+                        width={12}
+                        radius={3}
+                        color={"#34EBBA"}
+                        loading={loadingPage}
+                    />
                 </div>
-                <div className={styles.project_row} style={{ "flexDirection": smallScreen ? "column" : "row" }}>
-                    <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
-                        <h1 className={styles.table_title}>Users</h1>
-                        <UserList project_id={openProject} roles={roles} setRoles={setRoles}/>
+            :
+            <div>
+                {openProject && <div className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
+                    <h1 className={styles.project_header}>{currentProject().name}</h1>
+                    <div className={styles.section_container} style={{ "width": "100%" }}>
+                        <h1 className={styles.table_title}>Columns</h1>
+                        <ColumnOrder project_id={openProject}/>
                     </div>
-                    <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
-                        <h1 className={styles.table_title}>Permissions</h1>
-                        <PermissionsTable project_id={openProject} roles={roles} setRoles={setRoles}/>
+                    <div className={styles.project_row} style={{ "flexDirection": smallScreen ? "column" : "row" }}>
+                        <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
+                            <h1 className={styles.table_title}>Users</h1>
+                            <UserList project_id={openProject} roles={roles} setRoles={setRoles}/>
+                        </div>
+                        <div className={styles.section_container} style={{ "width": smallScreen ? "100%" : "50%" }}>
+                            <h1 className={styles.table_title}>Permissions</h1>
+                            <PermissionsTable project_id={openProject} roles={roles} setRoles={setRoles}/>
+                        </div>
                     </div>
-                </div>
-                <div className={styles.delete_proj_btn}>
-                    <GButton
-                        icon={mdiDelete}
-                        type="button"
-                        warning
-                        onClick={handleOpenDeleteWarning}
-                    >
-                        Delete Project
-                    </GButton>
-                </div>
-            </div>}
-
-            {projects.map((project, index) => (
-                project.project_id !== openProject && <div key={index} className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
-                    <div className={styles.button_row}>
-                        <h1 className={styles.project_header}>{project.name}</h1>
+                    <div className={styles.delete_proj_btn}>
                         <GButton
+                            icon={mdiDelete}
                             type="button"
-                            noWrap
-                            onClick={() => setOpenProjectDB(project.project_id)}
+                            warning
+                            onClick={handleOpenDeleteWarning}
                         >
-                            Open Project
+                            Delete Project
                         </GButton>
                     </div>
+                </div>}
+
+                {projects.map((project, index) => (
+                    project.project_id !== openProject && <div key={index} className={styles.project_container} style={{ "padding": smallScreen ? "1rem" : "2rem" }}>
+                        <div className={styles.button_row}>
+                            <h1 className={styles.project_header}>{project.name}</h1>
+                            <GButton
+                                type="button"
+                                noWrap
+                                onClick={() => setOpenProjectDB(project.project_id)}
+                            >
+                                Open Project
+                            </GButton>
+                        </div>
+                    </div>
+                ))}
+                {projects.length === 0 && <div className={styles.img_container}>
+                    <CreateProjectPicture />
+                </div>}
+                <div style={{margin: "2rem 0"}}>
+                    <GButton centered disabled={!canCreateProjects} icon={mdiPlus} onClick={handleOpenCreateProjectDialog}>Create New Project</GButton>
                 </div>
-            ))}
-            {projects.length === 0 && <div className={styles.img_container}>
-                <CreateProjectPicture />
+                <GDialog fitContent title="Create New Project" openDialog={createProjectDialog} setOpenDialog={setCreateProjectDialog}>
+                    <label htmlFor="name">Name:</label>
+                    <div className={styles.form_section}>
+                        <input className={styles.dark_input} type="text" id="name" name="name" onChange={handleSetNewProjectName}/>
+                        {newProjectErrorMessage && <div className={styles.error_message}>{newProjectErrorMessage}</div>}
+                    </div>
+                    <div className={styles.button_row}>
+                        <GButton
+                            onClick={() => setCreateProjectDialog(false)}
+                            type="button"
+                            warning
+                            alternate
+                        >
+                            Cancel
+                        </GButton>
+                        <GButton
+                            icon={mdiContentSave}
+                            onClick={createProject}
+                            disabled={newProjectErrorMessage.length > 0}
+                        >
+                            Save
+                        </GButton>
+                    </div>
+                </GDialog>
+                {openProject && <DangerDialog
+                    title="Delete Project"
+                    openDialog={openDeleteWarning}
+                    buttons={[
+                        <GButton
+                            onClick={() => setOpenDeleteWarning(false)}
+                            type="button"
+                        >
+                            Cancel
+                        </GButton>,
+                        <GButton
+                            icon={mdiDelete}
+                            type="button"
+                            onClick={() => deleteProject(openProject)}
+                            warning
+                        >
+                            Delete
+                        </GButton>
+                    ]}
+                >
+                    <span>
+                        Are you sure you want to delete the project {currentProject().name}?
+                    </span>
+                </DangerDialog>}
             </div>}
-            <div style={{margin: "2rem 0"}}>
-                <GButton centered disabled={!canCreateProjects} icon={mdiPlus} onClick={handleOpenCreateProjectDialog}>Create New Project</GButton>
-            </div>
-            <GDialog fitContent title="Create New Project" openDialog={createProjectDialog} setOpenDialog={setCreateProjectDialog}>
-                <label htmlFor="name">Name:</label>
-                <div className={styles.form_section}>
-                    <input className={styles.dark_input} type="text" id="name" name="name" onChange={handleSetNewProjectName}/>
-                    {newProjectErrorMessage && <div className={styles.error_message}>{newProjectErrorMessage}</div>}
-                </div>
-                <div className={styles.button_row}>
-                    <GButton
-                        onClick={() => setCreateProjectDialog(false)}
-                        type="button"
-                        warning
-                        alternate
-                    >
-                        Cancel
-                    </GButton>
-                    <GButton
-                        icon={mdiContentSave}
-                        onClick={createProject}
-                        disabled={newProjectErrorMessage.length > 0}
-                    >
-                        Save
-                    </GButton>
-                </div>
-            </GDialog>
-            {openProject && <DangerDialog
-                title="Delete Project"
-                openDialog={openDeleteWarning}
-                buttons={[
-                    <GButton
-                        onClick={() => setOpenDeleteWarning(false)}
-                        type="button"
-                    >
-                        Cancel
-                    </GButton>,
-                    <GButton
-                        icon={mdiDelete}
-                        type="button"
-                        onClick={() => deleteProject(openProject)}
-                        warning
-                    >
-                        Delete
-                    </GButton>
-                ]}
-            >
-                <span>
-                    Are you sure you want to delete the project {currentProject().name}?
-                </span>
-            </DangerDialog>}
         </Fragment>
     );
 }

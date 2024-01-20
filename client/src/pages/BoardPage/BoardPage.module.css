@@ -64,3 +64,11 @@
     gap: 1rem;
     margin-bottom: 3rem;
 }
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10rem;
+    padding: 0;
+}

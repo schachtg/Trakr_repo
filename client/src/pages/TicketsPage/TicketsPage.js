@@ -5,6 +5,7 @@ import { mdiCloseCircle, mdiPlus, mdiContentSave, mdiDelete } from '@mdi/js';
 import { Select } from 'antd';
 import { hasPermission } from '../../HelperFunctions';
 import { baseURL } from '../../apis/TicketManager';
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 // Components
 import RowItem from '../../components/RowItem/RowItem';
@@ -18,6 +19,7 @@ import NoProjectAvailable from '../../components/NoProjectAvailable/NoProjectAva
 const { Option } = Select;
 
 export default function TicketsPage() {
+    const [loadingPage, setLoadingPage] = useState(true);
     const [tickets, setTickets] = useState([]);
     const [epicList, setEpicList] = useState([]);
     const [createEpicDialog, setCreateEpicDialog] = useState(false);
@@ -83,6 +85,7 @@ export default function TicketsPage() {
 
     const initializeProject = async () => {
         try {
+            setLoadingPage(true);
             const projectId = await getOpenProjectID();
             if (!projectId) {
                 return;
@@ -104,8 +107,10 @@ export default function TicketsPage() {
             setTickets(tickets);
             setEpicList(epics);
             getTicketsForSprints(tickets, project.curr_sprint, []);
+            setLoadingPage(false);
         } catch (err) {
             console.error(err.message);
+            setLoadingPage(false);
         }
     }
 
@@ -317,159 +322,172 @@ export default function TicketsPage() {
 
     return (
         <Fragment>
-            {openProject && <div className={smallScreen ? styles.page_content_sml : styles.page_content}>
-                <div className={styles.layout_container}>
-                    <div className={styles.ticket_list}>
-                        <div className={styles.epics_box}>
-                            <h1>Epics</h1>
-                            {epicList.length > 0 && <RowItem
-                                title="Epic List"
-                                childRows={epicList.map((epic) => (
-                                    {
-                                        title: epic.name,
-                                        onClick: () => handleStartEditEpic(epic)
-                                    }
-                                ))}
-                            />}
-                            <div className={styles.labeled_section}>
-                                <label htmlFor="filter">Filter:</label>
-                                <Select
-                                    dropdownStyle={{ backgroundColor: '#555' }}
-                                    showSearch
-                                    optionFilterProp="children"
-                                    name="filter"
-                                    id="filter"
-                                    mode="multiple"
-                                    value={filteredEpics}
-                                    onChange={handleChangeFilteredEpics}
-                                    filterOption={(input, option) =>
-                                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                    }
-                                >
-                                    {epicList.map((epic, index) => <Option key={index} value={epic.epic_id}>{epic.name}</Option>)}
-                                </Select>
-                            </div>
-                            <GButton centered icon={mdiPlus} onClick={handleOpenCreateEpicDialog}>Create Epic</GButton>
-                        </div>
-                        <div className={styles.isolated_buttom}>
-                            <GButton
-                                onClick={handleOpenCreateTicketDialog}
-                                icon={mdiPlus}
-                                type="button"
-                            >
-                                Create Ticket
-                            </GButton>
-                        </div>
-                        <GDialog title="Create new ticket" openDialog={openNewTicketDialog} setOpenDialog={setOpenNewTicketDialog}>
-                            <CreateTicketForm projectInfo={openProject} closeForm={() => setOpenNewTicketDialog(false)}/>
-                        </GDialog>
-                        {[...Array(numSprintsDisplayed + 1)].map((e, i) => (
-                            <div key={i} className={styles.section_container}>
-                                <h1 className={styles.sprint_title}>{getSprintName(i)}</h1>
-                                <div className={styles.sprint_tickets_container}>
-                                    {sprintTickets[i].map((ticket) => (
-                                        <RowItem
-                                            key={ticket.ticket_id}
-                                            title={ticket.name}
-                                            subtitle={getEpicName(ticket.epic)}
-                                            strikethrough={ticket.column_name === "Done"}
-                                            onClick={() => handleOpenTicket(ticket)}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    {(!mediumScreen && openTicket) && <div className={styles.ticket_details}>
-                        <div className={styles.header_row}>
-                            <h1 className={styles.long_text}>{openTicket.name}</h1>
-                            <GButton
-                                icon={mdiCloseCircle}
-                                transparent
-                                iconSize={1.7}
-                                className={styles.close_btn}
-                                onClick={() => setOpenTicket(null)}
-                                type="button"
-                            />
-                        </div>
-                        <TicketForm projectInfo={openProject} ticket={openTicket}/>
-                    </div>}
-                    {(mediumScreen && openTicket) && <GDialog title={openTicket.name} openDialog={openTicket} setOpenDialog={handleCloseDialog}>
-                        <TicketForm projectInfo={openProject} ticket={openTicket} />
-                    </GDialog>}
-                    <GDialog fitContent title="Create Epic" openDialog={createEpicDialog} setOpenDialog={setCreateEpicDialog}>
-                        <label htmlFor="name">Name:</label>
-                        <div className={styles.form_section}>
-                            <input className={styles.dark_input} type="text" id="name" name="name" onChange={handleSetNewEpicName}/>
-                            {newEpicErrorMessage && <div className={styles.error_message}>{newEpicErrorMessage}</div>}
-                        </div>
-                        <div className={styles.button_row}>
-                            <GButton
-                                onClick={() => setCreateEpicDialog(false)}
-                                type="button"
-                                warning
-                                alternate
-                            >
-                                Cancel
-                            </GButton>
-                            <GButton
-                                icon={mdiContentSave}
-                                onClick={handleCreateEpic}
-                                disabled={newEpicErrorMessage.length > 0}
-                            >
-                                Save
-                            </GButton>
-                        </div>
-                    </GDialog>
-                    <GDialog fitContent title="Edit Epic" openDialog={openEditEpicDialog} setOpenDialog={setOpenEditEpicDialog}>
-                        <label htmlFor="editName">Name:</label>
-                        {epicList.length > 0 && <div className={styles.form_section}>
-                            <input className={styles.dark_input} type="text" id="editName" name="editName" value={newEpicName} onChange={handleSetNewEpicName}/>
-                            {newEpicErrorMessage && <div className={styles.error_message}>{newEpicErrorMessage}</div>}
-                        </div>}
-                        <div className={styles.button_row}>
-                            <GButton
-                                icon={mdiContentSave}
-                                type="submit"
-                                onClick={handleSaveNewName}
-                                disabled={newEpicErrorMessage.length > 0}
-                            >
-                                Save
-                            </GButton>
-                            <GButton
-                                icon={mdiDelete}
-                                onClick={handleDeleteWarning}
-                                type="button"
-                                warning
-                            >
-                                Delete
-                            </GButton>
-                        </div>
-                    </GDialog>
-                    {epicList.length > 0 && <DangerDialog
-                        title="Delete Epic"
-                        openDialog={openDeleteEpicDialog}
-                        buttons={[
-                            <GButton
-                                onClick={() => setOpenDeleteEpicDialog(false)}
-                                type="button"
-                            >
-                                Cancel
-                            </GButton>,
-                            <GButton
-                                onClick={handleDeleteEpic}
-                                type="button"
-                                warning
-                            >
-                                Delete
-                            </GButton>
-                        ]}
-                    >
-                        Are you sure you want to delete the epic {editEpic.name}?
-                    </DangerDialog>}
+            {loadingPage ?
+                <div className={styles.loading}>
+                    <ScaleLoader
+                        height={70}
+                        width={12}
+                        radius={3}
+                        color={"#34EBBA"}
+                        loading={loadingPage}
+                    />
                 </div>
+            :
+            <div>
+                {openProject && <div className={smallScreen ? styles.page_content_sml : styles.page_content}>
+                    <div className={styles.layout_container}>
+                        <div className={styles.ticket_list}>
+                            <div className={styles.epics_box}>
+                                <h1>Epics</h1>
+                                {epicList.length > 0 && <RowItem
+                                    title="Epic List"
+                                    childRows={epicList.map((epic) => (
+                                        {
+                                            title: epic.name,
+                                            onClick: () => handleStartEditEpic(epic)
+                                        }
+                                    ))}
+                                />}
+                                <div className={styles.labeled_section}>
+                                    <label htmlFor="filter">Filter:</label>
+                                    <Select
+                                        dropdownStyle={{ backgroundColor: '#555' }}
+                                        showSearch
+                                        optionFilterProp="children"
+                                        name="filter"
+                                        id="filter"
+                                        mode="multiple"
+                                        value={filteredEpics}
+                                        onChange={handleChangeFilteredEpics}
+                                        filterOption={(input, option) =>
+                                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                        }
+                                    >
+                                        {epicList.map((epic, index) => <Option key={index} value={epic.epic_id}>{epic.name}</Option>)}
+                                    </Select>
+                                </div>
+                                <GButton centered icon={mdiPlus} onClick={handleOpenCreateEpicDialog}>Create Epic</GButton>
+                            </div>
+                            <div className={styles.isolated_button}>
+                                <GButton
+                                    onClick={handleOpenCreateTicketDialog}
+                                    icon={mdiPlus}
+                                    type="button"
+                                >
+                                    Create Ticket
+                                </GButton>
+                            </div>
+                            <GDialog title="Create new ticket" openDialog={openNewTicketDialog} setOpenDialog={setOpenNewTicketDialog}>
+                                <CreateTicketForm projectInfo={openProject} closeForm={() => setOpenNewTicketDialog(false)}/>
+                            </GDialog>
+                            {[...Array(numSprintsDisplayed + 1)].map((e, i) => (
+                                <div key={i} className={styles.section_container}>
+                                    <h1 className={styles.sprint_title}>{getSprintName(i)}</h1>
+                                    <div className={styles.sprint_tickets_container}>
+                                        {sprintTickets[i].map((ticket) => (
+                                            <RowItem
+                                                key={ticket.ticket_id}
+                                                title={ticket.name}
+                                                subtitle={getEpicName(ticket.epic)}
+                                                strikethrough={ticket.column_name === "Done"}
+                                                onClick={() => handleOpenTicket(ticket)}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        {(!mediumScreen && openTicket) && <div className={styles.ticket_details}>
+                            <div className={styles.header_row}>
+                                <h1 className={styles.long_text}>{openTicket.name}</h1>
+                                <GButton
+                                    icon={mdiCloseCircle}
+                                    transparent
+                                    iconSize={1.7}
+                                    className={styles.close_btn}
+                                    onClick={() => setOpenTicket(null)}
+                                    type="button"
+                                />
+                            </div>
+                            <TicketForm projectInfo={openProject} ticket={openTicket}/>
+                        </div>}
+                        {(mediumScreen && openTicket) && <GDialog title={openTicket.name} openDialog={openTicket} setOpenDialog={handleCloseDialog}>
+                            <TicketForm projectInfo={openProject} ticket={openTicket} />
+                        </GDialog>}
+                        <GDialog fitContent title="Create Epic" openDialog={createEpicDialog} setOpenDialog={setCreateEpicDialog}>
+                            <label htmlFor="name">Name:</label>
+                            <div className={styles.form_section}>
+                                <input className={styles.dark_input} type="text" id="name" name="name" onChange={handleSetNewEpicName}/>
+                                {newEpicErrorMessage && <div className={styles.error_message}>{newEpicErrorMessage}</div>}
+                            </div>
+                            <div className={styles.button_row}>
+                                <GButton
+                                    onClick={() => setCreateEpicDialog(false)}
+                                    type="button"
+                                    warning
+                                    alternate
+                                >
+                                    Cancel
+                                </GButton>
+                                <GButton
+                                    icon={mdiContentSave}
+                                    onClick={handleCreateEpic}
+                                    disabled={newEpicErrorMessage.length > 0}
+                                >
+                                    Save
+                                </GButton>
+                            </div>
+                        </GDialog>
+                        <GDialog fitContent title="Edit Epic" openDialog={openEditEpicDialog} setOpenDialog={setOpenEditEpicDialog}>
+                            <label htmlFor="editName">Name:</label>
+                            {epicList.length > 0 && <div className={styles.form_section}>
+                                <input className={styles.dark_input} type="text" id="editName" name="editName" value={newEpicName} onChange={handleSetNewEpicName}/>
+                                {newEpicErrorMessage && <div className={styles.error_message}>{newEpicErrorMessage}</div>}
+                            </div>}
+                            <div className={styles.button_row}>
+                                <GButton
+                                    icon={mdiContentSave}
+                                    type="submit"
+                                    onClick={handleSaveNewName}
+                                    disabled={newEpicErrorMessage.length > 0}
+                                >
+                                    Save
+                                </GButton>
+                                <GButton
+                                    icon={mdiDelete}
+                                    onClick={handleDeleteWarning}
+                                    type="button"
+                                    warning
+                                >
+                                    Delete
+                                </GButton>
+                            </div>
+                        </GDialog>
+                        {epicList.length > 0 && <DangerDialog
+                            title="Delete Epic"
+                            openDialog={openDeleteEpicDialog}
+                            buttons={[
+                                <GButton
+                                    onClick={() => setOpenDeleteEpicDialog(false)}
+                                    type="button"
+                                >
+                                    Cancel
+                                </GButton>,
+                                <GButton
+                                    onClick={handleDeleteEpic}
+                                    type="button"
+                                    warning
+                                >
+                                    Delete
+                                </GButton>
+                            ]}
+                        >
+                            Are you sure you want to delete the epic {editEpic.name}?
+                        </DangerDialog>}
+                    </div>
+                </div>}
+                {!openProject && <NoProjectAvailable/>}
             </div>}
-            {!openProject && <NoProjectAvailable/>}
         </Fragment>
     );
 }
