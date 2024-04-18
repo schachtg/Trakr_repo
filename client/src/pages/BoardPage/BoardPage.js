@@ -47,6 +47,7 @@ export default function BoardPage() {
             });
             const data = await response.json();
             if (!data.open_project) {
+                setLoadingPage(false);
                 return;
             }
             await getProjectFromDB(data.open_project);

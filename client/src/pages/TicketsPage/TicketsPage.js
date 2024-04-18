@@ -88,18 +88,22 @@ export default function TicketsPage() {
             setLoadingPage(true);
             const projectId = await getOpenProjectID();
             if (!projectId) {
+                setLoadingPage(false);
                 return;
             }
             const project = await getProjectFromDB(projectId);
             if (!project) {
+                setLoadingPage(false);
                 return;
             }
             const tickets = await getTicketsFromDB(projectId);
             if (!tickets) {
+                setLoadingPage(false);
                 return;
             }
             const epics = await getEpicList(projectId);
             if (!epics) {
+                setLoadingPage(false);
                 return;
             }
 
