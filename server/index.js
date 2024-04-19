@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const ticketRoutes = require('./routes/ticketsRoutes');
+const userInfoRoutes = require('./routes/userInfoRoutes');
 require('dotenv');
 
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:5000', '/api/v1/'];
@@ -20,6 +21,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/api/v1/tickets', ticketRoutes);
+app.use('/api/v1/user_info', userInfoRoutes);
 
 //ROUTES//
 
@@ -183,189 +185,189 @@ app.use('/api/v1/tickets', ticketRoutes);
 // });
 
 // create a user
-app.post("/api/v1/user_info/create", async (req, res) => {
-  try {
-    const tableName = "user_info";
-    const { email, name, password } = req.body;
+// app.post("/api/v1/user_info/create", async (req, res) => {
+//   try {
+//     const tableName = "user_info";
+//     const { email, name, password } = req.body;
 
-    const saltedHash = await bcrypt.hash(password, 10);
+//     const saltedHash = await bcrypt.hash(password, 10);
 
-    const checkUser = await pool.query(
-      `SELECT * FROM ${tableName} WHERE email = $1`,
-      [email]
-    );
+//     const checkUser = await pool.query(
+//       `SELECT * FROM ${tableName} WHERE email = $1`,
+//       [email]
+//     );
 
-    if (checkUser.rowCount > 0) {
-      // If a user with the same email exists, return a response indicating that
-      res.status(409).json("User already exists");
-    } else {
-      // If the user doesn't exist, proceed to insert them into the database
-      const newUser = await pool.query(
-        `INSERT INTO ${tableName} (email, name, password) VALUES ($1, $2, $3) RETURNING *`,
-        [email, name, saltedHash]
-      );
-      res.status(201).json(newUser.rows[0]);
-    }
-  } catch (err) {
-    console.error(err.message);
-  }
-});
+//     if (checkUser.rowCount > 0) {
+//       // If a user with the same email exists, return a response indicating that
+//       res.status(409).json("User already exists");
+//     } else {
+//       // If the user doesn't exist, proceed to insert them into the database
+//       const newUser = await pool.query(
+//         `INSERT INTO ${tableName} (email, name, password) VALUES ($1, $2, $3) RETURNING *`,
+//         [email, name, saltedHash]
+//       );
+//       res.status(201).json(newUser.rows[0]);
+//     }
+//   } catch (err) {
+//     console.error(err.message);
+//   }
+// });
 
-app.patch("/api/v1/reset_password", async (req, res) => {
-  try {
-    const tableName = "user_info";
-    const { recipient_email, password, token } = req.body;
+// app.patch("/api/v1/user_info/reset_password", async (req, res) => {
+//   try {
+//     const tableName = "user_info";
+//     const { recipient_email, password, token } = req.body;
 
-    if (!token) {
-      return res.status(401).json("No password reset token provided");
-    }
+//     if (!token) {
+//       return res.status(401).json("No password reset token provided");
+//     }
 
-    // Verify password reset token
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    if (decodedToken.recipient_email !== recipient_email) {
-      await pool.query(
-        `UPDATE ${tableName} SET token = NULL WHERE email = $1`,
-        [recipient_email]
-      );
-      return res.status(401).json("Invalid password reset token");
-    }
-    if (decodedToken.exp < Date.now() / 1000) {
-      await pool.query(
-        `UPDATE ${tableName} SET token = NULL WHERE email = $1`,
-        [recipient_email]
-      );
-      return res.status(401).json("Password reset token has expired");
-    }
+//     // Verify password reset token
+//     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+//     if (decodedToken.recipient_email !== recipient_email) {
+//       await pool.query(
+//         `UPDATE ${tableName} SET token = NULL WHERE email = $1`,
+//         [recipient_email]
+//       );
+//       return res.status(401).json("Invalid password reset token");
+//     }
+//     if (decodedToken.exp < Date.now() / 1000) {
+//       await pool.query(
+//         `UPDATE ${tableName} SET token = NULL WHERE email = $1`,
+//         [recipient_email]
+//       );
+//       return res.status(401).json("Password reset token has expired");
+//     }
 
-    // Update user's password
-    const saltedHash = await bcrypt.hash(password, 10);
-    await pool.query(
-      `UPDATE ${tableName} SET password = $1, token = NULL WHERE email = $2`,
-      [saltedHash, recipient_email]
-    );
-    res.status(200).json("Password reset successful");
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json("Server error");
-  }
-});
+//     // Update user's password
+//     const saltedHash = await bcrypt.hash(password, 10);
+//     await pool.query(
+//       `UPDATE ${tableName} SET password = $1, token = NULL WHERE email = $2`,
+//       [saltedHash, recipient_email]
+//     );
+//     res.status(200).json("Password reset successful");
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json("Server error");
+//   }
+// });
 
-// Check if username password is in the db
-app.post("/api/v1/user_info/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const checkUser = await pool.query(
-      `SELECT * FROM user_info WHERE email = $1`,
-      [email]
-    );
+// // Check if username password is in the db
+// app.post("/api/v1/user_info/login", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const checkUser = await pool.query(
+//       `SELECT * FROM user_info WHERE email = $1`,
+//       [email]
+//     );
 
-    if (checkUser.rowCount > 0) {
-      const matching = await bcrypt.compare(password, checkUser.rows[0].password);
-      if (matching) {
-        const user = { email: email };
-        const token = jwt.sign(user, process.env.JWT_SECRET);
-        res.cookie('token', token, { expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)});
-        res.status(200).json("Found user");
-      } else {
-        res.status(401).json("Invalid password");
-      }
-    } else {
-      res.status(404).json("User not found");
-    }
-  } catch (err) {
-    res.status(404).json("User not found");
-  }
+//     if (checkUser.rowCount > 0) {
+//       const matching = await bcrypt.compare(password, checkUser.rows[0].password);
+//       if (matching) {
+//         const user = { email: email };
+//         const token = jwt.sign(user, process.env.JWT_SECRET);
+//         res.cookie('token', token, { expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)});
+//         res.status(200).json("Found user");
+//       } else {
+//         res.status(401).json("Invalid password");
+//       }
+//     } else {
+//       res.status(404).json("User not found");
+//     }
+//   } catch (err) {
+//     res.status(404).json("User not found");
+//   }
 
-  return;
-});
+//   return;
+// });
 
-app.get("/api/v1/user_info/logout", (req, res) => {
-  res.clearCookie('token');
-  res.status(200).json("Logged out");
-});
+// app.get("/api/v1/user_info/logout", async (req, res) => {
+//   res.clearCookie('token');
+//   res.status(200).json("Logged out");
+// });
 
-app.get("/api/v1/user_info/verify", authenticateToken, (req, res) => {
-  res.status(200).json("Valid token");
-});
+// app.get("/api/v1/user_info/verify", authenticateToken, async (req, res) => {
+//   res.status(200).json("Valid token");
+// });
 
-app.put("/api/v1/user_info/open_project", authenticateToken, async (req, res) => {
-  try {
-    const { open_project } = req.body;
-    const email = req.user.email;
-    const tableName = "user_info";
+// app.put("/api/v1/user_info/open_project", authenticateToken, async (req, res) => {
+//   try {
+//     const { open_project } = req.body;
+//     const email = req.user.email;
+//     const tableName = "user_info";
 
-    // Make sure user is in the project
-    const project = await pool.query(
-      `SELECT * FROM projects WHERE project_id = $1`,
-      [open_project]
-    );
+//     // Make sure user is in the project
+//     const project = await pool.query(
+//       `SELECT * FROM projects WHERE project_id = $1`,
+//       [open_project]
+//     );
 
-    if (project.rowCount === 0) {
-      res.status(404).json("Project not found");
-      return;
-    }
+//     if (project.rowCount === 0) {
+//       res.status(404).json("Project not found");
+//       return;
+//     }
 
-    if (!project.rows[0].user_emails.includes(email)) {
-      res.status(401).json("User is not in the project");
-      return;
-    }
+//     if (!project.rows[0].user_emails.includes(email)) {
+//       res.status(401).json("User is not in the project");
+//       return;
+//     }
 
-    // Update user's info
-    const updatedUser = await pool.query(
-      `UPDATE ${tableName} SET open_project=$1 WHERE email = $2 RETURNING *`,
-      [open_project, email]
-    );
-    res.status(200).json(updatedUser.rows[0]);
-  } catch (err) {
-    res.status(404).json("An error occured");
-  }
+//     // Update user's info
+//     const updatedUser = await pool.query(
+//       `UPDATE ${tableName} SET open_project=$1 WHERE email = $2 RETURNING *`,
+//       [open_project, email]
+//     );
+//     res.status(200).json(updatedUser.rows[0]);
+//   } catch (err) {
+//     res.status(404).json("An error occured");
+//   }
 
-  return;
-});
+//   return;
+// });
 
-app.get("/api/v1/user_info", authenticateToken, async (req, res) => {
+// app.get("/api/v1/user_info", authenticateToken, async (req, res) => {
   
-  const { email } = req.user;
-  const tableName = "user_info";
+//   const { email } = req.user;
+//   const tableName = "user_info";
 
-  // Use email to get user's data
-  const userData = await pool.query(
-    `SELECT * FROM ${tableName} WHERE email = $1`,
-    [email]
-  );
+//   // Use email to get user's data
+//   const userData = await pool.query(
+//     `SELECT * FROM ${tableName} WHERE email = $1`,
+//     [email]
+//   );
 
-  res.status(200).json({email: req.user.email, name: userData.rows[0].name, id: userData.rows[0].user_id, open_project: userData.rows[0].open_project});
-});
+//   res.status(200).json({email: req.user.email, name: userData.rows[0].name, id: userData.rows[0].user_id, open_project: userData.rows[0].open_project});
+// });
 
-app.get("/api/v1/user_info/project/:project_id", authenticateToken, async (req, res) => {
-  try {
-    const { project_id } = req.params;
-    const email = req.user.email;
+// app.get("/api/v1/user_info/project/:project_id", authenticateToken, async (req, res) => {
+//   try {
+//     const { project_id } = req.params;
+//     const email = req.user.email;
 
-    // Check if user is in the project
-    const project = await pool.query(
-      `SELECT * FROM projects WHERE project_id = $1`,
-      [project_id]
-    );
+//     // Check if user is in the project
+//     const project = await pool.query(
+//       `SELECT * FROM projects WHERE project_id = $1`,
+//       [project_id]
+//     );
 
-    if (project.rowCount === 0) {
-      res.status(404).json("Project not found");
-      return;
-    }
+//     if (project.rowCount === 0) {
+//       res.status(404).json("Project not found");
+//       return;
+//     }
 
-    if (project.rows[0].user_emails.includes(email)) {
-      const userList = await pool.query(
-        `SELECT user_id, name, email, open_project FROM user_info WHERE  email = ANY($1) ORDER BY name ASC`,
-        [project.rows[0].user_emails]
-      );
-      res.status(200).json(userList.rows);
-    } else {
-      res.status(401).json("User is not in the project");
-    }
-  } catch (err) {
-    console.error(err.message);
-  }
-});
+//     if (project.rows[0].user_emails.includes(email)) {
+//       const userList = await pool.query(
+//         `SELECT user_id, name, email, open_project FROM user_info WHERE  email = ANY($1) ORDER BY name ASC`,
+//         [project.rows[0].user_emails]
+//       );
+//       res.status(200).json(userList.rows);
+//     } else {
+//       res.status(401).json("User is not in the project");
+//     }
+//   } catch (err) {
+//     console.error(err.message);
+//   }
+// });
 
 // Create a project
 app.post("/api/v1/projects", authenticateToken, async (req, res) => {

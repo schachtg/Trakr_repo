@@ -31,7 +31,7 @@ export default function PasswordResetPage() {
             }
     
             try {
-                const data = await fetch(`${baseURL}/reset_password`, {
+                const data = await fetch(`${baseURL}/user_info/reset_password`, {
                     method: "PATCH",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(body)
