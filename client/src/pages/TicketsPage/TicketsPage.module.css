@@ -43,6 +43,7 @@
 }
 
 .ticket_details {
+    height: fit-content;
     width: 60%;
     min-width: 30rem;
     padding: 2rem;
