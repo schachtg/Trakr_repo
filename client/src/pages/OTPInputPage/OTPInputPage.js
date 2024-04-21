@@ -36,7 +36,7 @@ export default function OTPInputPage() {
         }
 
         try {
-            const data = await fetch(`${baseURL}/forgot_password`, {
+            const data = await fetch(`${baseURL}/user_info/forgot_password`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body)

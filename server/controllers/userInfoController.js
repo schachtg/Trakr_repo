@@ -1,6 +1,7 @@
 const pool = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { sendRecoveryEmail } = require('../utils/email');
 
 const createUser = async (req, res) => {
     try {
@@ -185,4 +186,27 @@ const getUserInProjectInfo = async (req, res) => {
     }
 };
 
-module.exports = { createUser, resetPassword, login, logout, verifyUser, updateOpenProject, getUserInfo, getUserInProjectInfo };
+const forgotPasswordRecoveryEmail = async (req, res) => {
+  try {
+    const tableName = "user_info";
+    const { recipient_email } = req.body;
+
+    // Generate password reset token
+    const resetToken = jwt.sign({ recipient_email, exp: Math.floor(Date.now() / 1000) + 3600 }, process.env.JWT_SECRET);
+    await pool.query(
+      `UPDATE ${tableName} SET token = $1 WHERE email = $2`,
+      [resetToken, recipient_email]
+    );
+    // Token expires in 1 hour
+
+    // Code to send email
+    sendRecoveryEmail(req.body)
+    .then((response) => res.status(200).json({message: response.message, resetToken: resetToken}))
+    .catch((err) => res.status(500).send(err.message));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+};
+
+module.exports = { createUser, resetPassword, login, logout, verifyUser, updateOpenProject, getUserInfo, getUserInProjectInfo, forgotPasswordRecoveryEmail };

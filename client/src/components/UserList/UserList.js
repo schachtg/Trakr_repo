@@ -40,7 +40,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 project_id: project_id,
                 recipient_email,
             };
-            const response = await fetch(`${baseURL}/invite`, {
+            const response = await fetch(`${baseURL}/projects/invite`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -63,7 +63,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 project_id: project_id,
                 email,
             };
-            const response = await fetch(`${baseURL}/remove_user`, {
+            const response = await fetch(`${baseURL}/projects/remove_user`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
@@ -138,7 +138,7 @@ export default function UserList({roles=[], setRoles, project_id}) {
                 email,
                 role_name,
             };
-            const response = await fetch(`${baseURL}/change_role`, {
+            const response = await fetch(`${baseURL}/roles/change_role`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

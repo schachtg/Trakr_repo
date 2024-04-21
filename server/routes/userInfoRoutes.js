@@ -12,5 +12,6 @@ router.get("/verify", authenticateToken, userInfoController.verifyUser);
 router.put("/open_project", authenticateToken, userInfoController.updateOpenProject);
 router.get("/", authenticateToken, userInfoController.getUserInfo);
 router.get("/project/:project_id", authenticateToken, userInfoController.getUserInProjectInfo);
+router.post("/forgot_password", userInfoController.forgotPasswordRecoveryEmail);
 
 module.exports = router;
