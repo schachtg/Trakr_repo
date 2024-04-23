@@ -40,7 +40,7 @@ const getTicketsByProjectId = async (req, res) => {
     );
     res.json(allTickets.rows);
   } catch (err) {
-    console.error(err.message);
+    res.status(500).json({ error: err.message });
   }
 }
 
@@ -109,7 +109,7 @@ const updateTicket = async (req, res) => {
 
     res.json(updateTicket.rows[0]);
     } catch (err) {
-    console.error(err.message);
+      res.status(500).json({ error: err.message });
   }
 };
 
@@ -149,7 +149,7 @@ const deleteTicket = async (req, res) => {
     );
     res.json("Ticket was deleted!");
   } catch (err) {
-    console.log(err.message);
+    res.status(500).json({ error: err.message });
   }
 };
 
