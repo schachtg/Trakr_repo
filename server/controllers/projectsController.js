@@ -26,7 +26,7 @@ const createProject = async (req, res) => {
   
       res.status(201).json(newProject.rows[0]);
     } catch (err) {
-      res.status(404).json("An error occured");
+      res.status(500).json({ error: err.message });
     }
   
     return;
@@ -42,7 +42,7 @@ const getUsersProjects = async (req, res) => {
       );
       res.json(allProjects.rows);
     } catch (err) {
-      console.error(err.message);
+      res.status(500).json({ error: err.message });
     }
 };
 
@@ -60,7 +60,7 @@ const getProjectById = async (req, res) => {
       }
       res.json(project.rows[0]);
     } catch (err) {
-      console.error(err.message);
+      res.status(500).json({ error: err.message });
     }
 };
 
@@ -79,7 +79,6 @@ const deleteProject = async (req, res) => {
         `UPDATE user_info SET open_project = NULL WHERE open_project = $1`,
         [project_id]
       );
-  
   
       if (user_list.rows[0].user_emails.includes(email)) {
         // Deletes everything referencing the project
@@ -107,7 +106,7 @@ const deleteProject = async (req, res) => {
         res.status(401).json("User is not in the project");
       }
     } catch (err) {
-      console.log(err.message);
+      res.status(500).json({ error: err.message });
     }
 };
 
@@ -160,7 +159,7 @@ const updateSprint = async (req, res) => {
         res.status(401).json("User is not in the project");
       }
     } catch (err) {
-      console.log(err.message);
+      res.status(500).json({ error: err.message });
     }
 };
 
@@ -216,10 +215,10 @@ const removeUserFromProject = async (req, res) => {
         res.status(404).json("User is not in the project");
       }
     } else {
-      res.status(401).json("User is not in the project");
+      res.status(404).json("User is not in the project");
     }
   } catch (err) {
-    console.log(err.message);
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -265,8 +264,7 @@ const inviteUserEmail = async (req, res) => {
     .then((response) => res.status(200).json({message: response.message}))
     .catch((err) => res.status(500).json({message: err.message}));
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    res.status(500).send(err.message);
   }
 };
 
@@ -322,7 +320,7 @@ const joinProject = async (req, res) => {
     });
 
   } catch (e) {
-    res.status(500).send("Server error");
+    res.status(500).send(e.message);
   }
 };
 
