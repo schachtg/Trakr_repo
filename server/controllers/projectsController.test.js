@@ -398,4 +398,4 @@ describe('updateSprint function', () => {
     });
 });
 
-// Today be busy
+// Test updates
