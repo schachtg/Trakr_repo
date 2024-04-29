@@ -12,12 +12,12 @@ import GMenu from '../GMenu/GMenu';
 export default function NavBar() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [isPublicDemo, setIsPublicDemo] = useState(false);
-    const [inDevelopment, setInDevelopment] = useState(true);
     const [openProfile, setOpenProfile] = useState(false);
     const [openNotifications, setOpenNotifications] = useState(false);
     const [userData, setUserData] = useState({email: "", name: ""});
     let screenSlack = 50;
     let smallScreen = windowWidth < (SMALL_WIDTH + screenSlack);
+    const inDevelopment = true;
 
     const handleLogout = async () => {
         await fetch(`${baseURL}/user_info/logout`, {
