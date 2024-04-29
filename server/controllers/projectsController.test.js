@@ -397,5 +397,3 @@ describe('updateSprint function', () => {
       expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
     });
 });
-
-// road block

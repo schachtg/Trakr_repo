@@ -12,6 +12,7 @@ import GMenu from '../GMenu/GMenu';
 export default function NavBar() {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [isPublicDemo, setIsPublicDemo] = useState(false);
+    const [inDevelopment, setInDevelopment] = useState(true);
     const [openProfile, setOpenProfile] = useState(false);
     const [openNotifications, setOpenNotifications] = useState(false);
     const [userData, setUserData] = useState({email: "", name: ""});
@@ -104,11 +105,11 @@ export default function NavBar() {
                     <ul className={smallScreen ? styles.ul_sml : styles.ul_lrg}>
                         <CustomLink to="/board">Board</CustomLink>
                         <CustomLink to="/tickets">Tickets</CustomLink>
-                        <CustomLink to="/reports">Reports</CustomLink>
+                        {!inDevelopment && <CustomLink to="/reports">Reports</CustomLink>}
                         <CustomLink to="/projects">Projects</CustomLink>
                     </ul>
                     <ul className={`${smallScreen ? styles.ul_sml : styles.ul_lrg} ${styles.button_group}`}>
-                        <GButton icon={mdiBell}
+                        {!inDevelopment && <GButton icon={mdiBell}
                             onClick={handleNotificationClick}
                             menu={
                                 <GMenu
@@ -119,7 +120,7 @@ export default function NavBar() {
                                     ]}
                                 />
                             }
-                        />
+                        />}
                         <GButton
                             icon={mdiAccount}
                             onClick={handleProfileClick}
