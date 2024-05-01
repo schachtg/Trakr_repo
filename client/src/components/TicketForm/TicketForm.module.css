@@ -69,6 +69,10 @@ input:-webkit-autofill{
     margin-top: 3rem;
 }
 
+.header_row {
+    margin: 2rem 0;
+}
+
 .error_text {
     color: #ff1f5f;
     font-size: 1rem;

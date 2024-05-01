@@ -361,6 +361,14 @@ export default function TicketForm({closeForm, ticket, projectInfo}) {
     return (
         <Fragment>
             <form id="form" method="post" onSubmit={handleSubmit}>
+                <div className={styles.header_row}>
+                    <GButton
+                        icon={mdiContentSave}
+                        type="submit"
+                    >
+                        Save
+                    </GButton>
+                </div>
                 <div className={styles.form_section}>
                     <label htmlFor="name">Name:</label>
                     <input maxLength="50" className={styles.dark_input} type="text" id="name" name="name" value={formData.name} onChange={handleChange}/>
