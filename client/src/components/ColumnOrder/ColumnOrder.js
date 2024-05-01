@@ -16,7 +16,7 @@ function ColumnBox(props) {
 
     const handleNameChange = async (event) => {
         const value = event.target.value;
-        props.updateName(value)
+        props.changeColumnName(value)
         if (value.length >= 15) {
             setTopBottomErrorMessage("Must be less than 15 characters");
         } else if (value.length === 0) {
@@ -28,9 +28,16 @@ function ColumnBox(props) {
         }
     };
 
+    const handleNameOnBlur = async (event) => {
+        const value = event.target.value;
+        if (topErrorMessage === "" && value.length > 0 && value.length < 15) {
+            props.updateName(value);
+        }
+    }
+
     const handleMaxChange = async (event) => {
         const value = event.target.value;
-        props.updateMax(value)
+        props.changeColumnMax(value)
 
         if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 100) {
             setBottomErrorMessage("Must be an integer between 0 and 100");
@@ -38,6 +45,13 @@ function ColumnBox(props) {
             setBottomErrorMessage("");
         }
     };
+
+    const handleMaxOnBlur = async (event) => {
+        const value = event.target.value;
+        if (bottomErrorMessage === "" && !(!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 100)) {
+            props.updateMax(value);
+        }
+    }
 
     return(
         <Fragment>
@@ -50,6 +64,8 @@ function ColumnBox(props) {
                         value={props.name}
                         type="text"
                         onChange={handleNameChange}
+                        onBlur={handleNameOnBlur}
+                        onFocus={() => props.fillOldColumns()}
                     />
                     {topErrorMessage && <div className={styles.error_message}>{topErrorMessage}</div>}
                 </div>
@@ -60,6 +76,9 @@ function ColumnBox(props) {
                         type="text"
                         value={props.max}
                         onChange={handleMaxChange}
+                        onBlur={handleMaxOnBlur}
+                        onFocus={() => props.fillOldColumns()}
+
                     />
                     {bottomErrorMessage && <div className={styles.error_message}>{bottomErrorMessage}</div>}
                 </div>
@@ -89,6 +108,7 @@ function ColumnBox(props) {
 
 export default function ColumnOrder({project_id}) {
     const [columns, setColumns] = useState([]);
+    const [oldColumns, setOldColumns] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [openDeleteWarning, setOpenDeleteWarning] = useState(false);
     const [deletingColumn, setDeletingColumn] = useState(0);
@@ -120,11 +140,17 @@ export default function ColumnOrder({project_id}) {
         }
     };
 
+    const changeColumnName = async (index, name) => {
+        let newColumns = [...columns];
+        newColumns[index].name = name;
+        setColumns(newColumns);
+    }
+
     const setColumnName = async (index, name) => {
         // Ensure that columns are up to date before updating
         const dbColumns = await getColumnsFromDB();
         const orderedColumns = updatePermanentColumns(orderColumnsByLocation(dbColumns));
-        if (JSON.stringify(orderedColumns) !== JSON.stringify(columns)) {
+        if (JSON.stringify(orderedColumns) !== JSON.stringify(oldColumns)) {
             window.location.reload();
             alert("An error occurred. Please try again.");
         } else {
@@ -141,11 +167,17 @@ export default function ColumnOrder({project_id}) {
         }
     }
 
+    const changeColumnMax = async (index, max) => {
+        let newColumns = [...columns];
+        newColumns[index].max = max;
+        setColumns(newColumns);
+    }
+
     const setColumnMax = async (index, max) => {
         // Ensure that columns are up to date before updating
         const dbColumns = await getColumnsFromDB();
         const orderedColumns = updatePermanentColumns(orderColumnsByLocation(dbColumns));
-        if (JSON.stringify(orderedColumns) !== JSON.stringify(columns)) {
+        if (JSON.stringify(orderedColumns) !== JSON.stringify(oldColumns)) {
             window.location.reload();
             alert("An error occurred. Please try again.");
         } else {
@@ -418,6 +450,12 @@ export default function ColumnOrder({project_id}) {
         setOpenDeleteWarning(true);
     }
 
+    const fillOldColumns = () => {
+        // Create a deep copy of the columns array
+        const columnsCopy = JSON.parse(JSON.stringify([...columns]));
+        setOldColumns(columnsCopy);
+    }
+
     useEffect(() => {
         getColumnsFromDB()
             .then((data) => {
@@ -438,8 +476,11 @@ export default function ColumnOrder({project_id}) {
                                 max={column.max}
                                 next_col={column.next_col}
                                 permanent={column.permanent}
+                                changeColumnName={(name) => changeColumnName(index, name)}
                                 updateName={(name) => setColumnName(index, name)}
+                                changeColumnMax={(max) => changeColumnMax(index, max)}
                                 updateMax={(max) => setColumnMax(index, max)}
+                                fillOldColumns={fillOldColumns}
                                 moveLeft={() => moveColumnLeft(index)}
                                 moveRight={() => moveColumnRight(index)}
                                 deleteColumn={() => openDeleteColumn(index)}
